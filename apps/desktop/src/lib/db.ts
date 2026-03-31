@@ -179,3 +179,35 @@ export function exportAccounts(ids: number[]): string {
     .all(...ids) as { login: string; senha: string }[];
   return rows.map((r) => `${r.login}:${r.senha}`).join('\n');
 }
+export function gerarBackup(): string {
+  const rows = db
+    .prepare('SELECT login, senha, nick FROM accounts WHERE deletedAt IS NULL')
+    .all() as { login: string; senha: string; nick: string | null }[];
+
+  return rows
+    .map((r) => {
+      const nickPart = r.nick ? ` ${r.nick}` : '';
+      return `${r.login}:${r.senha}${nickPart}`;
+    })
+    .join('\n');
+}
+export function addAccountsBulk(dados: Omit<Account, 'id'>[]): void {
+  const stmt = db.prepare(`
+    INSERT INTO accounts (login, senha, nick, elo, observacoes, deletedAt, pastaId)
+    VALUES (@login, @senha, @nick, @elo, @observacoes, @deletedAt, @pastaId)
+  `);
+  const inserirTodos = db.transaction((contas: Omit<Account, 'id'>[]) => {
+    contas.forEach((data) => {
+      stmt.run({
+        login: data.login,
+        senha: data.senha,
+        nick: data.nick ?? null,
+        elo: data.elo ?? null,
+        observacoes: data.observacoes ?? null,
+        deletedAt: data.deletedAt ?? null,
+        pastaId: data.pastaId ?? null,
+      });
+    });
+  });
+  inserirTodos(dados);
+}

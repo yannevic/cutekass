@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, clipboard, net } from 'electron';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import path, { join } from 'path';
 import {
   listAccounts,
   listTrash,
@@ -17,6 +17,8 @@ import {
   updatePasta,
   deletePasta,
   exportAccounts,
+  gerarBackup,
+  addAccountsBulk,
 } from '../src/lib/db';
 
 // ─── Janela ───────────────────────────────────────────────────────────────────
@@ -67,35 +69,80 @@ function saveConfig(data: Config) {
 
 let riotApiKey = loadConfig().riotApiKey;
 let riotClientPath = loadConfig().riotClientPath;
+function salvarBackup() {
+  try {
+    const conteudo = gerarBackup();
+    const backupPath = app.isPackaged
+      ? join(path.dirname(app.getPath('exe')), 'backup_contas.txt')
+      : join(app.getPath('userData'), 'backup_contas.txt');
+    writeFileSync(backupPath, conteudo, 'utf-8');
+  } catch {
+    // silencioso — backup é secundário
+  }
+}
 
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 
 ipcMain.handle('get-accounts', () => listAccounts());
 ipcMain.handle('get-trash', () => listTrash());
-ipcMain.handle('add-account', (_e, data) => addAccount(data));
-ipcMain.handle('update-account', (_e, data) => updateAccount(data));
-ipcMain.handle('delete-account', (_e, id) => softDeleteAccount(id));
-ipcMain.handle('restore-account', (_e, id) => restoreAccount(id));
-ipcMain.handle('permanent-delete', (_e, id) => hardDeleteAccount(id));
-ipcMain.handle('copy-to-clipboard', (_e, text: string) => {
-  clipboard.writeText(text);
+ipcMain.handle('add-account', (_e, data) => {
+  const resultado = addAccount(data);
+  salvarBackup();
+  return resultado;
 });
-ipcMain.handle('bulk-delete', (_e, ids: number[]) => bulkSoftDelete(ids));
-ipcMain.handle('bulk-set-elo', (_e, ids: number[], elo: string) => bulkSetElo(ids, elo));
-ipcMain.handle('bulk-move-pasta', (_e, ids: number[], pastaId: number | null) =>
-  bulkMovePasta(ids, pastaId)
-);
+
+ipcMain.handle('update-account', (_e, data) => {
+  updateAccount(data);
+  salvarBackup();
+});
+
+ipcMain.handle('delete-account', (_e, id) => {
+  softDeleteAccount(id);
+  salvarBackup();
+});
+
+ipcMain.handle('restore-account', (_e, id) => {
+  restoreAccount(id);
+  salvarBackup();
+});
+
+ipcMain.handle('permanent-delete', (_e, id) => {
+  hardDeleteAccount(id);
+  salvarBackup();
+});
+ipcMain.handle('bulk-add-accounts', (_e, dados) => {
+  addAccountsBulk(dados);
+  salvarBackup();
+});
+ipcMain.handle('bulk-delete', (_e, ids: number[]) => {
+  bulkSoftDelete(ids);
+  salvarBackup();
+});
+
+ipcMain.handle('bulk-set-elo', (_e, ids: number[], elo: string) => {
+  bulkSetElo(ids, elo);
+  salvarBackup();
+});
+
+ipcMain.handle('bulk-move-pasta', (_e, ids: number[], pastaId: number | null) => {
+  bulkMovePasta(ids, pastaId);
+  salvarBackup();
+});
+
+ipcMain.handle('export-accounts', (_e, ids: number[]) => {
+  const conteudo = exportAccounts(ids);
+  const downloadsPath = app.getPath('downloads');
+  const fileName = `contas_${Date.now()}.txt`;
+  writeFileSync(join(downloadsPath, fileName), conteudo, 'utf-8');
+});
 ipcMain.handle('get-pastas', () => listPastas());
 ipcMain.handle('add-pasta', (_e, nome: string, cor: string) => addPasta(nome, cor));
 ipcMain.handle('update-pasta', (_e, id: number, nome: string, cor: string) =>
   updatePasta(id, nome, cor)
 );
 ipcMain.handle('delete-pasta', (_e, id: number) => deletePasta(id));
-ipcMain.handle('export-accounts', (_e, ids: number[]) => {
-  const conteudo = exportAccounts(ids);
-  const downloadsPath = app.getPath('downloads');
-  const fileName = `contas_${Date.now()}.txt`;
-  writeFileSync(join(downloadsPath, fileName), conteudo, 'utf-8');
+ipcMain.handle('copy-to-clipboard', (_e, text: string) => {
+  clipboard.writeText(text);
 });
 
 // ─── Riot API ─────────────────────────────────────────────────────────────────

@@ -39,6 +39,13 @@ export default function useAccounts() {
     },
     [fetchAccounts]
   );
+  const bulkAddAccounts = useCallback(
+    async (dados: Omit<Account, 'id'>[]) => {
+      await window.electronAPI.bulkAddAccounts(dados);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
 
   const bulkDelete = useCallback(
     async (ids: number[]) => {
@@ -78,5 +85,6 @@ export default function useAccounts() {
     bulkSetElo,
     bulkMovePasta,
     copyToClipboard,
+    bulkAddAccounts,
   };
 }

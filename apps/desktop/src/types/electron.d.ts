@@ -26,6 +26,7 @@ declare global {
       loginRiot: (login: string, senha: string) => Promise<void>;
       getRiotClientPath: () => Promise<string>;
       saveRiotClientPath: (path: string) => Promise<void>;
+      bulkAddAccounts: (dados: Omit<Account, 'id'>[]) => Promise<void>;
     };
   }
 }

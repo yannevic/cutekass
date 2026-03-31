@@ -175,17 +175,17 @@ export default function Home() {
   }
 
   async function handleImport(parsed: ParsedAccount[]) {
-    for (let i = 0; i < parsed.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await addAccount({
-        login: parsed[i].login,
-        senha: parsed[i].senha,
-        nick: parsed[i].nick ?? '',
+    await window.electronAPI.bulkAddAccounts(
+      parsed.map((p) => ({
+        login: p.login,
+        senha: p.senha,
+        nick: p.nick ?? '',
         elo: '',
         observacoes: '',
         pastaId: pastaAtiva,
-      });
-    }
+      }))
+    );
+    setImportModalAberto(false);
   }
 
   async function handleAtualizarTodosElos() {
