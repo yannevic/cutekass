@@ -40,9 +40,43 @@ export default function useAccounts() {
     [fetchAccounts]
   );
 
+  const bulkDelete = useCallback(
+    async (ids: number[]) => {
+      await window.electronAPI.bulkDelete(ids);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
+
+  const bulkSetElo = useCallback(
+    async (ids: number[], elo: string) => {
+      await window.electronAPI.bulkSetElo(ids, elo);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
+
+  const bulkMovePasta = useCallback(
+    async (ids: number[], pastaId: number | null) => {
+      await window.electronAPI.bulkMovePasta(ids, pastaId);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
+
   const copyToClipboard = useCallback(async (text: string) => {
     await window.electronAPI.copyToClipboard(text);
   }, []);
 
-  return { accounts, loading, addAccount, updateAccount, deleteAccount, copyToClipboard };
+  return {
+    accounts,
+    loading,
+    addAccount,
+    updateAccount,
+    deleteAccount,
+    bulkDelete,
+    bulkSetElo,
+    bulkMovePasta,
+    copyToClipboard,
+  };
 }

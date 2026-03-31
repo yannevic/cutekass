@@ -10,4 +10,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   permanentDelete: (id: number) => ipcRenderer.invoke('permanent-delete', id),
   getTrash: () => ipcRenderer.invoke('get-trash'),
   copyToClipboard: (text: string) => ipcRenderer.invoke('copy-to-clipboard', text),
+  bulkDelete: (ids: number[]) => ipcRenderer.invoke('bulk-delete', ids),
+  bulkSetElo: (ids: number[], elo: string) => ipcRenderer.invoke('bulk-set-elo', ids, elo),
+  bulkMovePasta: (ids: number[], pastaId: number | null) =>
+    ipcRenderer.invoke('bulk-move-pasta', ids, pastaId),
+  getPastas: () => ipcRenderer.invoke('get-pastas'),
+  addPasta: (nome: string, cor: string) => ipcRenderer.invoke('add-pasta', nome, cor),
+  updatePasta: (id: number, nome: string, cor: string) =>
+    ipcRenderer.invoke('update-pasta', id, nome, cor),
+  deletePasta: (id: number) => ipcRenderer.invoke('delete-pasta', id),
 });
