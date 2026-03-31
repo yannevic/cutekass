@@ -6,12 +6,8 @@
     "source.fixAll.eslint": "always"
   },
   "eslint.validate": ["javascript", "typescript", "typescriptreact", "json"],
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
+  "eslint.workingDirectories": ["!apps/web", "!apps/desktop"],
   "prettier.requireConfig": true,
   "prettier.configPath": "./prettier.config.cjs",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
