@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import ImportModal from '../components/ImportModal';
 import { ParsedAccount } from '../lib/parser';
 import useAccounts from '../hooks/useAccounts';
@@ -39,6 +39,18 @@ export default function Home() {
   const [busca, setBusca] = useState('');
   const [filtroElo, setFiltroElo] = useState('Todos');
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
+  const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
+
+  useEffect(() => {
+    function handleClickFora(e: MouseEvent) {
+      const alvo = e.target as HTMLElement;
+      if (!alvo.closest('[data-dropdown]')) {
+        setDropdownAberto(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickFora);
+    return () => document.removeEventListener('mousedown', handleClickFora);
+  }, []);
 
   const contasFiltradas = useMemo(() => {
     return accounts.filter((acc) => {
@@ -263,42 +275,111 @@ export default function Home() {
                     ) : null}
                   </div>
 
-                  <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Olhinho */}
                     <button
                       type="button"
                       onClick={() => toggleSenha(account.id)}
-                      className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1 rounded-lg"
+                      className="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-zinc-700 transition-colors"
+                      title={senhaVisivel ? 'Ocultar senha' : 'Ver senha'}
                     >
-                      {senhaVisivel ? 'Ocultar' : 'Ver senha'}
+                      {senhaVisivel ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
                     </button>
+
+                    {/* Copiar login */}
                     <button
                       type="button"
                       onClick={() => copyToClipboard(account.login)}
-                      className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1 rounded-lg"
+                      className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Copiar login
                     </button>
+
+                    {/* Copiar senha */}
                     <button
                       type="button"
                       onClick={() => copyToClipboard(account.senha)}
-                      className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1 rounded-lg"
+                      className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Copiar senha
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => abrirEdicao(account)}
-                      className="text-xs bg-zinc-600 hover:bg-zinc-500 px-3 py-1 rounded-lg"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIdParaExcluir(account.id)}
-                      className="text-xs bg-red-800 hover:bg-red-700 px-3 py-1 rounded-lg"
-                    >
-                      Excluir
-                    </button>
+
+                    {/* 3 pontinhos */}
+                    <div className="relative" data-dropdown>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDropdownAberto(dropdownAberto === account.id ? null : account.id)
+                        }
+                        className="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-zinc-700 transition-colors"
+                        title="Mais opções"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <circle cx="5" cy="12" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="19" cy="12" r="2" />
+                        </svg>
+                      </button>
+
+                      {dropdownAberto === account.id && (
+                        <div className="absolute right-0 top-8 z-50 bg-zinc-700 rounded-xl shadow-lg py-1 min-w-[120px]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              abrirEdicao(account);
+                              setDropdownAberto(null);
+                            }}
+                            className="w-full text-left text-sm px-4 py-2 hover:bg-zinc-600 transition-colors"
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIdParaExcluir(account.id);
+                              setDropdownAberto(null);
+                            }}
+                            className="w-full text-left text-sm px-4 py-2 hover:bg-zinc-600 text-red-400 transition-colors"
+                          >
+                            🗑️ Excluir
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </li>
               );
