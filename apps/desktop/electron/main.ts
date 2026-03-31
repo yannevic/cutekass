@@ -27,7 +27,7 @@ function createWindow() {
     height: 650,
     minWidth: 700,
     minHeight: 500,
-    icon: join(__dirname, '../assets/cutekass.png'),
+    icon: join(__dirname, '../assets/cutekass.ico'),
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,

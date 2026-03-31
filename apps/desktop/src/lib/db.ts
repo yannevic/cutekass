@@ -5,7 +5,12 @@ import type { Account } from '../types/account';
 import type { Pasta } from '../types/pasta';
 
 const dbPath = path.join(app.getPath('userData'), 'accounts.db');
-const db = new Database(dbPath);
+
+const bindingPath = app.isPackaged
+  ? path.join(process.resourcesPath, 'better_sqlite3.node')
+  : undefined;
+
+const db = new Database(dbPath, bindingPath ? { nativeBinding: bindingPath } : undefined);
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 

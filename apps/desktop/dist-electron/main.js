@@ -26,7 +26,8 @@ const fs = require("fs");
 const path = require("path");
 const Database = require("better-sqlite3");
 const dbPath = path.join(electron.app.getPath("userData"), "accounts.db");
-const db = new Database(dbPath);
+const bindingPath = electron.app.isPackaged ? path.join(process.resourcesPath, "better_sqlite3.node") : void 0;
+const db = new Database(dbPath, bindingPath ? { nativeBinding: bindingPath } : void 0);
 db.exec(`
   CREATE TABLE IF NOT EXISTS pastas (
     id   INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -167,7 +168,7 @@ function createWindow() {
     height: 650,
     minWidth: 700,
     minHeight: 500,
-    icon: path.join(__dirname, "../assets/cutekass.png"),
+    icon: path.join(__dirname, "../assets/cutekass.ico"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
