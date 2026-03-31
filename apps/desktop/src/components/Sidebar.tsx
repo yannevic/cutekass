@@ -51,19 +51,15 @@ export default function Sidebar({
   return (
     <aside
       className="group w-12 hover:w-52 shrink-0 h-screen flex flex-col border-r transition-all duration-300 overflow-hidden"
-      style={{
-        backgroundColor: '#12082A',
-        borderColor: '#3B136B',
-      }}
+      style={{ backgroundColor: '#12082A', borderColor: '#3B136B' }}
     >
       {/* Logo */}
-      <div
-        className="h-14 flex items-center px-3 shrink-0 border-b"
-        style={{ borderColor: '#3B136B' }}
-      >
-        <span className="text-xl shrink-0 leading-none">🌸</span>
+      <div className="h-14 flex items-center shrink-0 border-b" style={{ borderColor: '#3B136B' }}>
+        <span className="w-12 flex items-center justify-center shrink-0 text-xl leading-none">
+          🌸
+        </span>
         <span
-          className="ml-3 font-bold text-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className="font-bold text-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           style={{ color: '#CFA6FF' }}
         >
           Continhas
@@ -71,7 +67,7 @@ export default function Sidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-hidden p-2 flex flex-col gap-1">
+      <nav className="flex-1 overflow-hidden py-2 flex flex-col gap-1">
         {/* Todas as contas */}
         <button
           type="button"
@@ -79,27 +75,15 @@ export default function Sidebar({
             onSelecionarPasta(null);
             navigate('/');
           }}
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
-          style={
+          className={`w-full flex items-center py-2 rounded-lg text-sm font-medium transition-colors mx-1 ${
             pastaAtiva === null && !naLixeira
-              ? { backgroundColor: '#3B136B', color: '#CFA6FF' }
-              : { color: '#7B5EA7' }
-          }
-          onMouseEnter={(e) => {
-            if (pastaAtiva !== null || naLixeira) {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
-              (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (pastaAtiva !== null || naLixeira) {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
-              (e.currentTarget as HTMLButtonElement).style.color = '#7B5EA7';
-            }
-          }}
+              ? 'group-hover:bg-[#3B136B] text-[#CFA6FF]'
+              : 'text-[#7B5EA7] hover:bg-[#1E0A38] hover:text-[#CFA6FF]'
+          }`}
         >
-          <span className="text-base shrink-0">🗂</span>
-          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {/* w-10 = 40px → ícone centralizado dentro dos 48px da sidebar fechada */}
+          <span className="w-10 flex items-center justify-center shrink-0 text-base">🗂</span>
+          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Todas as contas
           </span>
         </button>
@@ -108,34 +92,37 @@ export default function Sidebar({
         {pastas.map((pasta) => (
           <div
             key={pasta.id}
-            className="group/pasta w-full flex flex-col rounded-lg text-sm transition-colors"
+            className="group/pasta flex flex-col rounded-lg text-sm transition-colors mx-1"
             style={
               pastaAtiva === pasta.id && !naLixeira
                 ? { backgroundColor: '#3B136B', color: '#CFA6FF' }
                 : { color: '#7B5EA7' }
             }
           >
-            <div className="flex items-center gap-3 px-2 py-2">
+            <div className="flex items-center py-2">
               {editandoId === pasta.id ? (
-                <input
-                  className="flex-1 text-sm px-2 py-0.5 rounded outline-none min-w-0"
-                  style={{
-                    backgroundColor: '#2A1050',
-                    color: '#CFA6FF',
-                    border: '1px solid #7B2CF5',
-                  }}
-                  value={nomeEditando}
-                  autoFocus
-                  onChange={(e) => setNomeEditando(e.target.value)}
-                  onBlur={() => confirmarRename(pasta)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') confirmarRename(pasta);
-                    if (e.key === 'Escape') {
-                      setEditandoId(null);
-                      setNomeEditando('');
-                    }
-                  }}
-                />
+                <>
+                  <span className="w-10 shrink-0" />
+                  <input
+                    className="flex-1 text-sm px-2 py-0.5 rounded outline-none min-w-0 mr-2"
+                    style={{
+                      backgroundColor: '#2A1050',
+                      color: '#CFA6FF',
+                      border: '1px solid #7B2CF5',
+                    }}
+                    value={nomeEditando}
+                    autoFocus
+                    onChange={(e) => setNomeEditando(e.target.value)}
+                    onBlur={() => confirmarRename(pasta)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') confirmarRename(pasta);
+                      if (e.key === 'Escape') {
+                        setEditandoId(null);
+                        setNomeEditando('');
+                      }
+                    }}
+                  />
+                </>
               ) : (
                 <>
                   <button
@@ -144,18 +131,20 @@ export default function Sidebar({
                       onSelecionarPasta(pasta.id);
                       navigate('/');
                     }}
-                    className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                    className="flex items-center flex-1 min-w-0 text-left"
                   >
-                    <span
-                      className="w-3 h-3 rounded-full shrink-0"
-                      style={{ backgroundColor: pasta.cor }}
-                    />
+                    <span className="w-10 flex items-center justify-center shrink-0">
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: pasta.cor }}
+                      />
+                    </span>
                     <span className="truncate whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       {pasta.nome}
                     </span>
                   </button>
 
-                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover/pasta:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover/pasta:opacity-100 transition-opacity pr-1">
                     <button
                       type="button"
                       onClick={() => iniciarEdicao(pasta)}
@@ -267,12 +256,15 @@ export default function Sidebar({
       </nav>
 
       {/* Rodapé */}
-      <div className="p-2 flex flex-col gap-1 shrink-0 border-t" style={{ borderColor: '#3B136B' }}>
+      <div
+        className="py-2 flex flex-col gap-1 shrink-0 border-t"
+        style={{ borderColor: '#3B136B' }}
+      >
         {/* Nova pasta */}
         <button
           type="button"
           onClick={onNovaPasta}
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors"
+          className="w-full flex items-center py-2 rounded-lg text-sm transition-colors mx-1"
           style={{ color: '#5A3A8A' }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
@@ -283,8 +275,8 @@ export default function Sidebar({
             (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
           }}
         >
-          <span className="text-base shrink-0">＋</span>
-          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="w-10 flex items-center justify-center shrink-0 text-base">＋</span>
+          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Nova pasta
           </span>
         </button>
@@ -293,7 +285,7 @@ export default function Sidebar({
         <button
           type="button"
           onClick={() => navigate('/trash')}
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors"
+          className="w-full flex items-center py-2 rounded-lg text-sm transition-colors mx-1"
           style={
             naLixeira ? { backgroundColor: '#3B136B', color: '#CFA6FF' } : { color: '#5A3A8A' }
           }
@@ -310,8 +302,8 @@ export default function Sidebar({
             }
           }}
         >
-          <span className="text-base shrink-0">🗑</span>
-          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="w-10 flex items-center justify-center shrink-0 text-base">🗑</span>
+          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Lixeira
           </span>
         </button>
@@ -320,7 +312,7 @@ export default function Sidebar({
         <button
           type="button"
           onClick={onConfiguracoes}
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors"
+          className="w-full flex items-center py-2 rounded-lg text-sm transition-colors mx-1"
           style={{ color: '#5A3A8A' }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
@@ -331,20 +323,22 @@ export default function Sidebar({
             (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
           }}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4 shrink-0 ml-0.5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="w-10 flex items-center justify-center shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </span>
+          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Configurações
           </span>
         </button>
