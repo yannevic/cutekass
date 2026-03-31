@@ -41,6 +41,32 @@ function createWindow() {
   }
 }
 
+// ─── Config ───────────────────────────────────────────────────────────────────
+
+const configPath = join(app.getPath('userData'), 'config.json');
+
+interface Config {
+  riotApiKey: string;
+  riotClientPath: string;
+}
+
+function loadConfig(): Config {
+  if (!existsSync(configPath)) return { riotApiKey: '', riotClientPath: '' };
+  try {
+    const raw = readFileSync(configPath, 'utf-8');
+    return { riotApiKey: '', riotClientPath: '', ...JSON.parse(raw) };
+  } catch {
+    return { riotApiKey: '', riotClientPath: '' };
+  }
+}
+
+function saveConfig(data: Config) {
+  writeFileSync(configPath, JSON.stringify(data), 'utf-8');
+}
+
+let riotApiKey = loadConfig().riotApiKey;
+let riotClientPath = loadConfig().riotClientPath;
+
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 
 ipcMain.handle('get-accounts', () => listAccounts());
@@ -73,29 +99,18 @@ ipcMain.handle('export-accounts', (_e, ids: number[]) => {
 
 // ─── Riot API ─────────────────────────────────────────────────────────────────
 
-const configPath = join(app.getPath('userData'), 'config.json');
-
-function loadConfig(): { riotApiKey: string } {
-  if (!existsSync(configPath)) return { riotApiKey: '' };
-  try {
-    const raw = readFileSync(configPath, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return { riotApiKey: '' };
-  }
-}
-
-function saveConfig(data: { riotApiKey: string }) {
-  writeFileSync(configPath, JSON.stringify(data), 'utf-8');
-}
-
-let riotApiKey = loadConfig().riotApiKey;
-
 ipcMain.handle('get-riot-key', () => riotApiKey);
 
 ipcMain.handle('save-riot-key', (_e, key: string) => {
   riotApiKey = key.trim();
-  saveConfig({ riotApiKey });
+  saveConfig({ riotApiKey, riotClientPath });
+});
+
+ipcMain.handle('get-riot-client-path', () => riotClientPath);
+
+ipcMain.handle('save-riot-client-path', (_e, path: string) => {
+  riotClientPath = path.trim();
+  saveConfig({ riotApiKey, riotClientPath });
 });
 
 ipcMain.handle('fetch-elo', async (_e, nick: string) => {
@@ -126,7 +141,6 @@ ipcMain.handle('fetch-elo', async (_e, nick: string) => {
     });
   }
 
-  // 1. PUUID via account-v1
   const encodedName = encodeURIComponent(gameName);
   const encodedTag = encodeURIComponent(tagLine);
   const urlAccount = `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodedName}/${encodedTag}`;
@@ -142,9 +156,7 @@ ipcMain.handle('fetch-elo', async (_e, nick: string) => {
     );
   if (!accountData.puuid) throw new Error('Conta não encontrada.');
 
-  // 2. Elo via league-v4 direto pelo puuid
   const urlLeague = `https://br1.api.riotgames.com/lol/league/v4/entries/by-puuid/${accountData.puuid}`;
-
   const leagueRaw = await riotFetch(urlLeague);
 
   if (!Array.isArray(leagueRaw)) {
@@ -187,16 +199,46 @@ ipcMain.handle('fetch-elo', async (_e, nick: string) => {
   const altoElo = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(soloQ.tier);
   return altoElo ? `${tier} ${lp}LP` : `${tier} ${rank} ${lp}LP`;
 });
+
 ipcMain.handle('login-riot', async (_e, login: string, senha: string) => {
-  const { execSync } = await import('child_process');
-  const { writeFileSync, unlinkSync } = await import('fs');
+  const { execSync, execFileSync } = await import('child_process');
+  const { writeFileSync: fsWrite, unlinkSync, existsSync: fsExistsSync } = await import('fs');
   const { tmpdir } = await import('os');
   const { join: pathJoin } = await import('path');
 
-  console.log('[login-riot] Iniciando para login:', login);
-
   const loginEscapado = login.replace(/'/g, "''");
   const senhaEscapada = senha.replace(/'/g, "''");
+
+  // Verifica se o client já está aberto via arquivo .ps1
+  const checkFile = pathJoin(tmpdir(), `lol-check-${Date.now()}.ps1`);
+  let clientAberto = '0';
+  try {
+    fsWrite(
+      checkFile,
+      `Get-Process -Name "Riot Client" -ErrorAction SilentlyContinue | Measure-Object | Select-Object -ExpandProperty Count`,
+      'utf-8'
+    );
+    clientAberto = execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${checkFile}"`, {
+      windowsHide: true,
+      encoding: 'utf-8',
+    }).trim();
+  } finally {
+    try {
+      unlinkSync(checkFile);
+    } catch {
+      /* ignora */
+    }
+  }
+
+  if (clientAberto === '0') {
+    if (!riotClientPath || !fsExistsSync(riotClientPath)) {
+      throw new Error(
+        'Riot Client não está aberto. Configure o caminho do executável nas Configurações para abri-lo automaticamente.'
+      );
+    }
+    execFileSync(riotClientPath, { windowsHide: false });
+    execSync('powershell -NoProfile -Command "Start-Sleep -Seconds 8"', { windowsHide: true });
+  }
 
   const script = `
 Add-Type @"
@@ -214,10 +256,7 @@ if (-not $procs) { throw "Riot Client nao encontrado. Abra o client e tente nova
 $proc = $procs | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
 if (-not $proc) { throw "Janela do Riot Client nao encontrada. Verifique se o client esta aberto." }
 
-Write-Host "Processo encontrado: $($proc.Id)"
 $hwnd = $proc.MainWindowHandle
-Write-Host "Handle da janela: $hwnd"
-
 [Win32]::ShowWindow($hwnd, 9)
 [Win32]::SetForegroundWindow($hwnd)
 Start-Sleep -Milliseconds 800
@@ -230,25 +269,18 @@ Start-Sleep -Milliseconds 300
 [System.Windows.Forms.SendKeys]::SendWait('${senhaEscapada}')
 Start-Sleep -Milliseconds 300
 [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-Write-Host "Concluido!"
 `;
 
   const tmpFile = pathJoin(tmpdir(), `lol-login-${Date.now()}.ps1`);
 
   try {
-    writeFileSync(tmpFile, script, 'utf-8');
-    console.log('[login-riot] Script salvo em:', tmpFile);
-
-    const output = execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, {
+    fsWrite(tmpFile, script, 'utf-8');
+    execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, {
       windowsHide: true,
       encoding: 'utf-8',
     });
-    console.log('[login-riot] Output:', output);
   } catch (e: unknown) {
-    const err = e as { message?: string; stderr?: string; stdout?: string };
-    console.log('[login-riot] Erro:', err.message);
-    console.log('[login-riot] stderr:', err.stderr);
-    console.log('[login-riot] stdout:', err.stdout);
+    const err = e as { message?: string; stderr?: string };
     throw new Error(err.stderr || err.message || 'Erro desconhecido');
   } finally {
     try {

@@ -179,6 +179,21 @@ function createWindow() {
     win.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
+const configPath = path.join(electron.app.getPath("userData"), "config.json");
+function loadConfig() {
+  if (!fs.existsSync(configPath)) return { riotApiKey: "", riotClientPath: "" };
+  try {
+    const raw = fs.readFileSync(configPath, "utf-8");
+    return { riotApiKey: "", riotClientPath: "", ...JSON.parse(raw) };
+  } catch {
+    return { riotApiKey: "", riotClientPath: "" };
+  }
+}
+function saveConfig(data) {
+  fs.writeFileSync(configPath, JSON.stringify(data), "utf-8");
+}
+let riotApiKey = loadConfig().riotApiKey;
+let riotClientPath = loadConfig().riotClientPath;
 electron.ipcMain.handle("get-accounts", () => listAccounts());
 electron.ipcMain.handle("get-trash", () => listTrash());
 electron.ipcMain.handle("add-account", (_e, data) => addAccount(data));
@@ -208,24 +223,15 @@ electron.ipcMain.handle("export-accounts", (_e, ids) => {
   const fileName = `contas_${Date.now()}.txt`;
   fs.writeFileSync(path.join(downloadsPath, fileName), conteudo, "utf-8");
 });
-const configPath = path.join(electron.app.getPath("userData"), "config.json");
-function loadConfig() {
-  if (!fs.existsSync(configPath)) return { riotApiKey: "" };
-  try {
-    const raw = fs.readFileSync(configPath, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return { riotApiKey: "" };
-  }
-}
-function saveConfig(data) {
-  fs.writeFileSync(configPath, JSON.stringify(data), "utf-8");
-}
-let riotApiKey = loadConfig().riotApiKey;
 electron.ipcMain.handle("get-riot-key", () => riotApiKey);
 electron.ipcMain.handle("save-riot-key", (_e, key) => {
   riotApiKey = key.trim();
-  saveConfig({ riotApiKey });
+  saveConfig({ riotApiKey, riotClientPath });
+});
+electron.ipcMain.handle("get-riot-client-path", () => riotClientPath);
+electron.ipcMain.handle("save-riot-client-path", (_e, path2) => {
+  riotClientPath = path2.trim();
+  saveConfig({ riotApiKey, riotClientPath });
 });
 electron.ipcMain.handle("fetch-elo", async (_e, nick) => {
   if (!riotApiKey) throw new Error("Chave da Riot não configurada.");
@@ -292,13 +298,39 @@ electron.ipcMain.handle("fetch-elo", async (_e, nick) => {
   return altoElo ? `${tier} ${lp}LP` : `${tier} ${rank} ${lp}LP`;
 });
 electron.ipcMain.handle("login-riot", async (_e, login, senha) => {
-  const { execSync } = await import("child_process");
-  const { writeFileSync: writeFileSync2, unlinkSync } = await import("fs");
+  const { execSync, execFileSync } = await import("child_process");
+  const { writeFileSync: fsWrite, unlinkSync, existsSync: fsExistsSync } = await import("fs");
   const { tmpdir } = await import("os");
   const { join: pathJoin } = await import("path");
-  console.log("[login-riot] Iniciando para login:", login);
   const loginEscapado = login.replace(/'/g, "''");
   const senhaEscapada = senha.replace(/'/g, "''");
+  const checkFile = pathJoin(tmpdir(), `lol-check-${Date.now()}.ps1`);
+  let clientAberto = "0";
+  try {
+    fsWrite(
+      checkFile,
+      `Get-Process -Name "Riot Client" -ErrorAction SilentlyContinue | Measure-Object | Select-Object -ExpandProperty Count`,
+      "utf-8"
+    );
+    clientAberto = execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${checkFile}"`, {
+      windowsHide: true,
+      encoding: "utf-8"
+    }).trim();
+  } finally {
+    try {
+      unlinkSync(checkFile);
+    } catch {
+    }
+  }
+  if (clientAberto === "0") {
+    if (!riotClientPath || !fsExistsSync(riotClientPath)) {
+      throw new Error(
+        "Riot Client não está aberto. Configure o caminho do executável nas Configurações para abri-lo automaticamente."
+      );
+    }
+    execFileSync(riotClientPath, { windowsHide: false });
+    execSync('powershell -NoProfile -Command "Start-Sleep -Seconds 8"', { windowsHide: true });
+  }
   const script = `
 Add-Type @"
 using System;
@@ -315,10 +347,7 @@ if (-not $procs) { throw "Riot Client nao encontrado. Abra o client e tente nova
 $proc = $procs | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
 if (-not $proc) { throw "Janela do Riot Client nao encontrada. Verifique se o client esta aberto." }
 
-Write-Host "Processo encontrado: $($proc.Id)"
 $hwnd = $proc.MainWindowHandle
-Write-Host "Handle da janela: $hwnd"
-
 [Win32]::ShowWindow($hwnd, 9)
 [Win32]::SetForegroundWindow($hwnd)
 Start-Sleep -Milliseconds 800
@@ -331,22 +360,16 @@ Start-Sleep -Milliseconds 300
 [System.Windows.Forms.SendKeys]::SendWait('${senhaEscapada}')
 Start-Sleep -Milliseconds 300
 [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-Write-Host "Concluido!"
 `;
   const tmpFile = pathJoin(tmpdir(), `lol-login-${Date.now()}.ps1`);
   try {
-    writeFileSync2(tmpFile, script, "utf-8");
-    console.log("[login-riot] Script salvo em:", tmpFile);
-    const output = execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, {
+    fsWrite(tmpFile, script, "utf-8");
+    execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, {
       windowsHide: true,
       encoding: "utf-8"
     });
-    console.log("[login-riot] Output:", output);
   } catch (e) {
     const err = e;
-    console.log("[login-riot] Erro:", err.message);
-    console.log("[login-riot] stderr:", err.stderr);
-    console.log("[login-riot] stdout:", err.stdout);
     throw new Error(err.stderr || err.message || "Erro desconhecido");
   } finally {
     try {

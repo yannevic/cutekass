@@ -20,5 +20,7 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   getRiotKey: () => electron.ipcRenderer.invoke("get-riot-key"),
   saveRiotKey: (key) => electron.ipcRenderer.invoke("save-riot-key", key),
   fetchElo: (nick) => electron.ipcRenderer.invoke("fetch-elo", nick),
-  loginRiot: (login, senha) => electron.ipcRenderer.invoke("login-riot", login, senha)
+  loginRiot: (login, senha) => electron.ipcRenderer.invoke("login-riot", login, senha),
+  getRiotClientPath: () => electron.ipcRenderer.invoke("get-riot-client-path"),
+  saveRiotClientPath: (path) => electron.ipcRenderer.invoke("save-riot-client-path", path)
 });
