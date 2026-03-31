@@ -1,13 +1,46 @@
 {
   "name": "cutekass",
   "productName": "CuteKass",
+  "description": "Gerenciador de contas League of Legends",
+  "author": "nana",
   "private": true,
   "version": "1.0.0",
   "main": "dist-electron/main.js",
   "scripts": {
+    "postinstall": "electron-builder install-app-deps",
     "dev": "vite",
-    "build": "vite build && electron-builder",
+    "build": "vite build",
+    "dist": "npm run build && electron-builder",
     "preview": "vite preview"
+  },
+  "build": {
+    "appId": "com.cutekass.app",
+    "productName": "CuteKass",
+    "icon": "assets/cutekass.ico",
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "assets/**"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+        "to": "better_sqlite3.node"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/cutekass.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/cutekass.ico",
+      "uninstallerIcon": "assets/cutekass.ico",
+      "installerHeaderIcon": "assets/cutekass.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
@@ -24,9 +57,8 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.3.1",
     "concurrently": "^9.2.1",
-    "electron": "^29.1.0",
+    "electron": "29.1.0",
     "electron-builder": "^24.9.1",
-    "electron-rebuild": "^3.2.9",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "typescript": "^5.4.2",
     "vite": "^6.0.0",
