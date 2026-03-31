@@ -41,7 +41,7 @@ export default function Home() {
   const [filtroElo, setFiltroElo] = useState('Todos');
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
   const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
-  const [ordem, setOrdem] = useState<'recentes' | 'alfabetica'>('recentes');
+  const [ordem, setOrdem] = useState<'recentes' | 'antigas' | 'alfabetica' | 'z-a'>('recentes');
   const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
   const [atualizandoElos, setAtualizandoElos] = useState(false);
   const [progressoElo, setProgressoElo] = useState<{ atual: number; total: number } | null>(null);
@@ -89,6 +89,14 @@ export default function Home() {
           if (nomeA > nomeB) return 1;
           return 0;
         }
+        if (ordem === 'z-a') {
+          const nomeA = (a.nick || a.login).toLowerCase();
+          const nomeB = (b.nick || b.login).toLowerCase();
+          if (nomeA > nomeB) return -1;
+          if (nomeA < nomeB) return 1;
+          return 0;
+        }
+        if (ordem === 'antigas') return a.id - b.id;
         return b.id - a.id;
       });
   }, [accounts, busca, filtroElo, pastaAtiva, ordem]);
@@ -348,10 +356,14 @@ export default function Home() {
           <select
             className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
             value={ordem}
-            onChange={(e) => setOrdem(e.target.value as 'recentes' | 'alfabetica')}
+            onChange={(e) =>
+              setOrdem(e.target.value as 'recentes' | 'antigas' | 'alfabetica' | 'z-a')
+            }
           >
             <option value="recentes">Mais recentes</option>
+            <option value="antigas">Mais antigas</option>
             <option value="alfabetica">A → Z</option>
+            <option value="z-a">Z → A</option>
           </select>
         </div>
 
