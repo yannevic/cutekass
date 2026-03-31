@@ -1,3 +1,6 @@
 node_modules
 .turbo
 package-lock.json
+apps/desktop/dist/
+apps/desktop/dist-electron/
+apps/desktop/node_modules/
