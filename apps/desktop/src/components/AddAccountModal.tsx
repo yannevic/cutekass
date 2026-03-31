@@ -22,6 +22,8 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [autocompleteAberto, setAutocompleteAberto] = useState(false);
+  const [buscandoElo, setBuscandoElo] = useState(false);
+  const [erroElo, setErroElo] = useState('');
 
   const sugestoes = useMemo(() => {
     const termo = eloInput.trim().toLowerCase();
@@ -32,6 +34,23 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
   function selecionarElo(opcao: string) {
     setEloInput(opcao);
     setAutocompleteAberto(false);
+  }
+  async function handleBuscarElo() {
+    const nickTrimado = nick.trim();
+    if (!nickTrimado.includes('#')) {
+      setErroElo('Nick deve estar no formato Nome#TAG (ex: Faker#BR1)');
+      return;
+    }
+    setErroElo('');
+    setBuscandoElo(true);
+    try {
+      const eloEncontrado = await window.electronAPI.fetchElo(nickTrimado);
+      setEloInput(eloEncontrado);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Erro ao buscar elo';
+      setErroElo(msg);
+    }
+    setBuscandoElo(false);
   }
 
   async function handleSubmit() {
@@ -114,12 +133,27 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
 
         <div className="flex flex-col gap-1">
           <label className="text-sm text-zinc-400">Nick (opcional)</label>
-          <input
-            className="bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400"
-            value={nick}
-            onChange={(e) => setNick(e.target.value)}
-            placeholder="NomeDaContaNoLoL"
-          />
+          <div className="flex gap-2">
+            <input
+              className="flex-1 bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400"
+              value={nick}
+              onChange={(e) => {
+                setNick(e.target.value);
+                setErroElo('');
+              }}
+              placeholder="Nome#TAG"
+            />
+            <button
+              type="button"
+              onClick={handleBuscarElo}
+              disabled={buscandoElo || !nick.trim()}
+              className="px-3 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm text-zinc-300 disabled:opacity-40 transition-colors whitespace-nowrap"
+              title="Buscar elo via API da Riot"
+            >
+              {buscandoElo ? '...' : '🔍 Buscar elo'}
+            </button>
+          </div>
+          {erroElo && <p className="text-xs text-red-400">{erroElo}</p>}
         </div>
 
         <div className="flex flex-col gap-1 relative">

@@ -1,6 +1,7 @@
 export interface ParsedAccount {
   login: string;
   senha: string;
+  nick?: string;
 }
 
 export function parseAccountsText(text: string): ParsedAccount[] {
@@ -27,29 +28,32 @@ function parseBlock(block: string): ParsedAccount | null {
 
   if (lines.length === 0) return null;
 
-  // Tipo A: "login:senha" em uma linha
-  if (lines.length === 1) {
-    const colonIndex = lines[0].indexOf(':');
-    if (colonIndex === -1) return null;
+  let login = '';
+  let senha = '';
+  let nick: string | undefined;
 
-    return {
-      login: lines[0].slice(0, colonIndex).trim(),
-      senha: lines[0].slice(colonIndex + 1).trim(),
-    };
-  }
-
-  // Pode ser que a primeira linha já seja "login:senha" mesmo com mais linhas
+  // Tipo A: primeira linha é "login:senha"
   const colonIndex = lines[0].indexOf(':');
   if (colonIndex !== -1) {
-    return {
-      login: lines[0].slice(0, colonIndex).trim(),
-      senha: lines[0].slice(colonIndex + 1).trim(),
-    };
+    login = lines[0].slice(0, colonIndex).trim();
+    senha = lines[0].slice(colonIndex + 1).trim();
+    // linha 1 pode ser nick#tag
+    if (lines[1] && lines[1].includes('#')) {
+      nick = lines[1];
+    }
+  } else if (lines.length >= 2) {
+    // Tipo B: login na linha 0, senha na linha 1
+    login = lines[0];
+    senha = lines[1];
+    // linha 2 pode ser nick#tag
+    if (lines[2] && lines[2].includes('#')) {
+      nick = lines[2];
+    }
+  } else {
+    return null;
   }
 
-  // Tipo B: login na linha 0, senha na linha 1
-  return {
-    login: lines[0],
-    senha: lines[1],
-  };
+  if (!login || !senha) return null;
+
+  return { login, senha, nick };
 }

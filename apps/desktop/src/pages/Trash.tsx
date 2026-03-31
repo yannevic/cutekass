@@ -3,12 +3,14 @@ import type { Account } from '../types/account';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Sidebar from '../components/Sidebar';
 import usePastas from '../hooks/usePastas';
+import SettingsModal from '../components/SettingsModal';
 
 export default function Trash() {
   const [contas, setContas] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [idParaExcluir, setIdParaExcluir] = useState<number | null>(null);
   const { pastas, updatePasta, deletePasta } = usePastas();
+  const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
 
   const fetchTrash = useCallback(async () => {
     setLoading(true);
@@ -50,8 +52,8 @@ export default function Trash() {
         onNovaPasta={() => {}}
         onRenamePasta={(id, nome, cor) => updatePasta(id, nome, cor)}
         onDeletePasta={(id) => deletePasta(id)}
+        onConfiguracoes={() => setConfiguracoesAberto(true)}
       />
-
       <main className="flex-1 overflow-y-auto p-6">
         <h1 className="text-2xl font-bold text-zinc-400 mb-6">Lixeira</h1>
 
@@ -92,7 +94,6 @@ export default function Trash() {
           </ul>
         )}
       </main>
-
       {idParaExcluir !== null ? (
         <ConfirmDialog
           mensagem="Excluir permanentemente? Essa ação não pode ser desfeita."
@@ -100,6 +101,7 @@ export default function Trash() {
           onCancelar={() => setIdParaExcluir(null)}
         />
       ) : null}
+      {configuracoesAberto ? <SettingsModal onClose={() => setConfiguracoesAberto(false)} /> : null}
     </div>
   );
 }

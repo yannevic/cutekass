@@ -20,4 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('update-pasta', id, nome, cor),
   deletePasta: (id: number) => ipcRenderer.invoke('delete-pasta', id),
   exportAccounts: (ids: number[]) => ipcRenderer.invoke('export-accounts', ids),
+  getRiotKey: () => ipcRenderer.invoke('get-riot-key'),
+  saveRiotKey: (key: string) => ipcRenderer.invoke('save-riot-key', key),
+  fetchElo: (nick: string) => ipcRenderer.invoke('fetch-elo', nick),
 });

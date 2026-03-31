@@ -16,5 +16,8 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   addPasta: (nome, cor) => electron.ipcRenderer.invoke("add-pasta", nome, cor),
   updatePasta: (id, nome, cor) => electron.ipcRenderer.invoke("update-pasta", id, nome, cor),
   deletePasta: (id) => electron.ipcRenderer.invoke("delete-pasta", id),
-  exportAccounts: (ids) => electron.ipcRenderer.invoke("export-accounts", ids)
+  exportAccounts: (ids) => electron.ipcRenderer.invoke("export-accounts", ids),
+  getRiotKey: () => electron.ipcRenderer.invoke("get-riot-key"),
+  saveRiotKey: (key) => electron.ipcRenderer.invoke("save-riot-key", key),
+  fetchElo: (nick) => electron.ipcRenderer.invoke("fetch-elo", nick)
 });

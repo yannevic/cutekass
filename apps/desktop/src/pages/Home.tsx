@@ -11,6 +11,7 @@ import CreatePastaModal from '../components/CreatePastaModal';
 import BulkActionBar from '../components/BulkActionBar';
 import { ELO_TIERS, UNRANKED } from '../lib/eloConfig';
 import type { Account } from '../types/account';
+import SettingsModal from '../components/SettingsModal';
 
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
 
@@ -41,6 +42,10 @@ export default function Home() {
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
   const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
   const [ordem, setOrdem] = useState<'recentes' | 'alfabetica'>('recentes');
+  const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
+  const [atualizandoElos, setAtualizandoElos] = useState(false);
+  const [progressoElo, setProgressoElo] = useState<{ atual: number; total: number } | null>(null);
+  const [erroAtualizacao, setErroAtualizacao] = useState('');
 
   useEffect(() => {
     function handleClickFora(e: MouseEvent) {
@@ -166,11 +171,51 @@ export default function Home() {
       await addAccount({
         login: parsed[i].login,
         senha: parsed[i].senha,
-        nick: '',
+        nick: parsed[i].nick ?? '',
         elo: '',
         observacoes: '',
         pastaId: pastaAtiva,
       });
+    }
+  }
+  async function handleAtualizarTodosElos() {
+    const comNick = accounts.filter((a) => a.nick && a.nick.includes('#'));
+    if (comNick.length === 0) {
+      setErroAtualizacao('Nenhuma conta possui nick no formato Nome#TAG.');
+      return;
+    }
+
+    const chave = await window.electronAPI.getRiotKey();
+    if (!chave) {
+      setErroAtualizacao('Chave da API da Riot não configurada. Acesse as Configurações.');
+      return;
+    }
+
+    setErroAtualizacao('');
+    setAtualizandoElos(true);
+    setProgressoElo({ atual: 0, total: comNick.length });
+
+    let erros = 0;
+    for (let i = 0; i < comNick.length; i += 1) {
+      const conta = comNick[i];
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const elo = await window.electronAPI.fetchElo(conta.nick!);
+        // eslint-disable-next-line no-await-in-loop
+        await updateAccount({ ...conta, elo });
+      } catch {
+        erros += 1;
+      }
+      setProgressoElo({ atual: i + 1, total: comNick.length });
+    }
+
+    setAtualizandoElos(false);
+    setProgressoElo(null);
+
+    if (erros > 0) {
+      setErroAtualizacao(
+        `${erros} conta${erros !== 1 ? 's' : ''} não puderam ser atualizadas. Verifique se a chave da API ainda é válida.`
+      );
     }
   }
 
@@ -193,6 +238,7 @@ export default function Home() {
         onNovaPasta={() => setCriarPastaAberto(true)}
         onRenamePasta={(id, nome, cor) => updatePasta(id, nome, cor)}
         onDeletePasta={(id) => deletePasta(id)}
+        onConfiguracoes={() => setConfiguracoesAberto(true)}
       />
 
       <main className={`flex-1 overflow-y-auto p-6 ${algumSelecionado ? 'pb-20' : ''}`}>
@@ -210,7 +256,20 @@ export default function Home() {
               {pastaAtiva === null ? 'Todas as contas' : nomePastaAtiva}
             </h2>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {progressoElo && (
+              <span className="text-xs text-zinc-400">
+                {progressoElo.atual}/{progressoElo.total} atualizados
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleAtualizarTodosElos}
+              disabled={atualizandoElos}
+              className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white font-semibold text-sm px-4 py-2 rounded-lg"
+            >
+              {atualizandoElos ? '⟳ Atualizando...' : '⟳ Atualizar Elos'}
+            </button>
             <button
               type="button"
               onClick={() => setImportModalAberto(true)}
@@ -227,6 +286,18 @@ export default function Home() {
             </button>
           </div>
         </div>
+        {erroAtualizacao && (
+          <div className="mb-4 flex items-center justify-between bg-red-900/40 border border-red-700 text-red-300 text-sm px-4 py-2 rounded-lg">
+            <span>{erroAtualizacao}</span>
+            <button
+              type="button"
+              onClick={() => setErroAtualizacao('')}
+              className="ml-4 text-red-400 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         <div className="flex gap-3 mb-6">
           <input
@@ -454,6 +525,8 @@ export default function Home() {
           onCancelar={() => setConfirmarExclusaoLote(false)}
         />
       ) : null}
+
+      {configuracoesAberto ? <SettingsModal onClose={() => setConfiguracoesAberto(false)} /> : null}
     </div>
   );
 }

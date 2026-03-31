@@ -42,17 +42,19 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
           <span className="text-zinc-300 font-mono">login</span> e{' '}
           <span className="text-zinc-300 font-mono">senha</span> em linhas separadas.
           <br />
+          Opcionalmente, adicione o nick na linha seguinte:{' '}
+          <span className="text-zinc-300 font-mono">Nome#TAG</span>.
+          <br />
           Separe cada conta com uma linha em branco.
         </p>
 
         <textarea
           className="w-full h-40 bg-zinc-800 border border-zinc-600 rounded-lg p-3 text-zinc-100 font-mono text-sm resize-none focus:outline-none focus:border-blue-500"
-          placeholder={'conta1:senha1\n\nconta2\nsenha2\n\nconta3:senha3'}
+          placeholder={'conta1\nsenha1\nNick#BR1\n\nconta2:senha2\nNick2#BR1'}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
 
-        {/* Preview */}
         {parsed.length > 0 && (
           <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-3 max-h-40 overflow-y-auto flex flex-col gap-1">
             <p className="text-zinc-400 text-xs mb-1">
@@ -60,10 +62,19 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
               {parsed.length !== 1 ? 's' : ''}:
             </p>
             {parsed.map((acc) => (
-              <div key={`${acc.login}-${acc.senha}`} className="flex gap-2 text-sm font-mono">
+              <div
+                key={`${acc.login}-${acc.senha}`}
+                className="flex gap-2 text-sm font-mono flex-wrap"
+              >
                 <span className="text-blue-400">{acc.login}</span>
                 <span className="text-zinc-500">·</span>
                 <span className="text-zinc-400">{'•'.repeat(Math.min(acc.senha.length, 8))}</span>
+                {acc.nick && (
+                  <>
+                    <span className="text-zinc-500">·</span>
+                    <span className="text-yellow-400">{acc.nick}</span>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -77,12 +88,14 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
 
         <div className="flex gap-3 justify-end mt-2">
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 text-zinc-400 hover:text-white transition-colors"
           >
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleImport}
             disabled={parsed.length === 0 || loading}
             className="px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
