@@ -15,5 +15,6 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   getPastas: () => electron.ipcRenderer.invoke("get-pastas"),
   addPasta: (nome, cor) => electron.ipcRenderer.invoke("add-pasta", nome, cor),
   updatePasta: (id, nome, cor) => electron.ipcRenderer.invoke("update-pasta", id, nome, cor),
-  deletePasta: (id) => electron.ipcRenderer.invoke("delete-pasta", id)
+  deletePasta: (id) => electron.ipcRenderer.invoke("delete-pasta", id),
+  exportAccounts: (ids) => electron.ipcRenderer.invoke("export-accounts", ids)
 });

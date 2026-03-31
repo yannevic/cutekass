@@ -19,6 +19,7 @@ declare global {
       addPasta: (nome: string, cor: string) => Promise<Pasta>;
       updatePasta: (id: number, nome: string, cor: string) => Promise<void>;
       deletePasta: (id: number) => Promise<void>;
+      exportAccounts: (ids: number[]) => Promise<void>;
     };
   }
 }

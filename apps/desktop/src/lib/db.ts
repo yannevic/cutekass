@@ -35,6 +35,31 @@ try {
   // coluna já existe, ignorar
 }
 
+try {
+  const col = (
+    db.prepare(`PRAGMA table_info(accounts)`).all() as { name: string; notnull: number }[]
+  ).find((c) => c.name === 'nick');
+  if (col?.notnull === 1) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS accounts_new (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        login       TEXT NOT NULL,
+        senha       TEXT NOT NULL,
+        nick        TEXT,
+        elo         TEXT,
+        observacoes TEXT,
+        deletedAt   TEXT,
+        pastaId     INTEGER
+      );
+      INSERT INTO accounts_new SELECT id, login, senha, nick, elo, observacoes, deletedAt, pastaId FROM accounts;
+      DROP TABLE accounts;
+      ALTER TABLE accounts_new RENAME TO accounts;
+    `);
+  }
+} catch {
+  // migração já aplicada, ignorar
+}
+
 // ─── Accounts ─────────────────────────────────────────────────────────────────
 
 export function listAccounts(): Account[] {
@@ -140,4 +165,12 @@ export function updatePasta(id: number, nome: string, cor: string): void {
 export function deletePasta(id: number): void {
   db.prepare('UPDATE accounts SET pastaId = NULL WHERE pastaId = @id').run({ id });
   db.prepare('DELETE FROM pastas WHERE id = @id').run({ id });
+}
+export function exportAccounts(ids: number[]): string {
+  if (ids.length === 0) return '';
+  const placeholders = ids.map(() => '?').join(',');
+  const rows = db
+    .prepare(`SELECT login, senha FROM accounts WHERE id IN (${placeholders})`)
+    .all(...ids) as { login: string; senha: string }[];
+  return rows.map((r) => `${r.login}:${r.senha}`).join('\n');
 }

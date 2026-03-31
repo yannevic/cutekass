@@ -5,6 +5,7 @@ import type { Pasta } from '../types/pasta';
 interface BulkActionBarProps {
   count: number;
   pastas: Pasta[];
+  selectedIds: number[];
   onDeleteSelected: () => void;
   onSetEloSelected: (elo: string) => void;
   onMoveTopastaSelected: (pastaId: number | null) => void;
@@ -16,6 +17,7 @@ type AcaoAtiva = 'elo' | 'pasta' | null;
 export default function BulkActionBar({
   count,
   pastas,
+  selectedIds,
   onDeleteSelected,
   onSetEloSelected,
   onMoveTopastaSelected,
@@ -40,6 +42,10 @@ export default function BulkActionBar({
     setPastaSelecionada('');
   }
 
+  async function handleExportar() {
+    await window.electronAPI.exportAccounts(selectedIds);
+  }
+
   return (
     <div className="fixed bottom-0 left-52 right-0 bg-zinc-800 border-t border-zinc-700 px-6 py-3 flex items-center gap-3 flex-wrap z-40">
       <span className="text-sm text-zinc-300 font-medium shrink-0">
@@ -61,6 +67,13 @@ export default function BulkActionBar({
             className="text-sm bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg text-white transition-colors"
           >
             Mover para pasta
+          </button>
+          <button
+            type="button"
+            onClick={handleExportar}
+            className="text-sm bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg text-white transition-colors"
+          >
+            ↓ Exportar
           </button>
           <button
             type="button"

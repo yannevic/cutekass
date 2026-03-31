@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import type { Pasta } from '../types/pasta';
 
 interface SidebarProps {
@@ -6,6 +7,8 @@ interface SidebarProps {
   pastaAtiva: number | null;
   onSelecionarPasta: (id: number | null) => void;
   onNovaPasta: () => void;
+  onRenamePasta: (id: number, nome: string, cor: string) => void;
+  onDeletePasta: (id: number) => void;
 }
 
 export default function Sidebar({
@@ -13,8 +16,29 @@ export default function Sidebar({
   pastaAtiva,
   onSelecionarPasta,
   onNovaPasta,
+  onRenamePasta,
+  onDeletePasta,
 }: SidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const naLixeira = location.pathname === '/trash';
+
+  const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [nomeEditando, setNomeEditando] = useState('');
+
+  function iniciarEdicao(pasta: Pasta) {
+    setEditandoId(pasta.id);
+    setNomeEditando(pasta.nome);
+  }
+
+  function confirmarRename(pasta: Pasta) {
+    const nomeTrimado = nomeEditando.trim();
+    if (nomeTrimado && nomeTrimado !== pasta.nome) {
+      onRenamePasta(pasta.id, nomeTrimado, pasta.cor);
+    }
+    setEditandoId(null);
+    setNomeEditando('');
+  }
 
   return (
     <aside className="group w-12 hover:w-52 shrink-0 bg-zinc-950 h-screen flex flex-col border-r border-zinc-800 transition-all duration-300 overflow-hidden">
@@ -31,9 +55,12 @@ export default function Sidebar({
         {/* Todas as contas */}
         <button
           type="button"
-          onClick={() => onSelecionarPasta(null)}
+          onClick={() => {
+            onSelecionarPasta(null);
+            navigate('/');
+          }}
           className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
-            pastaAtiva === null
+            pastaAtiva === null && !naLixeira
               ? 'bg-zinc-700 text-white'
               : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
           }`}
@@ -46,24 +73,96 @@ export default function Sidebar({
 
         {/* Pastas */}
         {pastas.map((pasta) => (
-          <button
+          <div
             key={pasta.id}
-            type="button"
-            onClick={() => onSelecionarPasta(pasta.id)}
-            className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors ${
-              pastaAtiva === pasta.id
+            className={`group/pasta w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors ${
+              pastaAtiva === pasta.id && !naLixeira
                 ? 'bg-zinc-700 text-white'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
             }`}
           >
-            <span
-              className="w-3 h-3 rounded-full shrink-0"
-              style={{ backgroundColor: pasta.cor }}
-            />
-            <span className="truncate whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              {pasta.nome}
-            </span>
-          </button>
+            {editandoId === pasta.id ? (
+              <input
+                className="flex-1 bg-zinc-600 text-white text-sm px-2 py-0.5 rounded outline-none focus:ring-2 focus:ring-yellow-400 min-w-0"
+                value={nomeEditando}
+                autoFocus
+                onChange={(e) => setNomeEditando(e.target.value)}
+                onBlur={() => confirmarRename(pasta)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') confirmarRename(pasta);
+                  if (e.key === 'Escape') {
+                    setEditandoId(null);
+                    setNomeEditando('');
+                  }
+                }}
+              />
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelecionarPasta(pasta.id);
+                    navigate('/');
+                  }}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                >
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: pasta.cor }}
+                  />
+                  <span className="truncate whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {pasta.nome}
+                  </span>
+                </button>
+
+                {/* Ações da pasta — visíveis só no hover da sidebar expandida */}
+                <div className="hidden group-hover:flex group-hover/pasta:flex items-center gap-1 shrink-0 opacity-0 group-hover/pasta:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    onClick={() => iniciarEdicao(pasta)}
+                    className="text-zinc-500 hover:text-white p-0.5 rounded transition-colors"
+                    title="Renomear"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-3 h-3"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDeletePasta(pasta.id)}
+                    className="text-zinc-500 hover:text-red-400 p-0.5 rounded transition-colors"
+                    title="Deletar pasta"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-3 h-3"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         ))}
       </nav>
 
@@ -82,7 +181,11 @@ export default function Sidebar({
         <button
           type="button"
           onClick={() => navigate('/trash')}
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
+          className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors ${
+            naLixeira
+              ? 'bg-zinc-700 text-white'
+              : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+          }`}
         >
           <span className="text-base shrink-0">🗑</span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">

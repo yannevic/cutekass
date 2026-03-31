@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, clipboard } from 'electron';
+import { writeFileSync } from 'fs';
 import { join } from 'path';
 import {
   listAccounts,
@@ -15,6 +16,7 @@ import {
   addPasta,
   updatePasta,
   deletePasta,
+  exportAccounts,
 } from '../src/lib/db';
 
 // ─── Janela ───────────────────────────────────────────────────────────────────
@@ -62,6 +64,12 @@ ipcMain.handle('update-pasta', (_e, id: number, nome: string, cor: string) =>
   updatePasta(id, nome, cor)
 );
 ipcMain.handle('delete-pasta', (_e, id: number) => deletePasta(id));
+ipcMain.handle('export-accounts', (_e, ids: number[]) => {
+  const conteudo = exportAccounts(ids);
+  const downloadsPath = app.getPath('downloads');
+  const fileName = `contas_${Date.now()}.txt`;
+  writeFileSync(join(downloadsPath, fileName), conteudo, 'utf-8');
+});
 
 // ─── Ciclo de vida ────────────────────────────────────────────────────────────
 

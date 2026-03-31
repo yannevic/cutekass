@@ -1,5 +1,6 @@
 "use strict";
 const electron = require("electron");
+const fs = require("fs");
 const path = require("path");
 const Database = require("better-sqlite3");
 const dbPath = path.join(electron.app.getPath("userData"), "accounts.db");
@@ -24,6 +25,27 @@ db.exec(`
 `);
 try {
   db.exec("ALTER TABLE accounts ADD COLUMN pastaId INTEGER");
+} catch {
+}
+try {
+  const col = db.prepare(`PRAGMA table_info(accounts)`).all().find((c) => c.name === "nick");
+  if ((col == null ? void 0 : col.notnull) === 1) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS accounts_new (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        login       TEXT NOT NULL,
+        senha       TEXT NOT NULL,
+        nick        TEXT,
+        elo         TEXT,
+        observacoes TEXT,
+        deletedAt   TEXT,
+        pastaId     INTEGER
+      );
+      INSERT INTO accounts_new SELECT id, login, senha, nick, elo, observacoes, deletedAt, pastaId FROM accounts;
+      DROP TABLE accounts;
+      ALTER TABLE accounts_new RENAME TO accounts;
+    `);
+  }
 } catch {
 }
 function listAccounts() {
@@ -111,6 +133,12 @@ function deletePasta(id) {
   db.prepare("UPDATE accounts SET pastaId = NULL WHERE pastaId = @id").run({ id });
   db.prepare("DELETE FROM pastas WHERE id = @id").run({ id });
 }
+function exportAccounts(ids) {
+  if (ids.length === 0) return "";
+  const placeholders = ids.map(() => "?").join(",");
+  const rows = db.prepare(`SELECT login, senha FROM accounts WHERE id IN (${placeholders})`).all(...ids);
+  return rows.map((r) => `${r.login}:${r.senha}`).join("\n");
+}
 function createWindow() {
   const win = new electron.BrowserWindow({
     width: 900,
@@ -152,6 +180,12 @@ electron.ipcMain.handle(
   (_e, id, nome, cor) => updatePasta(id, nome, cor)
 );
 electron.ipcMain.handle("delete-pasta", (_e, id) => deletePasta(id));
+electron.ipcMain.handle("export-accounts", (_e, ids) => {
+  const conteudo = exportAccounts(ids);
+  const downloadsPath = electron.app.getPath("downloads");
+  const fileName = `contas_${Date.now()}.txt`;
+  fs.writeFileSync(path.join(downloadsPath, fileName), conteudo, "utf-8");
+});
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin") electron.app.quit();

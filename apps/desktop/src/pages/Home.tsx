@@ -26,7 +26,7 @@ export default function Home() {
     bulkMovePasta,
     copyToClipboard,
   } = useAccounts();
-  const { pastas, addPasta } = usePastas();
+  const { pastas, addPasta, updatePasta, deletePasta } = usePastas();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [importModalAberto, setImportModalAberto] = useState(false);
@@ -40,6 +40,7 @@ export default function Home() {
   const [filtroElo, setFiltroElo] = useState('Todos');
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
   const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
+  const [ordem, setOrdem] = useState<'recentes' | 'alfabetica'>('recentes');
 
   useEffect(() => {
     function handleClickFora(e: MouseEvent) {
@@ -53,27 +54,38 @@ export default function Home() {
   }, []);
 
   const contasFiltradas = useMemo(() => {
-    return accounts.filter((acc) => {
-      const termoBusca = busca.trim().toLowerCase();
-      const passaBusca =
-        !termoBusca ||
-        acc.nick?.toLowerCase().includes(termoBusca) ||
-        acc.login.toLowerCase().includes(termoBusca);
+    return accounts
+      .filter((acc) => {
+        const termoBusca = busca.trim().toLowerCase();
+        const passaBusca =
+          !termoBusca ||
+          acc.nick?.toLowerCase().includes(termoBusca) ||
+          acc.login.toLowerCase().includes(termoBusca);
 
-      function passaElo() {
-        if (filtroElo === 'Todos') return true;
-        if (filtroElo === UNRANKED.nome) return !acc.elo || acc.elo === UNRANKED.nome;
-        return acc.elo?.startsWith(filtroElo) ?? false;
-      }
+        function passaElo() {
+          if (filtroElo === 'Todos') return true;
+          if (filtroElo === UNRANKED.nome) return !acc.elo || acc.elo === UNRANKED.nome;
+          return acc.elo?.startsWith(filtroElo) ?? false;
+        }
 
-      function passaPasta() {
-        if (pastaAtiva === null) return true;
-        return acc.pastaId === pastaAtiva;
-      }
+        function passaPasta() {
+          if (pastaAtiva === null) return true;
+          return acc.pastaId === pastaAtiva;
+        }
 
-      return passaBusca && passaElo() && passaPasta();
-    });
-  }, [accounts, busca, filtroElo, pastaAtiva]);
+        return passaBusca && passaElo() && passaPasta();
+      })
+      .sort((a, b) => {
+        if (ordem === 'alfabetica') {
+          const nomeA = (a.nick || a.login).toLowerCase();
+          const nomeB = (b.nick || b.login).toLowerCase();
+          if (nomeA < nomeB) return -1;
+          if (nomeA > nomeB) return 1;
+          return 0;
+        }
+        return b.id - a.id;
+      });
+  }, [accounts, busca, filtroElo, pastaAtiva, ordem]);
 
   const algumSelecionado = selecionados.size > 0;
   const todosSelecionados =
@@ -179,6 +191,8 @@ export default function Home() {
         pastaAtiva={pastaAtiva}
         onSelecionarPasta={selecionarPasta}
         onNovaPasta={() => setCriarPastaAberto(true)}
+        onRenamePasta={(id, nome, cor) => updatePasta(id, nome, cor)}
+        onDeletePasta={(id) => deletePasta(id)}
       />
 
       <main className={`flex-1 overflow-y-auto p-6 ${algumSelecionado ? 'pb-20' : ''}`}>
@@ -231,6 +245,14 @@ export default function Home() {
                 {op}
               </option>
             ))}
+          </select>
+          <select
+            className="bg-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400"
+            value={ordem}
+            onChange={(e) => setOrdem(e.target.value as 'recentes' | 'alfabetica')}
+          >
+            <option value="recentes">Mais recentes</option>
+            <option value="alfabetica">A → Z</option>
           </select>
         </div>
 
@@ -392,6 +414,7 @@ export default function Home() {
         <BulkActionBar
           count={selecionados.size}
           pastas={pastas}
+          selectedIds={Array.from(selecionados)}
           onDeleteSelected={() => setConfirmarExclusaoLote(true)}
           onSetEloSelected={handleSetEloLote}
           onMoveTopastaSelected={handleMovePastaLote}

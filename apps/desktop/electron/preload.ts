@@ -19,4 +19,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updatePasta: (id: number, nome: string, cor: string) =>
     ipcRenderer.invoke('update-pasta', id, nome, cor),
   deletePasta: (id: number) => ipcRenderer.invoke('delete-pasta', id),
+  exportAccounts: (ids: number[]) => ipcRenderer.invoke('export-accounts', ids),
 });
