@@ -19,7 +19,7 @@ export default function Sidebar({
   onNovaPasta,
   onRenamePasta,
   onDeletePasta,
-  onConfiguracoes, // ← adicionar aqui
+  onConfiguracoes,
 }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,12 +49,24 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="group w-12 hover:w-52 shrink-0 bg-zinc-950 h-screen flex flex-col border-r border-zinc-800 transition-all duration-300 overflow-hidden">
+    <aside
+      className="group w-12 hover:w-52 shrink-0 h-screen flex flex-col border-r transition-all duration-300 overflow-hidden"
+      style={{
+        backgroundColor: '#12082A',
+        borderColor: '#3B136B',
+      }}
+    >
       {/* Logo */}
-      <div className="h-14 flex items-center px-3 border-b border-zinc-800 shrink-0">
-        <span className="text-yellow-400 text-xl shrink-0">✦</span>
-        <span className="ml-3 text-yellow-400 font-bold text-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          LoL Accounts
+      <div
+        className="h-14 flex items-center px-3 shrink-0 border-b"
+        style={{ borderColor: '#3B136B' }}
+      >
+        <span className="text-xl shrink-0 leading-none">🌸</span>
+        <span
+          className="ml-3 font-bold text-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          style={{ color: '#CFA6FF' }}
+        >
+          Continhas
         </span>
       </div>
 
@@ -67,11 +79,24 @@ export default function Sidebar({
             onSelecionarPasta(null);
             navigate('/');
           }}
-          className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors"
+          style={
             pastaAtiva === null && !naLixeira
-              ? 'bg-zinc-700 text-white'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-          }`}
+              ? { backgroundColor: '#3B136B', color: '#CFA6FF' }
+              : { color: '#7B5EA7' }
+          }
+          onMouseEnter={(e) => {
+            if (pastaAtiva !== null || naLixeira) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+              (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (pastaAtiva !== null || naLixeira) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+              (e.currentTarget as HTMLButtonElement).style.color = '#7B5EA7';
+            }
+          }}
         >
           <span className="text-base shrink-0">🗂</span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -83,16 +108,22 @@ export default function Sidebar({
         {pastas.map((pasta) => (
           <div
             key={pasta.id}
-            className={`group/pasta w-full flex flex-col rounded-lg text-sm transition-colors ${
+            className="group/pasta w-full flex flex-col rounded-lg text-sm transition-colors"
+            style={
               pastaAtiva === pasta.id && !naLixeira
-                ? 'bg-zinc-700 text-white'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-            }`}
+                ? { backgroundColor: '#3B136B', color: '#CFA6FF' }
+                : { color: '#7B5EA7' }
+            }
           >
             <div className="flex items-center gap-3 px-2 py-2">
               {editandoId === pasta.id ? (
                 <input
-                  className="flex-1 bg-zinc-600 text-white text-sm px-2 py-0.5 rounded outline-none focus:ring-2 focus:ring-yellow-400 min-w-0"
+                  className="flex-1 text-sm px-2 py-0.5 rounded outline-none min-w-0"
+                  style={{
+                    backgroundColor: '#2A1050',
+                    color: '#CFA6FF',
+                    border: '1px solid #7B2CF5',
+                  }}
                   value={nomeEditando}
                   autoFocus
                   onChange={(e) => setNomeEditando(e.target.value)}
@@ -128,7 +159,14 @@ export default function Sidebar({
                     <button
                       type="button"
                       onClick={() => iniciarEdicao(pasta)}
-                      className="text-zinc-500 hover:text-white p-0.5 rounded transition-colors"
+                      className="p-0.5 rounded transition-colors"
+                      style={{ color: '#5A3A8A' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+                      }}
                       title="Renomear"
                     >
                       <svg
@@ -148,7 +186,14 @@ export default function Sidebar({
                     <button
                       type="button"
                       onClick={() => setConfirmandoDeleteId(pasta.id)}
-                      className="text-zinc-500 hover:text-red-400 p-0.5 rounded transition-colors"
+                      className="p-0.5 rounded transition-colors"
+                      style={{ color: '#5A3A8A' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#f87171';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+                      }}
                       title="Deletar pasta"
                     >
                       <svg
@@ -174,22 +219,43 @@ export default function Sidebar({
 
             {/* Confirmação inline */}
             {confirmandoDeleteId === pasta.id && (
-              <div className="mx-2 mb-2 px-2 py-2 bg-zinc-800 rounded-lg flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-xs text-zinc-300 whitespace-nowrap">
-                  Deletar <span className="text-white font-semibold">{pasta.nome}</span>?
+              <div
+                className="mx-2 mb-2 px-2 py-2 rounded-lg flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ backgroundColor: '#1E0A38', border: '1px solid #3B136B' }}
+              >
+                <p className="text-xs whitespace-nowrap" style={{ color: '#CFA6FF' }}>
+                  Deletar{' '}
+                  <span className="font-semibold" style={{ color: '#D94BFF' }}>
+                    {pasta.nome}
+                  </span>
+                  ?
                 </p>
                 <div className="flex gap-1">
                   <button
                     type="button"
                     onClick={() => handleDeletePasta(pasta.id)}
-                    className="flex-1 text-xs bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded transition-colors"
+                    className="flex-1 text-xs px-2 py-1 rounded transition-colors"
+                    style={{ backgroundColor: '#7B1FA2', color: '#fff' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#9C27B0';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#7B1FA2';
+                    }}
                   >
                     Deletar
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmandoDeleteId(null)}
-                    className="flex-1 text-xs bg-zinc-600 hover:bg-zinc-500 text-white px-2 py-1 rounded transition-colors"
+                    className="flex-1 text-xs px-2 py-1 rounded transition-colors"
+                    style={{ backgroundColor: '#2A2F3A', color: '#CFA6FF' }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#3B136B';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#2A2F3A';
+                    }}
                   >
                     Cancelar
                   </button>
@@ -201,35 +267,69 @@ export default function Sidebar({
       </nav>
 
       {/* Rodapé */}
-      <div className="p-2 flex flex-col gap-1 border-t border-zinc-800 shrink-0">
+      <div className="p-2 flex flex-col gap-1 shrink-0 border-t" style={{ borderColor: '#3B136B' }}>
+        {/* Nova pasta */}
         <button
           type="button"
           onClick={onNovaPasta}
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
+          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors"
+          style={{ color: '#5A3A8A' }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+            (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+          }}
         >
           <span className="text-base shrink-0">＋</span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             Nova pasta
           </span>
         </button>
+
+        {/* Lixeira */}
         <button
           type="button"
           onClick={() => navigate('/trash')}
-          className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors ${
-            naLixeira
-              ? 'bg-zinc-700 text-white'
-              : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
-          }`}
+          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors"
+          style={
+            naLixeira ? { backgroundColor: '#3B136B', color: '#CFA6FF' } : { color: '#5A3A8A' }
+          }
+          onMouseEnter={(e) => {
+            if (!naLixeira) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+              (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!naLixeira) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+              (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+            }
+          }}
         >
           <span className="text-base shrink-0">🗑</span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             Lixeira
           </span>
         </button>
+
+        {/* Configurações */}
         <button
           type="button"
           onClick={onConfiguracoes}
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
+          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors"
+          style={{ color: '#5A3A8A' }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+            (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+          }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

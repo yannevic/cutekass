@@ -40,25 +40,24 @@ export default function SettingsModal({ onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4"
+        className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold text-yellow-400">Configurações</h2>
+        <h2 className="text-lg font-bold text-rift-300">⚙️ Configurações</h2>
 
-        {/* Chave da API */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-zinc-400 font-medium">Chave da API da Riot</label>
-          <p className="text-xs text-zinc-500">
+          <label className="text-sm text-rift-200/70 font-medium">Chave da API da Riot</label>
+          <p className="text-xs text-rift-200/40">
             Gere sua chave gratuita em{' '}
-            <span className="text-yellow-400">developer.riotgames.com</span> e cole aqui. Ela expira
-            a cada 24h.
+            <span className="text-rift-400">developer.riotgames.com</span> e cole aqui. Ela expira a
+            cada 24h.
           </p>
           <input
-            className="bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400 font-mono text-sm"
+            className="bg-void-950 border border-void-800 rounded-lg px-3 py-2 text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 font-mono text-sm placeholder-rift-200/20 transition-colors"
             value={chave}
             onChange={(e) => setChave(e.target.value)}
             placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -68,7 +67,7 @@ export default function SettingsModal({ onClose }: Props) {
               type="button"
               onClick={handleSalvar}
               disabled={salvando}
-              className="flex-1 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-zinc-900 font-semibold text-sm disabled:opacity-50 transition-colors"
+              className="flex-1 px-4 py-2 rounded-lg bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm disabled:opacity-50 transition-colors"
             >
               {salvo ? '✓ Salvo!' : salvando ? 'Salvando...' : 'Salvar chave'}
             </button>
@@ -76,7 +75,7 @@ export default function SettingsModal({ onClose }: Props) {
               <button
                 type="button"
                 onClick={handleLimpar}
-                className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm text-zinc-300 transition-colors"
+                className="px-4 py-2 rounded-lg bg-void-800 hover:bg-void-700 text-sm text-rift-200/60 transition-colors"
               >
                 Limpar
               </button>
@@ -84,25 +83,24 @@ export default function SettingsModal({ onClose }: Props) {
           </div>
         </div>
 
-        <div className="border-t border-zinc-700" />
+        <div className="border-t border-void-800" />
 
-        {/* Caminho do Riot Client */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-zinc-400 font-medium">Caminho do Riot Client</label>
-          <p className="text-xs text-zinc-500">
+          <label className="text-sm text-rift-200/70 font-medium">Caminho do Riot Client</label>
+          <p className="text-xs text-rift-200/40">
             Cole o caminho completo do executável do Riot Client. Usado para abrir o client
             automaticamente ao clicar em &ldquo;Logar&rdquo;.
           </p>
-          <p className="text-xs text-zinc-600 font-mono bg-zinc-900 rounded px-2 py-1">
+          <p className="text-xs text-rift-200/25 font-mono bg-void-950 rounded px-2 py-1 border border-void-800">
             Exemplo: C:\Riot Games\Riot Client\RiotClientServices.exe
           </p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-rift-200/40">
             Para encontrar: clique com o botão direito no ícone do Riot Client no desktop →{' '}
-            <span className="text-zinc-300">Propriedades</span> → copie o campo{' '}
-            <span className="text-zinc-300">Destino</span>.
+            <span className="text-rift-200/70">Propriedades</span> → copie o campo{' '}
+            <span className="text-rift-200/70">Destino</span>.
           </p>
           <input
-            className="bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400 font-mono text-sm"
+            className="bg-void-950 border border-void-800 rounded-lg px-3 py-2 text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 font-mono text-sm placeholder-rift-200/20 transition-colors"
             value={caminhoClient}
             onChange={(e) => setCaminhoClient(e.target.value)}
             placeholder="C:\Riot Games\Riot Client\RiotClientServices.exe"
@@ -111,17 +109,17 @@ export default function SettingsModal({ onClose }: Props) {
             type="button"
             onClick={handleSalvarClient}
             disabled={salvandoClient}
-            className="px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-zinc-900 font-semibold text-sm disabled:opacity-50 transition-colors"
+            className="px-4 py-2 rounded-lg bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm disabled:opacity-50 transition-colors"
           >
             {salvoClient ? '✓ Salvo!' : salvandoClient ? 'Salvando...' : 'Salvar caminho'}
           </button>
         </div>
 
-        <div className="border-t border-zinc-700 pt-3">
+        <div className="border-t border-void-800 pt-3">
           <button
             type="button"
             onClick={onClose}
-            className="w-full px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm transition-colors"
+            className="w-full px-4 py-2 rounded-lg bg-void-800 hover:bg-void-700 text-sm text-rift-200/60 transition-colors"
           >
             Fechar
           </button>

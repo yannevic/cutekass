@@ -167,6 +167,7 @@ function createWindow() {
     height: 650,
     minWidth: 700,
     minHeight: 500,
+    icon: path.join(__dirname, "../assets/cutekass.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

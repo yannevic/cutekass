@@ -179,6 +179,7 @@ export default function Home() {
       });
     }
   }
+
   async function handleAtualizarTodosElos() {
     const comNick = accounts.filter((a) => a.nick && a.nick.includes('#'));
     if (comNick.length === 0) {
@@ -219,6 +220,7 @@ export default function Home() {
       );
     }
   }
+
   async function handleLoginRiot(login: string, senha: string) {
     setErroLogin('');
     try {
@@ -231,8 +233,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-900 text-white flex items-center justify-center">
-        <p className="text-zinc-400">Carregando contas...</p>
+      <div className="min-h-screen bg-void-950 text-rift-200 flex items-center justify-center">
+        <p className="text-rift-200/50">Carregando contas...</p>
       </div>
     );
   }
@@ -240,7 +242,7 @@ export default function Home() {
   const nomePastaAtiva = pastas.find((p) => p.id === pastaAtiva)?.nome ?? 'Pasta';
 
   return (
-    <div className="flex h-screen bg-zinc-900 text-white overflow-hidden">
+    <div className="flex h-screen bg-void-950 text-rift-200 overflow-hidden">
       <Sidebar
         pastas={pastas}
         pastaAtiva={pastaAtiva}
@@ -252,23 +254,24 @@ export default function Home() {
       />
 
       <main className={`flex-1 overflow-y-auto p-6 ${algumSelecionado ? 'pb-20' : ''}`}>
+        {/* Cabeçalho */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             {contasFiltradas.length > 0 && algumSelecionado && (
               <input
                 type="checkbox"
-                className="w-4 h-4 accent-yellow-400 cursor-pointer"
+                className="w-4 h-4 accent-rift-300 cursor-pointer"
                 checked={todosSelecionados}
                 onChange={toggleSelecionarTodos}
               />
             )}
-            <h2 className="text-xl font-bold">
+            <h2 className="text-xl font-bold text-rift-200">
               {pastaAtiva === null ? 'Todas as contas' : nomePastaAtiva}
             </h2>
           </div>
           <div className="flex gap-2 items-center">
             {progressoElo && (
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-rift-200/50">
                 {progressoElo.atual}/{progressoElo.total} atualizados
               </span>
             )}
@@ -276,28 +279,30 @@ export default function Home() {
               type="button"
               onClick={handleAtualizarTodosElos}
               disabled={atualizandoElos}
-              className="bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white font-semibold text-sm px-4 py-2 rounded-lg"
+              className="bg-void-800 hover:bg-void-700 disabled:opacity-50 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
             >
               {atualizandoElos ? '⟳ Atualizando...' : '⟳ Atualizar Elos'}
             </button>
             <button
               type="button"
               onClick={() => setImportModalAberto(true)}
-              className="bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-sm px-4 py-2 rounded-lg"
+              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
             >
               ↑ Importar
             </button>
             <button
               type="button"
               onClick={() => setModalAberto(true)}
-              className="bg-yellow-400 hover:bg-yellow-300 text-zinc-900 font-semibold text-sm px-4 py-2 rounded-lg"
+              className="bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
             >
               + Adicionar
             </button>
           </div>
         </div>
+
+        {/* Erros */}
         {erroAtualizacao && (
-          <div className="mb-4 flex items-center justify-between bg-red-900/40 border border-red-700 text-red-300 text-sm px-4 py-2 rounded-lg">
+          <div className="mb-4 flex items-center justify-between bg-red-900/30 border border-red-700/50 text-red-300 text-sm px-4 py-2 rounded-lg">
             <span>{erroAtualizacao}</span>
             <button
               type="button"
@@ -309,7 +314,7 @@ export default function Home() {
           </div>
         )}
         {erroLogin && (
-          <div className="mb-4 flex items-center justify-between bg-red-900/40 border border-red-700 text-red-300 text-sm px-4 py-2 rounded-lg">
+          <div className="mb-4 flex items-center justify-between bg-red-900/30 border border-red-700/50 text-red-300 text-sm px-4 py-2 rounded-lg">
             <span>{erroLogin}</span>
             <button
               type="button"
@@ -321,15 +326,16 @@ export default function Home() {
           </div>
         )}
 
+        {/* Filtros */}
         <div className="flex gap-3 mb-6">
           <input
-            className="flex-1 bg-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400 placeholder-zinc-500"
+            className="flex-1 bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/30 transition-colors"
             placeholder="Buscar por nick ou login..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
           <select
-            className="bg-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400"
+            className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
             value={filtroElo}
             onChange={(e) => setFiltroElo(e.target.value)}
           >
@@ -340,7 +346,7 @@ export default function Home() {
             ))}
           </select>
           <select
-            className="bg-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-yellow-400"
+            className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
             value={ordem}
             onChange={(e) => setOrdem(e.target.value as 'recentes' | 'alfabetica')}
           >
@@ -349,8 +355,9 @@ export default function Home() {
           </select>
         </div>
 
+        {/* Lista */}
         {contasFiltradas.length === 0 ? (
-          <p className="text-zinc-400 text-center mt-20">
+          <p className="text-rift-200/40 text-center mt-20">
             {accounts.length === 0
               ? 'Nenhuma conta cadastrada ainda.'
               : 'Nenhuma conta encontrada.'}
@@ -363,13 +370,15 @@ export default function Home() {
               return (
                 <li
                   key={account.id}
-                  className={`group/card bg-zinc-800 rounded-xl p-4 flex items-center gap-4 transition-all ${
-                    estaSelecionado ? 'ring-2 ring-yellow-400' : ''
+                  className={`group/card bg-void-900 border rounded-xl p-4 flex items-center gap-4 transition-all ${
+                    estaSelecionado
+                      ? 'ring-2 ring-rift-300 border-rift-300/30'
+                      : 'border-void-800 hover:border-void-700'
                   }`}
                 >
                   <input
                     type="checkbox"
-                    className={`w-4 h-4 accent-yellow-400 cursor-pointer shrink-0 transition-opacity ${
+                    className={`w-4 h-4 accent-rift-300 cursor-pointer shrink-0 transition-opacity ${
                       estaSelecionado ? 'opacity-100' : 'opacity-0 group-hover/card:opacity-100'
                     }`}
                     checked={estaSelecionado}
@@ -378,15 +387,15 @@ export default function Home() {
 
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold">{account.nick ?? account.login}</p>
+                      <p className="font-semibold text-rift-200">{account.nick ?? account.login}</p>
                       {account.elo ? <EloBadge elo={account.elo} /> : null}
                     </div>
-                    <p className="text-sm text-zinc-400">{account.login}</p>
-                    <p className="text-sm text-zinc-500 font-mono">
+                    <p className="text-sm text-rift-200/60">{account.login}</p>
+                    <p className="text-sm text-rift-200/40 font-mono">
                       {senhaVisivel ? account.senha : '••••••••'}
                     </p>
                     {account.observacoes ? (
-                      <p className="text-xs text-zinc-500">{account.observacoes}</p>
+                      <p className="text-xs text-rift-200/40">{account.observacoes}</p>
                     ) : null}
                   </div>
 
@@ -395,7 +404,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => toggleSenha(account.id)}
-                      className="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-zinc-700 transition-colors"
+                      className="text-rift-200/40 hover:text-rift-200 p-1.5 rounded-lg hover:bg-void-800 transition-colors"
                       title={senhaVisivel ? 'Ocultar senha' : 'Ver senha'}
                     >
                       {senhaVisivel ? (
@@ -429,20 +438,22 @@ export default function Home() {
                         </svg>
                       )}
                     </button>
-                    {/* Login no Riot Client */}
+
+                    {/* Logar */}
                     <button
                       type="button"
                       onClick={() => handleLoginRiot(account.login, account.senha)}
-                      className="text-xs bg-yellow-500 hover:bg-yellow-400 text-zinc-900 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                      className="text-xs bg-rift-500 hover:bg-rift-400 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors"
                       title="Logar no Riot Client"
                     >
                       ▶ Logar
                     </button>
+
                     {/* Copiar login */}
                     <button
                       type="button"
                       onClick={() => copyToClipboard(account.login)}
-                      className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg transition-colors"
+                      className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Copiar login
                     </button>
@@ -451,7 +462,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => copyToClipboard(account.senha)}
-                      className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg transition-colors"
+                      className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Copiar senha
                     </button>
@@ -463,7 +474,7 @@ export default function Home() {
                         onClick={() =>
                           setDropdownAberto(dropdownAberto === account.id ? null : account.id)
                         }
-                        className="text-zinc-400 hover:text-white p-1.5 rounded-lg hover:bg-zinc-700 transition-colors"
+                        className="text-rift-200/40 hover:text-rift-200 p-1.5 rounded-lg hover:bg-void-800 transition-colors"
                         title="Mais opções"
                       >
                         <svg
@@ -479,14 +490,14 @@ export default function Home() {
                       </button>
 
                       {dropdownAberto === account.id && (
-                        <div className="absolute right-0 top-8 z-50 bg-zinc-700 rounded-xl shadow-lg py-1 min-w-30">
+                        <div className="absolute right-0 top-8 z-50 bg-void-900 border border-void-800 rounded-xl shadow-lg shadow-black/50 py-1 min-w-30">
                           <button
                             type="button"
                             onClick={() => {
                               abrirEdicao(account);
                               setDropdownAberto(null);
                             }}
-                            className="w-full text-left text-sm px-4 py-2 hover:bg-zinc-600 transition-colors"
+                            className="w-full text-left text-sm px-4 py-2 text-rift-200 hover:bg-void-800 transition-colors"
                           >
                             ✏️ Editar
                           </button>
@@ -496,7 +507,7 @@ export default function Home() {
                               setIdParaExcluir(account.id);
                               setDropdownAberto(null);
                             }}
-                            className="w-full text-left text-sm px-4 py-2 hover:bg-zinc-600 text-red-400 transition-colors"
+                            className="w-full text-left text-sm px-4 py-2 text-red-400 hover:bg-void-800 transition-colors"
                           >
                             🗑️ Excluir
                           </button>

@@ -27,6 +27,7 @@ function createWindow() {
     height: 650,
     minWidth: 700,
     minHeight: 500,
+    icon: join(__dirname, '../assets/cutekass.png'),
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -209,7 +210,6 @@ ipcMain.handle('login-riot', async (_e, login: string, senha: string) => {
   const loginEscapado = login.replace(/'/g, "''");
   const senhaEscapada = senha.replace(/'/g, "''");
 
-  // Verifica se o client já está aberto via arquivo .ps1
   const checkFile = pathJoin(tmpdir(), `lol-check-${Date.now()}.ps1`);
   let clientAberto = '0';
   try {

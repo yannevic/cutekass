@@ -47,8 +47,8 @@ export default function BulkActionBar({
   }
 
   return (
-    <div className="fixed bottom-0 left-52 right-0 bg-zinc-800 border-t border-zinc-700 px-6 py-3 flex items-center gap-3 flex-wrap z-40">
-      <span className="text-sm text-zinc-300 font-medium shrink-0">
+    <div className="fixed bottom-0 left-52 right-0 bg-void-900 border-t border-void-800 px-6 py-3 flex items-center gap-3 flex-wrap z-40">
+      <span className="text-sm text-rift-200/70 font-medium shrink-0">
         {count} selecionada{count !== 1 ? 's' : ''}
       </span>
 
@@ -57,28 +57,28 @@ export default function BulkActionBar({
           <button
             type="button"
             onClick={() => setAcaoAtiva('elo')}
-            className="text-sm bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg text-white transition-colors"
+            className="text-sm bg-void-800 hover:bg-void-700 px-3 py-1.5 rounded-lg text-rift-200 transition-colors"
           >
             Definir elo
           </button>
           <button
             type="button"
             onClick={() => setAcaoAtiva('pasta')}
-            className="text-sm bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg text-white transition-colors"
+            className="text-sm bg-void-800 hover:bg-void-700 px-3 py-1.5 rounded-lg text-rift-200 transition-colors"
           >
             Mover para pasta
           </button>
           <button
             type="button"
             onClick={handleExportar}
-            className="text-sm bg-zinc-700 hover:bg-zinc-600 px-3 py-1.5 rounded-lg text-white transition-colors"
+            className="text-sm bg-void-800 hover:bg-void-700 px-3 py-1.5 rounded-lg text-rift-200 transition-colors"
           >
             ↓ Exportar
           </button>
           <button
             type="button"
             onClick={onDeleteSelected}
-            className="text-sm bg-red-800 hover:bg-red-700 px-3 py-1.5 rounded-lg text-white transition-colors"
+            className="text-sm bg-red-900/50 hover:bg-red-800/70 border border-red-800/50 px-3 py-1.5 rounded-lg text-red-400 transition-colors"
           >
             Excluir selecionadas
           </button>
@@ -88,7 +88,7 @@ export default function BulkActionBar({
       {acaoAtiva === 'elo' && (
         <>
           <select
-            className="bg-zinc-700 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-yellow-400"
+            className="bg-void-800 border border-void-700 text-rift-200 text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
             value={eloSelecionado}
             onChange={(e) => setEloSelecionado(e.target.value)}
           >
@@ -104,14 +104,14 @@ export default function BulkActionBar({
             type="button"
             onClick={handleSetElo}
             disabled={!eloSelecionado}
-            className="text-sm bg-yellow-400 hover:bg-yellow-300 disabled:opacity-40 text-zinc-900 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+            className="text-sm bg-rift-500 hover:bg-rift-400 disabled:opacity-40 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors"
           >
             Aplicar
           </button>
           <button
             type="button"
             onClick={() => setAcaoAtiva(null)}
-            className="text-sm text-zinc-400 hover:text-white px-2 py-1.5 transition-colors"
+            className="text-sm text-rift-200/40 hover:text-rift-200 px-2 py-1.5 transition-colors"
           >
             Voltar
           </button>
@@ -121,7 +121,7 @@ export default function BulkActionBar({
       {acaoAtiva === 'pasta' && (
         <>
           <select
-            className="bg-zinc-700 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-yellow-400"
+            className="bg-void-800 border border-void-700 text-rift-200 text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
             value={pastaSelecionada}
             onChange={(e) => setPastaSelecionada(e.target.value)}
           >
@@ -137,14 +137,14 @@ export default function BulkActionBar({
             type="button"
             onClick={handleMovePasta}
             disabled={!pastaSelecionada}
-            className="text-sm bg-yellow-400 hover:bg-yellow-300 disabled:opacity-40 text-zinc-900 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+            className="text-sm bg-rift-500 hover:bg-rift-400 disabled:opacity-40 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors"
           >
             Mover
           </button>
           <button
             type="button"
             onClick={() => setAcaoAtiva(null)}
-            className="text-sm text-zinc-400 hover:text-white px-2 py-1.5 transition-colors"
+            className="text-sm text-rift-200/40 hover:text-rift-200 px-2 py-1.5 transition-colors"
           >
             Voltar
           </button>
@@ -154,7 +154,7 @@ export default function BulkActionBar({
       <button
         type="button"
         onClick={onClearSelection}
-        className="ml-auto text-sm text-zinc-500 hover:text-white transition-colors"
+        className="ml-auto text-sm text-rift-200/30 hover:text-rift-200 transition-colors"
       >
         Cancelar seleção
       </button>

@@ -1,1 +1,20 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-void-950: #0b0f1a; /* fundo principal */
+  --color-void-900: #1e0a38; /* fundo cards */
+  --color-void-800: #3b136b; /* bordas / divisores */
+  --color-void-700: #5a1fa8; /* roxo médio */
+  --color-armor: #2e3f5e; /* azul armadura */
+  --color-metal: #2a2f3a; /* cinza metálico */
+
+  --color-rift-500: #7b2cf5; /* roxo vibrante — botões */
+  --color-rift-400: #a23cff; /* roxo neon — hover */
+  --color-rift-300: #d94bff; /* magenta — destaque/ativo */
+  --color-rift-200: #cfa6ff; /* lilás — texto suave */
+}
+
+body {
+  background-color: #0b0f1a;
+  color: #cfa6ff;
+}

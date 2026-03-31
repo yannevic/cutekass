@@ -35,6 +35,7 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
     setEloInput(opcao);
     setAutocompleteAberto(false);
   }
+
   async function handleBuscarElo() {
     const nickTrimado = nick.trim();
     if (!nickTrimado.includes('#')) {
@@ -55,11 +56,8 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
 
   async function handleSubmit() {
     if (!login.trim() || !senha.trim()) return;
-
     setSalvando(true);
-
     const eloFinal = eloInput.trim() || undefined;
-
     if (editando) {
       await onEdit({
         ...contaParaEditar,
@@ -79,30 +77,29 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
         deletedAt: undefined,
       });
     }
-
     setSalvando(false);
     onClose();
   }
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-zinc-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4"
+        className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold text-yellow-400">
+        <h2 className="text-lg font-bold text-rift-300">
           {editando ? 'Editar conta' : 'Adicionar conta'}
         </h2>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-zinc-400">
+          <label className="text-sm text-rift-200/60">
             Login <span className="text-red-400">*</span>
           </label>
           <input
-            className="bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400"
+            className="bg-void-950 border border-void-800 rounded-lg px-3 py-2 text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/20 transition-colors"
             value={login}
             onChange={(e) => setLogin(e.target.value)}
             placeholder="usuário"
@@ -110,13 +107,13 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-zinc-400">
+          <label className="text-sm text-rift-200/60">
             Senha <span className="text-red-400">*</span>
           </label>
           <div className="flex gap-2">
             <input
               type={mostrarSenha ? 'text' : 'password'}
-              className="flex-1 bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400"
+              className="flex-1 bg-void-950 border border-void-800 rounded-lg px-3 py-2 text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/20 transition-colors"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="••••••••"
@@ -124,7 +121,7 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
             <button
               type="button"
               onClick={() => setMostrarSenha((v) => !v)}
-              className="px-3 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm text-zinc-300"
+              className="px-3 py-2 rounded-lg bg-void-800 hover:bg-void-700 text-sm text-rift-200/70 transition-colors"
             >
               {mostrarSenha ? 'Ocultar' : 'Ver'}
             </button>
@@ -132,10 +129,10 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-zinc-400">Nick (opcional)</label>
+          <label className="text-sm text-rift-200/60">Nick (opcional)</label>
           <div className="flex gap-2">
             <input
-              className="flex-1 bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400"
+              className="flex-1 bg-void-950 border border-void-800 rounded-lg px-3 py-2 text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/20 transition-colors"
               value={nick}
               onChange={(e) => {
                 setNick(e.target.value);
@@ -147,7 +144,7 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
               type="button"
               onClick={handleBuscarElo}
               disabled={buscandoElo || !nick.trim()}
-              className="px-3 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm text-zinc-300 disabled:opacity-40 transition-colors whitespace-nowrap"
+              className="px-3 py-2 rounded-lg bg-void-800 hover:bg-void-700 text-sm text-rift-200/70 disabled:opacity-40 transition-colors whitespace-nowrap"
               title="Buscar elo via API da Riot"
             >
               {buscandoElo ? '...' : '🔍 Buscar elo'}
@@ -157,9 +154,9 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
         </div>
 
         <div className="flex flex-col gap-1 relative">
-          <label className="text-sm text-zinc-400">Elo (opcional)</label>
+          <label className="text-sm text-rift-200/60">Elo (opcional)</label>
           <input
-            className="bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400"
+            className="bg-void-950 border border-void-800 rounded-lg px-3 py-2 text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/20 transition-colors"
             value={eloInput}
             onChange={(e) => {
               setEloInput(e.target.value);
@@ -171,13 +168,13 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
             style={eloInput ? { color: corDoElo(eloInput) } : undefined}
           />
           {autocompleteAberto && sugestoes.length > 0 ? (
-            <ul className="absolute top-full left-0 right-0 mt-1 bg-zinc-700 rounded-lg overflow-y-auto max-h-44 z-10 shadow-lg">
+            <ul className="absolute top-full left-0 right-0 mt-1 bg-void-900 border border-void-800 rounded-lg overflow-y-auto max-h-44 z-10 shadow-lg shadow-black/50">
               {sugestoes.map((opcao) => (
                 <li key={opcao}>
                   <button
                     type="button"
                     onMouseDown={() => selecionarElo(opcao)}
-                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-zinc-600 transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-void-800 transition-colors"
                     style={{ color: opcao === UNRANKED.nome ? '#6b7280' : corDoElo(opcao) }}
                   >
                     {opcao}
@@ -189,9 +186,9 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-zinc-400">Observações (opcional)</label>
+          <label className="text-sm text-rift-200/60">Observações (opcional)</label>
           <textarea
-            className="bg-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400 resize-none"
+            className="bg-void-950 border border-void-800 rounded-lg px-3 py-2 text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/20 resize-none transition-colors"
             value={observacoes}
             onChange={(e) => setObservacoes(e.target.value)}
             rows={2}
@@ -203,7 +200,7 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm"
+            className="px-4 py-2 rounded-lg bg-void-800 hover:bg-void-700 text-sm text-rift-200/70 transition-colors"
           >
             Cancelar
           </button>
@@ -211,7 +208,7 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
             type="button"
             onClick={handleSubmit}
             disabled={salvando || !login.trim() || !senha.trim()}
-            className="px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-zinc-900 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {salvando ? 'Salvando...' : 'Salvar'}
           </button>

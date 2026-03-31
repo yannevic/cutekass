@@ -37,14 +37,14 @@ export default function Trash() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-900 text-white flex items-center justify-center">
-        <p className="text-zinc-400">Carregando lixeira...</p>
+      <div className="min-h-screen bg-void-950 text-rift-200 flex items-center justify-center">
+        <p className="text-rift-200/50">Carregando lixeira...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-zinc-900 text-white overflow-hidden">
+    <div className="flex h-screen bg-void-950 text-rift-200 overflow-hidden">
       <Sidebar
         pastas={pastas}
         pastaAtiva={null}
@@ -55,36 +55,36 @@ export default function Trash() {
         onConfiguracoes={() => setConfiguracoesAberto(true)}
       />
       <main className="flex-1 overflow-y-auto p-6">
-        <h1 className="text-2xl font-bold text-zinc-400 mb-6">Lixeira</h1>
+        <h1 className="text-2xl font-bold text-rift-300 mb-6">🗑️ Lixeira</h1>
 
         {contas.length === 0 ? (
-          <p className="text-zinc-500 text-center mt-20">A lixeira está vazia.</p>
+          <p className="text-rift-200/40 text-center mt-20">A lixeira está vazia.</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {contas.map((conta) => (
               <li
                 key={conta.id}
-                className="bg-zinc-800 rounded-xl p-4 flex items-center justify-between"
+                className="bg-void-900 border border-void-800 rounded-xl p-4 flex items-center justify-between"
               >
                 <div>
-                  <p className="font-semibold text-zinc-300">{conta.nick}</p>
-                  <p className="text-sm text-zinc-500">{conta.login}</p>
+                  <p className="font-semibold text-rift-200/70">{conta.nick}</p>
+                  <p className="text-sm text-rift-200/40">{conta.login}</p>
                   {conta.observacoes ? (
-                    <p className="text-xs text-zinc-600 mt-1">{conta.observacoes}</p>
+                    <p className="text-xs text-rift-200/30 mt-1">{conta.observacoes}</p>
                   ) : null}
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => restaurar(conta.id)}
-                    className="text-xs bg-zinc-700 hover:bg-zinc-600 px-3 py-1 rounded-lg"
+                    className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     Restaurar
                   </button>
                   <button
                     type="button"
                     onClick={() => setIdParaExcluir(conta.id)}
-                    className="text-xs bg-red-800 hover:bg-red-700 px-3 py-1 rounded-lg"
+                    className="text-xs bg-red-900/50 hover:bg-red-800/70 text-red-400 border border-red-800/50 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     Excluir permanente
                   </button>
@@ -94,6 +94,7 @@ export default function Trash() {
           </ul>
         )}
       </main>
+
       {idParaExcluir !== null ? (
         <ConfirmDialog
           mensagem="Excluir permanentemente? Essa ação não pode ser desfeita."
