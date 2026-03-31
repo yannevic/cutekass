@@ -9,7 +9,7 @@ module.exports = {
   ignorePatterns: ['dist', 'dist-electron', '*.cjs', '*.json'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: './tsconfig.json',
+    project: ['./tsconfig.json', './tsconfig.node.json'],
     tsconfigRootDir: __dirname,
   },
   plugins: ['react-hooks'],
