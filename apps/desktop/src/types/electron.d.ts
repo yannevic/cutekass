@@ -23,6 +23,7 @@ declare global {
       getRiotKey: () => Promise<string>;
       saveRiotKey: (key: string) => Promise<void>;
       fetchElo: (nick: string) => Promise<string>;
+      loginRiot: (login: string, senha: string) => Promise<void>;
     };
   }
 }

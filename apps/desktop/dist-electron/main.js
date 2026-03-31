@@ -1,4 +1,26 @@
 "use strict";
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 const electron = require("electron");
 const fs = require("fs");
 const path = require("path");
@@ -268,6 +290,70 @@ electron.ipcMain.handle("fetch-elo", async (_e, nick) => {
   const lp = soloQ.leaguePoints;
   const altoElo = ["MASTER", "GRANDMASTER", "CHALLENGER"].includes(soloQ.tier);
   return altoElo ? `${tier} ${lp}LP` : `${tier} ${rank} ${lp}LP`;
+});
+electron.ipcMain.handle("login-riot", async (_e, login, senha) => {
+  const { execSync } = await import("child_process");
+  const { writeFileSync: writeFileSync2, unlinkSync } = await import("fs");
+  const { tmpdir } = await import("os");
+  const { join: pathJoin } = await import("path");
+  console.log("[login-riot] Iniciando para login:", login);
+  const loginEscapado = login.replace(/'/g, "''");
+  const senhaEscapada = senha.replace(/'/g, "''");
+  const script = `
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class Win32 {
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+}
+"@
+
+$procs = Get-Process -Name "Riot Client" -ErrorAction SilentlyContinue
+if (-not $procs) { throw "Riot Client nao encontrado. Abra o client e tente novamente." }
+
+$proc = $procs | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+if (-not $proc) { throw "Janela do Riot Client nao encontrada. Verifique se o client esta aberto." }
+
+Write-Host "Processo encontrado: $($proc.Id)"
+$hwnd = $proc.MainWindowHandle
+Write-Host "Handle da janela: $hwnd"
+
+[Win32]::ShowWindow($hwnd, 9)
+[Win32]::SetForegroundWindow($hwnd)
+Start-Sleep -Milliseconds 800
+
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.SendKeys]::SendWait('${loginEscapado}')
+Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait('{TAB}')
+Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait('${senhaEscapada}')
+Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+Write-Host "Concluido!"
+`;
+  const tmpFile = pathJoin(tmpdir(), `lol-login-${Date.now()}.ps1`);
+  try {
+    writeFileSync2(tmpFile, script, "utf-8");
+    console.log("[login-riot] Script salvo em:", tmpFile);
+    const output = execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, {
+      windowsHide: true,
+      encoding: "utf-8"
+    });
+    console.log("[login-riot] Output:", output);
+  } catch (e) {
+    const err = e;
+    console.log("[login-riot] Erro:", err.message);
+    console.log("[login-riot] stderr:", err.stderr);
+    console.log("[login-riot] stdout:", err.stdout);
+    throw new Error(err.stderr || err.message || "Erro desconhecido");
+  } finally {
+    try {
+      unlinkSync(tmpFile);
+    } catch {
+    }
+  }
 });
 electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {

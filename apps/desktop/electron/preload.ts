@@ -23,4 +23,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getRiotKey: () => ipcRenderer.invoke('get-riot-key'),
   saveRiotKey: (key: string) => ipcRenderer.invoke('save-riot-key', key),
   fetchElo: (nick: string) => ipcRenderer.invoke('fetch-elo', nick),
+  loginRiot: (login: string, senha: string) => ipcRenderer.invoke('login-riot', login, senha),
 });

@@ -46,6 +46,7 @@ export default function Home() {
   const [atualizandoElos, setAtualizandoElos] = useState(false);
   const [progressoElo, setProgressoElo] = useState<{ atual: number; total: number } | null>(null);
   const [erroAtualizacao, setErroAtualizacao] = useState('');
+  const [erroLogin, setErroLogin] = useState<string>('');
 
   useEffect(() => {
     function handleClickFora(e: MouseEvent) {
@@ -218,6 +219,15 @@ export default function Home() {
       );
     }
   }
+  async function handleLoginRiot(login: string, senha: string) {
+    setErroLogin('');
+    try {
+      await window.electronAPI.loginRiot(login, senha);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Erro ao tentar logar no Riot Client.';
+      setErroLogin(msg);
+    }
+  }
 
   if (loading) {
     return (
@@ -292,6 +302,18 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setErroAtualizacao('')}
+              className="ml-4 text-red-400 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        {erroLogin && (
+          <div className="mb-4 flex items-center justify-between bg-red-900/40 border border-red-700 text-red-300 text-sm px-4 py-2 rounded-lg">
+            <span>{erroLogin}</span>
+            <button
+              type="button"
+              onClick={() => setErroLogin('')}
               className="ml-4 text-red-400 hover:text-white transition-colors"
             >
               ✕
@@ -407,7 +429,15 @@ export default function Home() {
                         </svg>
                       )}
                     </button>
-
+                    {/* Login no Riot Client */}
+                    <button
+                      type="button"
+                      onClick={() => handleLoginRiot(account.login, account.senha)}
+                      className="text-xs bg-yellow-500 hover:bg-yellow-400 text-zinc-900 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                      title="Logar no Riot Client"
+                    >
+                      ▶ Logar
+                    </button>
                     {/* Copiar login */}
                     <button
                       type="button"
@@ -449,7 +479,7 @@ export default function Home() {
                       </button>
 
                       {dropdownAberto === account.id && (
-                        <div className="absolute right-0 top-8 z-50 bg-zinc-700 rounded-xl shadow-lg py-1 min-w-[120px]">
+                        <div className="absolute right-0 top-8 z-50 bg-zinc-700 rounded-xl shadow-lg py-1 min-w-30">
                           <button
                             type="button"
                             onClick={() => {

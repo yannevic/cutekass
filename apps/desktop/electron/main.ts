@@ -187,6 +187,77 @@ ipcMain.handle('fetch-elo', async (_e, nick: string) => {
   const altoElo = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(soloQ.tier);
   return altoElo ? `${tier} ${lp}LP` : `${tier} ${rank} ${lp}LP`;
 });
+ipcMain.handle('login-riot', async (_e, login: string, senha: string) => {
+  const { execSync } = await import('child_process');
+  const { writeFileSync, unlinkSync } = await import('fs');
+  const { tmpdir } = await import('os');
+  const { join: pathJoin } = await import('path');
+
+  console.log('[login-riot] Iniciando para login:', login);
+
+  const loginEscapado = login.replace(/'/g, "''");
+  const senhaEscapada = senha.replace(/'/g, "''");
+
+  const script = `
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class Win32 {
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+}
+"@
+
+$procs = Get-Process -Name "Riot Client" -ErrorAction SilentlyContinue
+if (-not $procs) { throw "Riot Client nao encontrado. Abra o client e tente novamente." }
+
+$proc = $procs | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+if (-not $proc) { throw "Janela do Riot Client nao encontrada. Verifique se o client esta aberto." }
+
+Write-Host "Processo encontrado: $($proc.Id)"
+$hwnd = $proc.MainWindowHandle
+Write-Host "Handle da janela: $hwnd"
+
+[Win32]::ShowWindow($hwnd, 9)
+[Win32]::SetForegroundWindow($hwnd)
+Start-Sleep -Milliseconds 800
+
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.SendKeys]::SendWait('${loginEscapado}')
+Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait('{TAB}')
+Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait('${senhaEscapada}')
+Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+Write-Host "Concluido!"
+`;
+
+  const tmpFile = pathJoin(tmpdir(), `lol-login-${Date.now()}.ps1`);
+
+  try {
+    writeFileSync(tmpFile, script, 'utf-8');
+    console.log('[login-riot] Script salvo em:', tmpFile);
+
+    const output = execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, {
+      windowsHide: true,
+      encoding: 'utf-8',
+    });
+    console.log('[login-riot] Output:', output);
+  } catch (e: unknown) {
+    const err = e as { message?: string; stderr?: string; stdout?: string };
+    console.log('[login-riot] Erro:', err.message);
+    console.log('[login-riot] stderr:', err.stderr);
+    console.log('[login-riot] stdout:', err.stdout);
+    throw new Error(err.stderr || err.message || 'Erro desconhecido');
+  } finally {
+    try {
+      unlinkSync(tmpFile);
+    } catch {
+      /* ignora */
+    }
+  }
+});
 
 // ─── Ciclo de vida ────────────────────────────────────────────────────────────
 
