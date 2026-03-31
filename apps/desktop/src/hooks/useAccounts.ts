@@ -1,0 +1,48 @@
+import { useState, useEffect, useCallback } from 'react';
+import type { Account } from '../types/account';
+
+export default function useAccounts() {
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAccounts = useCallback(async () => {
+    setLoading(true);
+    const data = await window.electronAPI.getAccounts();
+    setAccounts(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
+
+  const addAccount = useCallback(
+    async (data: Omit<Account, 'id'>) => {
+      await window.electronAPI.addAccount(data);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
+
+  const updateAccount = useCallback(
+    async (data: Account) => {
+      await window.electronAPI.updateAccount(data);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
+
+  const deleteAccount = useCallback(
+    async (id: number) => {
+      await window.electronAPI.deleteAccount(id);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
+
+  const copyToClipboard = useCallback(async (text: string) => {
+    await window.electronAPI.copyToClipboard(text);
+  }, []);
+
+  return { accounts, loading, addAccount, updateAccount, deleteAccount, copyToClipboard };
+}
