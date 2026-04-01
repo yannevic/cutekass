@@ -516,9 +516,10 @@ ipcMain.handle('fetch-lcu-data', async () => {
     lcuGet('/lol-inventory/v2/inventory/CHAMPION_SKIN'),
   ]);
 
-  const s = summoner as { summonerLevel?: number };
+  const s = summoner as { summonerLevel?: number; gameName?: string; tagLine?: string };
   const w = wallet as Record<string, number>;
   const nivel = s.summonerLevel ?? 0;
+  const nickLcu = s.gameName && s.tagLine ? `${s.gameName}#${s.tagLine}` : '';
   const essenciaAzul = w['lol_blue_essence'] ?? 0;
   const essenciaLaranja = w['lol_orange_essence'] ?? 0;
   const numCampeoes = Array.isArray(campeoes)
@@ -538,7 +539,14 @@ ipcMain.handle('fetch-lcu-data', async () => {
       })
     : [];
 
-  return { nivel, essenciaAzul, essenciaLaranja, numCampeoes, numSkins: skinsRaw.length };
+  return {
+    nivel,
+    essenciaAzul,
+    essenciaLaranja,
+    numCampeoes,
+    numSkins: skinsRaw.length,
+    nick: nickLcu,
+  };
 });
 
 // ─── Ciclo de vida ────────────────────────────────────────────────────────────

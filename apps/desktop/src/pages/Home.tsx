@@ -287,6 +287,7 @@ export default function Home({
       essenciaLaranja: number;
       numCampeoes: number;
       numSkins: number;
+      nick: string;
     } | null;
     erro: string;
     carregando: boolean;
@@ -435,6 +436,10 @@ export default function Home({
     setPastaAtiva(id);
     setFiltraSemPasta(false);
     setSelecionados(new Set());
+  }
+
+  async function handleVincularNick(conta: Account, nickLcu: string) {
+    await updateAccount({ ...conta, nick: nickLcu });
   }
 
   async function confirmarExclusao() {
@@ -806,7 +811,9 @@ export default function Home({
           dados={lcuModal.dados}
           erro={lcuModal.erro}
           carregando={lcuModal.carregando}
+          accounts={accounts}
           onFechar={() => setLcuModal(null)}
+          onVincular={handleVincularNick}
         />
       ) : null}
     </div>

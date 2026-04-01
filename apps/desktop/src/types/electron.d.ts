@@ -43,6 +43,7 @@ declare global {
         essenciaLaranja: number;
         numCampeoes: number;
         numSkins: number;
+        nick: string;
       }>;
     };
   }
