@@ -16,6 +16,7 @@
     "appId": "com.cutekass.app",
     "productName": "CuteKass",
     "icon": "assets/cutekass.ico",
+    "artifactName": "${productName}-Setup-${version}.${ext}",
     "publish": {
       "provider": "github",
       "owner": "yannevic",
