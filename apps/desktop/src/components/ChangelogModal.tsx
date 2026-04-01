@@ -4,6 +4,9 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.9': [
+    '🔄 Botão de atualização movido para a sidebar — agora fica no rodapé ao lado das configurações',
+  ],
   '1.0.8': [
     '🔧 Correção do sistema de atualizações automáticas — notificação agora aparece corretamente ao abrir o app',
     '🔄 Botão para buscar atualizações manualmente',
