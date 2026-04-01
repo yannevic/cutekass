@@ -28,7 +28,9 @@ jobs:
           node-version: '22'
 
       - name: Instalar dependências
-        run: npm ci --workspaces --include-workspace-root
+        run: |
+          npm ci --workspaces --include-workspace-root
+          cd apps/desktop && npm install
 
       - name: Bump de versão e atualizar changelog
         id: bump
