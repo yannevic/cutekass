@@ -99,7 +99,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.bump.outputs.new_version }}
-          name: v${{ steps.bump.outputs.new_version }}
+          name: CuteKass v${{ steps.bump.outputs.new_version }}
           body: ${{ github.event.inputs.changelog }}
           files: |
             apps/desktop/dist/*.exe

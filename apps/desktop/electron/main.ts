@@ -34,6 +34,7 @@ function createWindow() {
     height: 650,
     minWidth: 700,
     minHeight: 500,
+    autoHideMenuBar: true,
     icon: join(__dirname, '../assets/cutekass.ico'),
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
