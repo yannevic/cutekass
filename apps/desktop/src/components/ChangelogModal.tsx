@@ -4,61 +4,31 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
-  '1.0.21': [
-    '🌸 CuteKass v1.0.24  *  🔧 Correção de bugs',
-  ],
+  '1.0.23': ['🌸 CuteKass v1.0.22  *  🔧 Correção de bugs'],
 
-  '1.0.23': [
-    '🌸 CuteKass v1.0.22  *  🔧 Correção de bugs',
-  ],
+  '1.0.22': ['🌸 CuteKass v1.0.22  *  🔧 Correção de bugs'],
 
-  '1.0.22': [
-    '🌸 CuteKass v1.0.22  *  🔧 Correção de bugs',
-  ],
+  '1.0.21': ['🌸 CuteKass v1.0.21  *  🔧 Correção de bugs'],
 
-  '1.0.21': [
-    '🌸 CuteKass v1.0.21  *  🔧 Correção de bugs',
-  ],
+  '1.0.20': ['🌸 CuteKass v1.0.19  *  🔧 Correção de bugs'],
 
-  '1.0.20': [
-    '🌸 CuteKass v1.0.19  *  🔧 Correção de bugs',
-  ],
+  '1.0.19': ['🌸 CuteKass v1.0.18  *  🔧 Correção de bugs'],
 
-  '1.0.19': [
-    '🌸 CuteKass v1.0.18  *  🔧 Correção de bugs',
-  ],
+  '1.0.18': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
-  '1.0.18': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
+  '1.0.17': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
-  '1.0.17': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
+  '1.0.16': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
-  '1.0.16': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
+  '1.0.15': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
-  '1.0.15': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
+  '1.0.14': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
-  '1.0.14': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
+  '1.0.13': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
-  '1.0.13': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
+  '1.0.12': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
-  '1.0.12': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
-
-  '1.0.11': [
-    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
-  ],
+  '1.0.11': ['🌸 CuteKass v1.0.11  *  🔧 Correção do bug'],
 
   '1.0.9': [
     '🔄 Botão de atualização movido para a sidebar — agora fica no rodapé ao lado das configurações',
