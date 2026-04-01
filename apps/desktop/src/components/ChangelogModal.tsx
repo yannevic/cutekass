@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.31': [
+    '✨ Disponível agora avaliação de conta contendo nick, nível, campeões, essências, skins',
+  ],
+
   '1.0.30': [
     '✨ Disponível agora avaliação de conta contendo nível, campeões, essências, skins',
   ],
