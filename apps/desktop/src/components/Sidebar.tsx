@@ -19,6 +19,73 @@ interface SidebarProps {
   onUpdateErro: (msg: string) => void;
 }
 
+// ─── Componente de nome com scroll ping-pong ──────────────────────────────────
+
+function NomePasta({ nome }: { nome: string }) {
+  const containerRef = useRef<HTMLSpanElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const animRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const posRef = useRef(0);
+  const [pos, setPos] = useState(0);
+  const [duracao, setDuracao] = useState(0);
+
+  function pararAnim() {
+    if (animRef.current) clearTimeout(animRef.current);
+    posRef.current = 0;
+    setPos(0);
+    setDuracao(0);
+  }
+
+  function iniciarAnim() {
+    const container = containerRef.current;
+    const text = textRef.current;
+    if (!container || !text) return;
+    const overflow = text.scrollWidth - container.offsetWidth;
+    if (overflow <= 4) return; // nome cabe, não rola
+
+    let indo = true;
+
+    function passo(atual: number) {
+      const destino = indo ? overflow : 0;
+      const dist = Math.abs(destino - atual);
+      const dur = dist * 18; // 18ms por pixel → velocidade constante
+
+      setDuracao(dur);
+      setPos(destino);
+      posRef.current = destino;
+
+      animRef.current = setTimeout(() => {
+        indo = !indo;
+        passo(destino);
+      }, dur + 700); // pausa de 700ms nas pontas antes de voltar
+    }
+
+    passo(0);
+  }
+
+  return (
+    <span
+      ref={containerRef}
+      className="overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-1 min-w-0"
+      onMouseEnter={iniciarAnim}
+      onMouseLeave={pararAnim}
+    >
+      <span
+        ref={textRef}
+        style={{
+          display: 'inline-block',
+          transform: `translateX(-${pos}px)`,
+          transition: duracao > 0 ? `transform ${duracao}ms linear` : 'none',
+        }}
+      >
+        {nome}
+      </span>
+    </span>
+  );
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+
 export default function Sidebar({
   pastas,
   pastaAtiva,
@@ -48,7 +115,6 @@ export default function Sidebar({
     window.electronAPI.getAppVersion().then(setVersaoApp);
   }, []);
 
-  // Volta para idle após 4s quando estiver up-to-date
   useEffect(() => {
     if (updateStatus === 'up-to-date') {
       voltarIdleRef.current = setTimeout(() => {
@@ -96,7 +162,6 @@ export default function Sidebar({
   }
 
   function renderBotaoUpdate() {
-    // Ícone base para todos os estados
     const icone = () => {
       if (updateStatus === 'checking') return '🔄';
       if (updateStatus === 'up-to-date') return '✅';
@@ -121,7 +186,6 @@ export default function Sidebar({
       return '#5A3A8A';
     };
 
-    // Estado downloaded — botão de instalar
     if (updateStatus === 'downloaded') {
       return (
         <button
@@ -145,7 +209,6 @@ export default function Sidebar({
       );
     }
 
-    // Estado erro — botão principal + submenu expandido
     if (updateStatus === 'error') {
       return (
         <div className="flex flex-col mx-1">
@@ -167,7 +230,6 @@ export default function Sidebar({
             </span>
           </button>
 
-          {/* Submenu de erro — só aparece com sidebar aberta */}
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col gap-1 pl-10 pr-2 pb-1">
             {updateErro && (
               <div className="flex flex-col gap-1">
@@ -249,7 +311,6 @@ export default function Sidebar({
       );
     }
 
-    // Estados: idle, checking, available, up-to-date
     return (
       <button
         type="button"
@@ -358,7 +419,7 @@ export default function Sidebar({
                       onSelecionarPasta(pasta.id);
                       navigate('/');
                     }}
-                    className="flex items-center flex-1 min-w-0 text-left"
+                    className="flex items-center flex-1 min-w-0 text-left gap-0"
                   >
                     <span className="w-10 flex items-center justify-center shrink-0">
                       <span
@@ -366,9 +427,7 @@ export default function Sidebar({
                         style={{ backgroundColor: pasta.cor }}
                       />
                     </span>
-                    <span className="truncate whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      {pasta.nome}
-                    </span>
+                    <NomePasta nome={pasta.nome} />
                   </button>
 
                   <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover/pasta:opacity-100 transition-opacity pr-1">

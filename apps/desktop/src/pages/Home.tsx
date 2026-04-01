@@ -276,6 +276,7 @@ export default function Home({
   const [busca, setBusca] = useState('');
   const [filtroElo, setFiltroElo] = useState('Todos');
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
+  const [filtraSemPasta, setFiltraSemPasta] = useState(false);
   const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
   const [ordem, setOrdem] = useState<'recentes' | 'antigas' | 'alfabetica' | 'z-a' | 'custom'>(
     () => {
@@ -312,7 +313,6 @@ export default function Home({
     return () => document.removeEventListener('mousedown', handleClickFora);
   }, []);
 
-  // Sincroniza ordemCustom quando accounts mudam
   useEffect(() => {
     setOrdemCustom(accounts.map((a) => a.id));
   }, [accounts]);
@@ -332,6 +332,7 @@ export default function Home({
       }
 
       function passaPasta() {
+        if (filtraSemPasta) return acc.pastaId === null || acc.pastaId === undefined;
         if (pastaAtiva === null) return true;
         return acc.pastaId === pastaAtiva;
       }
@@ -365,7 +366,7 @@ export default function Home({
 
     if (ordem === 'antigas') return [...base].sort((a, b) => a.id - b.id);
     return [...base].sort((a, b) => b.id - a.id);
-  }, [accounts, busca, filtroElo, pastaAtiva, ordem, ordemCustom]);
+  }, [accounts, busca, filtroElo, pastaAtiva, filtraSemPasta, ordem, ordemCustom]);
 
   useEffect(() => {
     localStorage.setItem('cutekass-ordem', ordem);
@@ -419,6 +420,7 @@ export default function Home({
 
   function selecionarPasta(id: number | null) {
     setPastaAtiva(id);
+    setFiltraSemPasta(false);
     setSelecionados(new Set());
   }
 
@@ -561,7 +563,11 @@ export default function Home({
               />
             )}
             <h2 className="text-xl font-bold text-rift-200">
-              {pastaAtiva === null ? 'Todas as contas' : nomePastaAtiva}
+              {filtraSemPasta
+                ? 'Sem pasta'
+                : pastaAtiva === null
+                  ? 'Todas as contas'
+                  : nomePastaAtiva}
             </h2>
           </div>
           <div className="flex gap-2 items-center">
@@ -629,6 +635,21 @@ export default function Home({
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
+          <button
+            type="button"
+            onClick={() => {
+              setFiltraSemPasta((v) => !v);
+              setPastaAtiva(null);
+              setSelecionados(new Set());
+            }}
+            className={`text-sm px-3 py-2 rounded-lg border transition-colors font-medium whitespace-nowrap ${
+              filtraSemPasta
+                ? 'bg-[#3B136B] border-[#7B2CF5] text-[#CFA6FF]'
+                : 'bg-void-900 border-void-800 text-rift-200/50 hover:text-rift-200 hover:border-void-700'
+            }`}
+          >
+            Sem pasta
+          </button>
           <select
             className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
             value={filtroElo}
