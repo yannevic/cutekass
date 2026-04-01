@@ -32,6 +32,7 @@ jobs:
         shell: bash
         run: |
           cd apps/desktop && npm install
+          npx @electron/rebuild -f -w better-sqlite3 --version 29.1.0
           npm install 7zip-bin --prefix .
 
       - name: Bump de versão e atualizar changelog
