@@ -4,6 +4,9 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.7': [
+    '🔧 Correção do sistema de atualizações automáticas — notificação agora aparece corretamente ao abrir o app',
+  ],
   '1.0.6': [
     '💾 Histórico de backup nas configurações — veja e copie as últimas 3 sessões salvas automaticamente',
   ],

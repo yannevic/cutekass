@@ -58,8 +58,6 @@ function createWindow() {
       repo: 'cutekass',
     });
 
-    autoUpdater.checkForUpdates();
-
     autoUpdater.on('update-available', () => {
       win.webContents.send('update-available');
     });
@@ -70,6 +68,12 @@ function createWindow() {
 
     autoUpdater.on('error', (err) => {
       win.webContents.send('update-error', err.message);
+    });
+
+    // Aguarda a janela carregar para garantir que o React já montou
+    // o UpdateNotifier e registrou os listeners antes de disparar eventos
+    win.webContents.on('did-finish-load', () => {
+      autoUpdater.checkForUpdates();
     });
   }
 }
@@ -99,6 +103,7 @@ function saveConfig(data: Config) {
 
 let riotApiKey = loadConfig().riotApiKey;
 let riotClientPath = loadConfig().riotClientPath;
+
 function salvarBackup() {
   try {
     const conteudo = gerarBackup();
@@ -126,6 +131,7 @@ ipcMain.handle('get-app-version', () => app.getVersion());
 
 ipcMain.handle('get-accounts', () => listAccounts());
 ipcMain.handle('get-trash', () => listTrash());
+
 ipcMain.handle('add-account', (_e, data) => {
   const resultado = addAccount(data);
   salvarBackup();
@@ -151,10 +157,12 @@ ipcMain.handle('permanent-delete', (_e, id) => {
   hardDeleteAccount(id);
   salvarBackup();
 });
+
 ipcMain.handle('bulk-add-accounts', (_e, dados) => {
   addAccountsBulk(dados);
   salvarBackup();
 });
+
 ipcMain.handle('bulk-delete', (_e, ids: number[]) => {
   bulkSoftDelete(ids);
   salvarBackup();
@@ -176,6 +184,7 @@ ipcMain.handle('export-accounts', (_e, ids: number[]) => {
   const fileName = `contas_${Date.now()}.txt`;
   writeFileSync(join(downloadsPath, fileName), conteudo, 'utf-8');
 });
+
 ipcMain.handle('empty-trash', () => {
   emptyTrash();
   salvarBackup();
@@ -187,6 +196,7 @@ ipcMain.handle('update-pasta', (_e, id: number, nome: string, cor: string) =>
   updatePasta(id, nome, cor)
 );
 ipcMain.handle('delete-pasta', (_e, id: number) => deletePasta(id));
+
 ipcMain.handle('copy-to-clipboard', (_e, text: string) => {
   clipboard.writeText(text);
 });
@@ -196,6 +206,7 @@ ipcMain.handle('reorder-accounts', (_e, ids: number[]) => {
 });
 
 ipcMain.handle('listar-historico-backup', () => listarHistoricoBackup());
+
 // ─── Riot API ─────────────────────────────────────────────────────────────────
 
 ipcMain.handle('get-riot-key', () => riotApiKey);
