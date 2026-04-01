@@ -4,6 +4,12 @@ interface Props {
   onClose: () => void;
 }
 
+interface Backup {
+  id: number;
+  criadoEm: string;
+  conteudo: string;
+}
+
 export default function SettingsModal({ onClose }: Props) {
   const [chave, setChave] = useState('');
   const [caminhoClient, setCaminhoClient] = useState('');
@@ -11,10 +17,14 @@ export default function SettingsModal({ onClose }: Props) {
   const [salvo, setSalvo] = useState(false);
   const [salvandoClient, setSalvandoClient] = useState(false);
   const [salvoClient, setSalvoClient] = useState(false);
+  const [backups, setBackups] = useState<Backup[]>([]);
+  const [backupExpandido, setBackupExpandido] = useState<number | null>(null);
+  const [copiado, setCopiado] = useState<number | null>(null);
 
   useEffect(() => {
     window.electronAPI.getRiotKey().then(setChave);
     window.electronAPI.getRiotClientPath().then(setCaminhoClient);
+    window.electronAPI.listarHistoricoBackup().then(setBackups);
   }, []);
 
   async function handleSalvar() {
@@ -38,17 +48,35 @@ export default function SettingsModal({ onClose }: Props) {
     window.electronAPI.saveRiotKey('');
   }
 
+  async function handleCopiarBackup(id: number, conteudo: string) {
+    await window.electronAPI.copyToClipboard(conteudo);
+    setCopiado(id);
+    setTimeout(() => setCopiado(null), 2000);
+  }
+
+  function formatarData(iso: string) {
+    const d = new Date(iso);
+    return d.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50"
+        className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-bold text-rift-300">⚙️ Configurações</h2>
 
+        {/* Chave da API */}
         <div className="flex flex-col gap-2">
           <label className="text-sm text-rift-200/70 font-medium">Chave da API da Riot</label>
           <p className="text-xs text-rift-200/40">
@@ -85,6 +113,7 @@ export default function SettingsModal({ onClose }: Props) {
 
         <div className="border-t border-void-800" />
 
+        {/* Caminho do client */}
         <div className="flex flex-col gap-2">
           <label className="text-sm text-rift-200/70 font-medium">Caminho do Riot Client</label>
           <p className="text-xs text-rift-200/40">
@@ -113,6 +142,56 @@ export default function SettingsModal({ onClose }: Props) {
           >
             {salvoClient ? '✓ Salvo!' : salvandoClient ? 'Salvando...' : 'Salvar caminho'}
           </button>
+        </div>
+
+        <div className="border-t border-void-800" />
+
+        {/* Histórico de backup */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm text-rift-200/70 font-medium">💾 Histórico de backup</label>
+          <p className="text-xs text-rift-200/40">
+            Últimas 3 sessões salvas automaticamente. Use para recuperar contas se algo der errado.
+          </p>
+
+          {backups.length === 0 ? (
+            <p className="text-xs text-rift-200/30 italic">Nenhum backup salvo ainda.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {backups.map((backup) => (
+                <div key={backup.id} className="rounded-lg border border-void-800 overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 bg-void-950">
+                    <span className="text-xs text-rift-200/60">
+                      {formatarData(backup.criadoEm)}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleCopiarBackup(backup.id, backup.conteudo)}
+                        className="text-xs px-2 py-0.5 rounded bg-void-800 hover:bg-void-700 text-rift-200/70 transition-colors"
+                      >
+                        {copiado === backup.id ? '✓ Copiado!' : 'Copiar'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBackupExpandido(backupExpandido === backup.id ? null : backup.id)
+                        }
+                        className="text-xs px-2 py-0.5 rounded bg-void-800 hover:bg-void-700 text-rift-200/70 transition-colors"
+                      >
+                        {backupExpandido === backup.id ? 'Fechar' : 'Ver'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {backupExpandido === backup.id && (
+                    <pre className="text-xs text-rift-200/50 font-mono px-3 py-2 bg-void-950/50 border-t border-void-800 whitespace-pre-wrap break-all max-h-32 overflow-y-auto">
+                      {backup.conteudo}
+                    </pre>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="border-t border-void-800 pt-3">

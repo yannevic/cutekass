@@ -4,6 +4,16 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.6': [
+    '💾 Histórico de backup nas configurações — veja e copie as últimas 3 sessões salvas automaticamente',
+  ],
+  '1.0.5': ['🔧 Correção do sistema de atualizações automáticas'],
+  '1.0.4': ['🔀 Reordenação de contas por arrastar e soltar'],
+  '1.0.3': [
+    '🔧 Correção do sistema de atualizações automáticas',
+    '📋 Changelog — novidades ao abrir uma nova versão',
+    '🏷️ Versão exibida na sidebar',
+  ],
   '1.0.2': ['✨ Atualizações automáticas — o app avisa quando tem novidade e instala sozinho'],
   '1.0.1': [
     '🎉 Primeira versão pública do CuteKass',
