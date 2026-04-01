@@ -28,9 +28,10 @@ jobs:
           node-version: '22'
 
       - name: Instalar dependências
+        shell: bash
         run: |
-          npm ci --workspaces --include-workspace-root
-          cd apps/desktop && npm install
+          cd apps/desktop
+          npm install
 
       - name: Bump de versão e atualizar changelog
         id: bump
@@ -82,6 +83,7 @@ jobs:
           git push
 
       - name: Build e empacotar
+        shell: bash
         run: npm run dist
         working-directory: apps/desktop
         env:
