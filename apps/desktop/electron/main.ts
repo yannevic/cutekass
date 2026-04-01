@@ -79,6 +79,12 @@ function createWindow() {
     // o UpdateNotifier e registrou os listeners antes de disparar eventos
     win.webContents.on('did-finish-load', () => {
       autoUpdater.checkForUpdates();
+      setInterval(
+        () => {
+          autoUpdater.checkForUpdates();
+        },
+        60 * 60 * 1000
+      );
     });
   }
 }

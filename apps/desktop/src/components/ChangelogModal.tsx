@@ -4,15 +4,18 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.27': [
+    '🌸 CuteKass v1.0.25',
+    '✨ Scroll ping-pong no nome de pastas longas',
+    '✨ Filtro "Sem pasta" na barra de busca',
+  ],
   '1.0.26': [
     '🌸 CuteKass v1.0.25',
     '✨ Scroll ping-pong no nome de pastas longas',
     '✨ Filtro "Sem pasta" na barra de busca',
   ],
 
-  '1.0.25': [
-    '🌸 CuteKass v1.0.25  *  🔧 Correção de bugs',
-  ],
+  '1.0.25': ['🌸 CuteKass v1.0.25  *  🔧 Correção de bugs'],
 
   '1.0.23': ['🌸 CuteKass v1.0.22  *  🔧 Correção de bugs'],
 
