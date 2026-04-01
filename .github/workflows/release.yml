@@ -30,8 +30,8 @@ jobs:
       - name: Instalar dependências
         shell: bash
         run: |
-          cd apps/desktop
           npm install
+          cd apps/desktop && npm install
 
       - name: Bump de versão e atualizar changelog
         id: bump
