@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import LcuModal from '../components/LcuModal';
 import {
   DndContext,
   closestCenter,
@@ -278,6 +279,18 @@ export default function Home({
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
   const [filtraSemPasta, setFiltraSemPasta] = useState(false);
   const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
+  const [lcuModal, setLcuModal] = useState<{
+    nick: string;
+    dados: {
+      nivel: number;
+      essenciaAzul: number;
+      essenciaLaranja: number;
+      numCampeoes: number;
+      numSkins: number;
+    } | null;
+    erro: string;
+    carregando: boolean;
+  } | null>(null);
   const [ordem, setOrdem] = useState<'recentes' | 'antigas' | 'alfabetica' | 'z-a' | 'custom'>(
     () => {
       const salvo = localStorage.getItem('cutekass-ordem');
@@ -524,6 +537,17 @@ export default function Home({
     await reorderAccounts(novaOrdem);
   }
 
+  async function handleAvaliarGeral() {
+    setLcuModal({ nick: 'Conta atual', dados: null, erro: '', carregando: true });
+    try {
+      const dados = await window.electronAPI.fetchLcuData();
+      setLcuModal({ nick: 'Conta atual', dados, erro: '', carregando: false });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Erro ao ler o cliente do LoL.';
+      setLcuModal({ nick: 'Conta atual', dados: null, erro: msg, carregando: false });
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-void-950 text-rift-200 flex items-center justify-center">
@@ -576,6 +600,13 @@ export default function Home({
                 {progressoElo.atual}/{progressoElo.total} atualizados
               </span>
             )}
+            <button
+              type="button"
+              onClick={handleAvaliarGeral}
+              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+            >
+              🔍 Avaliar conta
+            </button>
             <button
               type="button"
               onClick={handleAtualizarTodosElos}
@@ -768,6 +799,16 @@ export default function Home({
       ) : null}
 
       {configuracoesAberto ? <SettingsModal onClose={() => setConfiguracoesAberto(false)} /> : null}
+
+      {lcuModal ? (
+        <LcuModal
+          nick={lcuModal.nick}
+          dados={lcuModal.dados}
+          erro={lcuModal.erro}
+          carregando={lcuModal.carregando}
+          onFechar={() => setLcuModal(null)}
+        />
+      ) : null}
     </div>
   );
 }

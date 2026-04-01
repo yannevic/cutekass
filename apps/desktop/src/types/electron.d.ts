@@ -37,6 +37,13 @@ declare global {
       onUpdateError: (cb: (msg: string) => void) => void;
       reorderAccounts: (ids: number[]) => Promise<void>;
       listarHistoricoBackup: () => Promise<{ id: number; criadoEm: string; conteudo: string }[]>;
+      fetchLcuData: () => Promise<{
+        nivel: number;
+        essenciaAzul: number;
+        essenciaLaranja: number;
+        numCampeoes: number;
+        numSkins: number;
+      }>;
     };
   }
 }

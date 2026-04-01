@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, clipboard, net } from 'electron';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import path, { join } from 'path';
+import https from 'https';
 import { autoUpdater } from 'electron-updater';
 import {
   emptyTrash,
@@ -412,6 +413,132 @@ Start-Sleep -Milliseconds 300
       /* ignora */
     }
   }
+});
+
+// ─── LCU API ──────────────────────────────────────────────────────────────────
+
+ipcMain.handle('fetch-lcu-data', async () => {
+  const { execSync } = await import('child_process');
+  const { readFileSync: fsRead, existsSync: fsExists } = await import('fs');
+  const { join: pJoin } = await import('path');
+
+  let lockfilePath = '';
+
+  // Tentativa 1: busca pelo processo LeagueClient via PowerShell
+  try {
+    const resultado = execSync(
+      `powershell -NoProfile -Command "Get-Process LeagueClient -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Path"`,
+      { windowsHide: true, encoding: 'utf-8', timeout: 5000 }
+    ).trim();
+
+    if (resultado) {
+      // resultado é o caminho do .exe — o lockfile fica 2 pastas acima
+      const pastaLol = pJoin(resultado, '..', '..');
+      const candidato = pJoin(pastaLol, 'lockfile');
+      if (fsExists(candidato)) lockfilePath = candidato;
+    }
+  } catch {
+    // segue para próxima tentativa
+  }
+
+  // Tentativa 2: deriva do riotClientPath salvo (troca RiotClient pelo LoL)
+  if (!lockfilePath && riotClientPath) {
+    const pastaRiotGames = pJoin(riotClientPath, '..', '..', '..');
+    const candidato = pJoin(pastaRiotGames, 'League of Legends', 'lockfile');
+    if (fsExists(candidato)) lockfilePath = candidato;
+  }
+
+  // Tentativa 3: caminhos padrão
+  if (!lockfilePath) {
+    const programFiles = process.env['ProgramFiles'] ?? 'C:\\Program Files';
+    const programFilesX86 = process.env['ProgramFiles(x86)'] ?? 'C:\\Program Files (x86)';
+
+    const candidatos = [
+      pJoin('C:\\', 'Riot Games', 'League of Legends', 'lockfile'),
+      pJoin('E:\\', 'Riot Games', 'League of Legends', 'lockfile'),
+      pJoin(programFiles, 'Riot Games', 'League of Legends', 'lockfile'),
+      pJoin(programFilesX86, 'Riot Games', 'League of Legends', 'lockfile'),
+    ];
+
+    const encontrado = candidatos.find((c) => fsExists(c));
+    if (encontrado) lockfilePath = encontrado;
+  }
+
+  if (!lockfilePath) {
+    throw new Error(
+      'Lockfile não encontrado. Verifique se o League of Legends está aberto e logado.'
+    );
+  }
+
+  // lockfile formato: name:pid:port:password:protocol
+  const partes = fsRead(lockfilePath, 'utf-8').split(':');
+  const porta = partes[2];
+  const senha = partes[3];
+  const auth = Buffer.from(`riot:${senha}`).toString('base64');
+
+  async function lcuGet(endpoint: string): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      const options = {
+        hostname: '127.0.0.1',
+        port: porta,
+        path: endpoint,
+        method: 'GET',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          Accept: 'application/json',
+        },
+        rejectUnauthorized: false, // ignora certificado autoassinado da LCU
+      };
+
+      const req = https.request(options, (res: import('http').IncomingMessage) => {
+        let body = '';
+        res.on('data', (chunk: Buffer) => {
+          body += chunk.toString();
+        });
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(body));
+          } catch {
+            reject(new Error('Resposta inválida da LCU'));
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.end();
+    });
+  }
+
+  const [summoner, wallet, campeoes, skins] = await Promise.all([
+    lcuGet('/lol-summoner/v1/current-summoner'),
+    lcuGet('/lol-inventory/v1/wallet/balance'),
+    lcuGet('/lol-champions/v1/owned-champions-minimal'),
+    lcuGet('/lol-inventory/v2/inventory/CHAMPION_SKIN'),
+  ]);
+
+  const s = summoner as { summonerLevel?: number };
+  const w = wallet as Record<string, number>;
+  const nivel = s.summonerLevel ?? 0;
+  const essenciaAzul = w['lol_blue_essence'] ?? 0;
+  const essenciaLaranja = w['lol_orange_essence'] ?? 0;
+  const numCampeoes = Array.isArray(campeoes)
+    ? (campeoes as { ownership?: { owned?: boolean } }[]).filter((c) => c.ownership?.owned).length
+    : 0;
+
+  const skinsData = await lcuGet('/lol-game-data/assets/v1/skins.json').catch(() => ({}));
+  const skinsMap = skinsData as Record<string, { isBase?: boolean }>;
+
+  const skinsRaw = Array.isArray(skins)
+    ? (skins as { owned?: boolean; itemId?: number }[]).filter((sk) => {
+        if (!sk.owned || sk.itemId === undefined) return false;
+        const dadosSkin = skinsMap[String(sk.itemId)];
+        if (!dadosSkin) return false;
+        if (dadosSkin.isBase) return false;
+        return true;
+      })
+    : [];
+
+  return { nivel, essenciaAzul, essenciaLaranja, numCampeoes, numSkins: skinsRaw.length };
 });
 
 // ─── Ciclo de vida ────────────────────────────────────────────────────────────
