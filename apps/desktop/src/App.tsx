@@ -45,7 +45,17 @@ export default function App() {
             />
           }
         />
-        <Route path="/trash" element={<Trash />} />
+        <Route
+          path="/trash"
+          element={
+            <Trash
+              updateStatus={updateStatus}
+              updateErro={updateErro}
+              onUpdateStatus={setUpdateStatus}
+              onUpdateErro={setUpdateErro}
+            />
+          }
+        />
       </Routes>
       {mostrarChangelog && versao ? (
         <ChangelogModal versao={versao} onFechar={fecharChangelog} />

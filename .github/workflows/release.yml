@@ -1,16 +1,24 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      changelog:
+        description: 'Notas do changelog (separe múltiplos itens com | ex: 🔧 Correção X | ✨ Feature Y)'
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -21,15 +29,71 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Bump de versão e atualizar changelog
+        id: bump
+        shell: bash
+        run: |
+          # Ler versão atual e incrementar patch
+          CURRENT=$(node -p "require('./apps/desktop/package.json').version")
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          # Atualizar package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('./apps/desktop/package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('./apps/desktop/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          # Converter itens do changelog separados por |
+          CHANGELOG_INPUT='${{ github.event.inputs.changelog }}'
+          ITEMS_JS=$(node -e "
+            const raw = process.argv[1];
+            const items = raw.split('|').map(s => s.trim()).filter(Boolean);
+            console.log(JSON.stringify(items));
+          " -- "$CHANGELOG_INPUT")
+
+          # Injetar nova entrada no ChangelogModal.tsx
+          node -e "
+            const fs = require('fs');
+            const version = '$NEW_VERSION';
+            const items = $ITEMS_JS;
+
+            const lines = items.map(i => \`    '\${i}',\`).join('\n');
+            const newEntry = \`  '\${version}': [\n\${lines}\n  ],\n\`;
+
+            let content = fs.readFileSync('./apps/desktop/src/components/ChangelogModal.tsx', 'utf8');
+            content = content.replace(
+              /(const CHANGELOG: Record<string, string\[\]> = \{)/,
+              '\$1\n' + newEntry
+            );
+            fs.writeFileSync('./apps/desktop/src/components/ChangelogModal.tsx', content);
+          "
+
+      - name: Commit das mudanças
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add apps/desktop/package.json apps/desktop/src/components/ChangelogModal.tsx
+          git commit -m "chore: release v${{ steps.bump.outputs.new_version }}"
+          git push
+
       - name: Build e empacotar
         run: npm run dist
         working-directory: apps/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload dos artefatos para o release
+      - name: Criar release e fazer upload
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.bump.outputs.new_version }}
+          name: v${{ steps.bump.outputs.new_version }}
+          body: ${{ github.event.inputs.changelog }}
           files: |
             apps/desktop/dist/*.exe
             apps/desktop/dist/*.blockmap

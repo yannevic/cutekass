@@ -4,8 +4,16 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import Sidebar from '../components/Sidebar';
 import usePastas from '../hooks/usePastas';
 import SettingsModal from '../components/SettingsModal';
+import type { UpdateStatus } from '../components/UpdateNotifier';
 
-export default function Trash() {
+interface Props {
+  updateStatus: UpdateStatus;
+  updateErro: string;
+  onUpdateStatus: (status: UpdateStatus) => void;
+  onUpdateErro: (msg: string) => void;
+}
+
+export default function Trash({ updateStatus, updateErro, onUpdateStatus, onUpdateErro }: Props) {
   const [contas, setContas] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [idParaExcluir, setIdParaExcluir] = useState<number | null>(null);
@@ -54,6 +62,10 @@ export default function Trash() {
         onRenamePasta={(id, nome, cor) => updatePasta(id, nome, cor)}
         onDeletePasta={(id) => deletePasta(id)}
         onConfiguracoes={() => setConfiguracoesAberto(true)}
+        updateStatus={updateStatus}
+        updateErro={updateErro}
+        onUpdateStatus={onUpdateStatus}
+        onUpdateErro={onUpdateErro}
       />
       <main className="flex-1 overflow-y-auto p-6">
         <h1 className="text-2xl font-bold text-rift-300 mb-6">🗑️ Lixeira</h1>
@@ -115,7 +127,7 @@ export default function Trash() {
           onCancelar={() => setIdParaExcluir(null)}
         />
       ) : null}
-      {confirmarEsvaziar && ( // ← adiciona aqui
+      {confirmarEsvaziar && (
         <ConfirmDialog
           mensagem="Esvaziar lixeira permanentemente? Essa ação não pode ser desfeita."
           onConfirmar={async () => {
