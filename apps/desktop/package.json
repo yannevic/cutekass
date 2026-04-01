@@ -10,7 +10,8 @@
     "dev": "vite",
     "build": "vite build",
     "dist": "npm run build && electron-builder",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
   "build": {
     "appId": "com.cutekass.app",
@@ -69,6 +70,7 @@
     "concurrently": "^9.2.1",
     "electron": "29.1.0",
     "electron-builder": "^24.9.1",
+    "electron-rebuild": "^3.2.9",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "typescript": "^5.4.2",
     "vite": "^6.0.0",
