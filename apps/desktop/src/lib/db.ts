@@ -83,8 +83,12 @@ export function addAccount(data: Omit<Account, 'id'>): Account {
     if (existe.deletedAt !== null) {
       db.prepare('UPDATE accounts SET deletedAt = NULL WHERE id = ?').run(existe.id);
     }
+    if (data.nick) {
+      db.prepare('UPDATE accounts SET nick = ? WHERE id = ?').run(data.nick, existe.id);
+    }
     return { id: existe.id, ...data };
   }
+
   const stmt = db.prepare(`
     INSERT INTO accounts (login, senha, nick, elo, observacoes, deletedAt, pastaId)
     VALUES (@login, @senha, @nick, @elo, @observacoes, @deletedAt, @pastaId)
@@ -213,6 +217,9 @@ export function addAccountsBulk(dados: Omit<Account, 'id'>[]): void {
       if (existe) {
         if (existe.deletedAt !== null) {
           db.prepare('UPDATE accounts SET deletedAt = NULL WHERE id = ?').run(existe.id);
+        }
+        if (data.nick) {
+          db.prepare('UPDATE accounts SET nick = ? WHERE id = ?').run(data.nick, existe.id);
         }
         return;
       }
