@@ -48,8 +48,16 @@ function createWindow() {
     win.loadFile(join(__dirname, '../dist/index.html'));
   }
 
-  // Auto-updater — só roda no app empacotado
   if (app.isPackaged) {
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'yannevic',
+      repo: 'cutekass',
+    });
+
     autoUpdater.checkForUpdates();
 
     autoUpdater.on('update-available', () => {
