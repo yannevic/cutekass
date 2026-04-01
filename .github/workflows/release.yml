@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Instalar 7zip
+        run: choco install 7zip -y
+
       - name: Instalar dependências
         shell: bash
         run: |
@@ -88,6 +91,7 @@ jobs:
         working-directory: apps/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USE_SYSTEM_7ZA: true
 
       - name: Criar release e fazer upload
         uses: softprops/action-gh-release@v2
