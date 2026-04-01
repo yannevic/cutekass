@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.30': [
+    '✨ Disponível agora avaliação de conta contendo nível, campeões, essências, skins',
+  ],
+
   '1.0.29': [
     '🌸 CuteKass v1.0.29',
     '✨ Release automática.',
