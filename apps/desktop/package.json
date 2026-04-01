@@ -4,7 +4,7 @@
   "description": "Gerenciador de contas League of Legends",
   "author": "nana",
   "private": true,
-  "version": "1.0.17",
+  "version": "1.0.18",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -51,6 +51,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@tailwindcss/vite": "^4.2.2",
+    "7zip-bin": "^5.2.0",
     "better-sqlite3": "^9.4.3",
     "electron-updater": "^6.3.9",
     "react": "^19.0.0",
