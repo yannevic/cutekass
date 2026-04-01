@@ -4,7 +4,7 @@
   "description": "Gerenciador de contas League of Legends",
   "author": "nana",
   "private": true,
-  "version": "1.0.23",
+  "version": "1.0.20",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -28,6 +28,12 @@
       "dist/**",
       "dist-electron/**",
       "assets/**"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+        "to": "better_sqlite3.node"
+      }
     ],
     "win": {
       "target": "nsis",
