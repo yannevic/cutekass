@@ -28,6 +28,12 @@ declare global {
       saveRiotClientPath: (path: string) => Promise<void>;
       bulkAddAccounts: (dados: Omit<Account, 'id'>[]) => Promise<void>;
       emptyTrash: () => Promise<void>;
+      checkForUpdates: () => Promise<void>;
+      installUpdate: () => Promise<void>;
+      getAppVersion: () => Promise<string>;
+      onUpdateAvailable: (cb: () => void) => void;
+      onUpdateDownloaded: (cb: () => void) => void;
+      onUpdateError: (cb: (msg: string) => void) => void;
     };
   }
 }

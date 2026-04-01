@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, clipboard, net } from 'electron';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import path, { join } from 'path';
+import { autoUpdater } from 'electron-updater';
 import {
   emptyTrash,
   listAccounts,
@@ -43,6 +44,23 @@ function createWindow() {
   } else {
     win.loadFile(join(__dirname, '../dist/index.html'));
   }
+
+  // Auto-updater — só roda no app empacotado
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdates();
+
+    autoUpdater.on('update-available', () => {
+      win.webContents.send('update-available');
+    });
+
+    autoUpdater.on('update-downloaded', () => {
+      win.webContents.send('update-downloaded');
+    });
+
+    autoUpdater.on('error', (err) => {
+      win.webContents.send('update-error', err.message);
+    });
+  }
 }
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -83,6 +101,16 @@ function salvarBackup() {
 }
 
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
+
+ipcMain.handle('check-for-updates', () => {
+  if (app.isPackaged) autoUpdater.checkForUpdates();
+});
+
+ipcMain.handle('install-update', () => {
+  autoUpdater.quitAndInstall();
+});
+
+ipcMain.handle('get-app-version', () => app.getVersion());
 
 ipcMain.handle('get-accounts', () => listAccounts());
 ipcMain.handle('get-trash', () => listTrash());

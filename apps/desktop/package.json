@@ -16,6 +16,11 @@
     "appId": "com.cutekass.app",
     "productName": "CuteKass",
     "icon": "assets/cutekass.ico",
+    "publish": {
+      "provider": "github",
+      "owner": "yannevic",
+      "repo": "https://github.com/yannevic/cutekass"
+    },
     "files": [
       "dist/**",
       "dist-electron/**",
@@ -44,6 +49,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "better-sqlite3": "^9.4.3",
+    "electron-updater": "^6.3.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.13.2",

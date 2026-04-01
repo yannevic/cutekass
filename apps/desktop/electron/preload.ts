@@ -29,4 +29,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   emptyTrash: () => ipcRenderer.invoke('empty-trash'),
   bulkAddAccounts: (dados: Record<string, unknown>[]) =>
     ipcRenderer.invoke('bulk-add-accounts', dados),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  onUpdateAvailable: (cb: () => void) => ipcRenderer.on('update-available', cb),
+  onUpdateDownloaded: (cb: () => void) => ipcRenderer.on('update-downloaded', cb),
+  onUpdateError: (cb: (msg: string) => void) =>
+    ipcRenderer.on('update-error', (_e, msg) => cb(msg)),
 });
