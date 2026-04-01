@@ -76,6 +76,15 @@ export function listTrash(): Account[] {
 }
 
 export function addAccount(data: Omit<Account, 'id'>): Account {
+  const existe = db
+    .prepare('SELECT id, deletedAt FROM accounts WHERE login = ?')
+    .get(data.login) as { id: number; deletedAt: string | null } | undefined;
+  if (existe) {
+    if (existe.deletedAt !== null) {
+      db.prepare('UPDATE accounts SET deletedAt = NULL WHERE id = ?').run(existe.id);
+    }
+    return { id: existe.id, ...data };
+  }
   const stmt = db.prepare(`
     INSERT INTO accounts (login, senha, nick, elo, observacoes, deletedAt, pastaId)
     VALUES (@login, @senha, @nick, @elo, @observacoes, @deletedAt, @pastaId)
@@ -198,6 +207,15 @@ export function addAccountsBulk(dados: Omit<Account, 'id'>[]): void {
   `);
   const inserirTodos = db.transaction((contas: Omit<Account, 'id'>[]) => {
     contas.forEach((data) => {
+      const existe = db
+        .prepare('SELECT id, deletedAt FROM accounts WHERE login = ?')
+        .get(data.login) as { id: number; deletedAt: string | null } | undefined;
+      if (existe) {
+        if (existe.deletedAt !== null) {
+          db.prepare('UPDATE accounts SET deletedAt = NULL WHERE id = ?').run(existe.id);
+        }
+        return;
+      }
       stmt.run({
         login: data.login,
         senha: data.senha,

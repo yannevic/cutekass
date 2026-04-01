@@ -26,6 +26,7 @@ export default function Home() {
     bulkSetElo,
     bulkMovePasta,
     copyToClipboard,
+    bulkAddAccounts,
   } = useAccounts();
   const { pastas, addPasta, updatePasta, deletePasta } = usePastas();
 
@@ -175,7 +176,7 @@ export default function Home() {
   }
 
   async function handleImport(parsed: ParsedAccount[]) {
-    await window.electronAPI.bulkAddAccounts(
+    await bulkAddAccounts(
       parsed.map((p) => ({
         login: p.login,
         senha: p.senha,
