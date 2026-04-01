@@ -28,6 +28,9 @@ jobs:
       - name: Instalar 7zip
         run: choco install 7zip -y
 
+      - name: Corrigir distutils para Python 3.12
+        run: pip install setuptools
+
       - name: Instalar dependências
         shell: bash
         run: |
