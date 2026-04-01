@@ -32,6 +32,7 @@ declare global {
       installUpdate: () => Promise<void>;
       getAppVersion: () => Promise<string>;
       onUpdateAvailable: (cb: () => void) => void;
+      onUpdateNotAvailable: (cb: () => void) => void;
       onUpdateDownloaded: (cb: () => void) => void;
       onUpdateError: (cb: (msg: string) => void) => void;
       reorderAccounts: (ids: number[]) => Promise<void>;

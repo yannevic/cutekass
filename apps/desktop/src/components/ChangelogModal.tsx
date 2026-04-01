@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.8': [
+    '🔧 Correção do sistema de atualizações automáticas — notificação agora aparece corretamente ao abrir o app',
+    '🔄 Botão para buscar atualizações manualmente',
+  ],
   '1.0.7': [
     '🔧 Correção do sistema de atualizações automáticas — notificação agora aparece corretamente ao abrir o app',
   ],

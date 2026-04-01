@@ -33,6 +33,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   installUpdate: () => ipcRenderer.invoke('install-update'),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   onUpdateAvailable: (cb: () => void) => ipcRenderer.on('update-available', cb),
+  onUpdateNotAvailable: (cb: () => void) => ipcRenderer.on('update-not-available', cb),
   onUpdateDownloaded: (cb: () => void) => ipcRenderer.on('update-downloaded', cb),
   onUpdateError: (cb: (msg: string) => void) =>
     ipcRenderer.on('update-error', (_e, msg) => cb(msg)),

@@ -62,6 +62,10 @@ function createWindow() {
       win.webContents.send('update-available');
     });
 
+    autoUpdater.on('update-not-available', () => {
+      win.webContents.send('update-not-available');
+    });
+
     autoUpdater.on('update-downloaded', () => {
       win.webContents.send('update-downloaded');
     });
