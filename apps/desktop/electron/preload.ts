@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loginRiot: (login: string, senha: string) => ipcRenderer.invoke('login-riot', login, senha),
   getRiotClientPath: () => ipcRenderer.invoke('get-riot-client-path'),
   saveRiotClientPath: (path: string) => ipcRenderer.invoke('save-riot-client-path', path),
+  emptyTrash: () => ipcRenderer.invoke('empty-trash'),
   bulkAddAccounts: (dados: Record<string, unknown>[]) =>
     ipcRenderer.invoke('bulk-add-accounts', dados),
 });

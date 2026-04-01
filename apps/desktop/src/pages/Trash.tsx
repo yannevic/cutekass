@@ -9,6 +9,7 @@ export default function Trash() {
   const [contas, setContas] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [idParaExcluir, setIdParaExcluir] = useState<number | null>(null);
+  const [confirmarEsvaziar, setConfirmarEsvaziar] = useState(false);
   const { pastas, updatePasta, deletePasta } = usePastas();
   const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
 
@@ -57,6 +58,18 @@ export default function Trash() {
       <main className="flex-1 overflow-y-auto p-6">
         <h1 className="text-2xl font-bold text-rift-300 mb-6">🗑️ Lixeira</h1>
 
+        {contas.length > 0 && (
+          <div className="flex justify-end mb-4">
+            <button
+              type="button"
+              onClick={() => setConfirmarEsvaziar(true)}
+              className="text-xs bg-red-900/50 hover:bg-red-800/70 text-red-400 border border-red-800/50 px-4 py-2 rounded-lg transition-colors"
+            >
+              🗑️ Esvaziar lixeira
+            </button>
+          </div>
+        )}
+
         {contas.length === 0 ? (
           <p className="text-rift-200/40 text-center mt-20">A lixeira está vazia.</p>
         ) : (
@@ -102,6 +115,17 @@ export default function Trash() {
           onCancelar={() => setIdParaExcluir(null)}
         />
       ) : null}
+      {confirmarEsvaziar && ( // ← adiciona aqui
+        <ConfirmDialog
+          mensagem="Esvaziar lixeira permanentemente? Essa ação não pode ser desfeita."
+          onConfirmar={async () => {
+            await window.electronAPI.emptyTrash();
+            setConfirmarEsvaziar(false);
+            await fetchTrash();
+          }}
+          onCancelar={() => setConfirmarEsvaziar(false)}
+        />
+      )}
       {configuracoesAberto ? <SettingsModal onClose={() => setConfiguracoesAberto(false)} /> : null}
     </div>
   );

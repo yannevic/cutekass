@@ -211,3 +211,7 @@ export function addAccountsBulk(dados: Omit<Account, 'id'>[]): void {
   });
   inserirTodos(dados);
 }
+
+export function emptyTrash(): void {
+  db.prepare('DELETE FROM accounts WHERE deletedAt IS NOT NULL').run();
+}

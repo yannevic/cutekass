@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, clipboard, net } from 'electron';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import path, { join } from 'path';
 import {
+  emptyTrash,
   listAccounts,
   listTrash,
   addAccount,
@@ -135,6 +136,11 @@ ipcMain.handle('export-accounts', (_e, ids: number[]) => {
   const fileName = `contas_${Date.now()}.txt`;
   writeFileSync(join(downloadsPath, fileName), conteudo, 'utf-8');
 });
+ipcMain.handle('empty-trash', () => {
+  emptyTrash();
+  salvarBackup();
+});
+
 ipcMain.handle('get-pastas', () => listPastas());
 ipcMain.handle('add-pasta', (_e, nome: string, cor: string) => addPasta(nome, cor));
 ipcMain.handle('update-pasta', (_e, id: number, nome: string, cor: string) =>
