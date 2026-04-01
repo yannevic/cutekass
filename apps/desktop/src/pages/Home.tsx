@@ -27,10 +27,18 @@ import BulkActionBar from '../components/BulkActionBar';
 import { ELO_TIERS, UNRANKED } from '../lib/eloConfig';
 import type { Account } from '../types/account';
 import SettingsModal from '../components/SettingsModal';
+import type { UpdateStatus } from '../components/UpdateNotifier';
 
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
 
 // ─── Card arrastável ──────────────────────────────────────────────────────────
+
+interface HomeProps {
+  updateStatus: UpdateStatus;
+  updateErro: string;
+  onUpdateStatus: (status: UpdateStatus) => void;
+  onUpdateErro: (msg: string) => void;
+}
 
 interface CardProps {
   account: Account;
@@ -236,7 +244,12 @@ function AccountCard({
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 
-export default function Home() {
+export default function Home({
+  updateStatus,
+  updateErro,
+  onUpdateStatus,
+  onUpdateErro,
+}: HomeProps) {
   const {
     accounts,
     loading,
@@ -529,6 +542,10 @@ export default function Home() {
         onRenamePasta={(id, nome, cor) => updatePasta(id, nome, cor)}
         onDeletePasta={(id) => deletePasta(id)}
         onConfiguracoes={() => setConfiguracoesAberto(true)}
+        updateStatus={updateStatus}
+        updateErro={updateErro}
+        onUpdateStatus={onUpdateStatus}
+        onUpdateErro={onUpdateErro}
       />
 
       <main className={`flex-1 overflow-y-auto p-6 ${algumSelecionado ? 'pb-20' : ''}`}>

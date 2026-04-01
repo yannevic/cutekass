@@ -2,12 +2,14 @@ import { Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import Trash from './pages/Trash';
-import UpdateNotifier from './components/UpdateNotifier';
+import UpdateNotifier, { UpdateStatus } from './components/UpdateNotifier';
 import ChangelogModal from './components/ChangelogModal';
 
 export default function App() {
   const [versao, setVersao] = useState('');
   const [mostrarChangelog, setMostrarChangelog] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
+  const [updateErro, setUpdateErro] = useState('');
 
   useEffect(() => {
     async function verificarChangelog() {
@@ -30,11 +32,21 @@ export default function App() {
 
   return (
     <>
+      <UpdateNotifier onStatus={setUpdateStatus} onErro={setUpdateErro} />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <Home
+              updateStatus={updateStatus}
+              updateErro={updateErro}
+              onUpdateStatus={setUpdateStatus}
+              onUpdateErro={setUpdateErro}
+            />
+          }
+        />
         <Route path="/trash" element={<Trash />} />
       </Routes>
-      <UpdateNotifier />
       {mostrarChangelog && versao ? (
         <ChangelogModal versao={versao} onFechar={fecharChangelog} />
       ) : null}

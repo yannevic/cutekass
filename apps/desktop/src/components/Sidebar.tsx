@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { Pasta } from '../types/pasta';
+import type { UpdateStatus } from './UpdateNotifier';
+
+const RELEASE_URL = 'https://github.com/yannevic/cutekass/releases/latest';
 
 interface SidebarProps {
   pastas: Pasta[];
@@ -10,6 +13,10 @@ interface SidebarProps {
   onRenamePasta: (id: number, nome: string, cor: string) => void;
   onDeletePasta: (id: number) => void;
   onConfiguracoes: () => void;
+  updateStatus: UpdateStatus;
+  updateErro: string;
+  onUpdateStatus: (status: UpdateStatus) => void;
+  onUpdateErro: (msg: string) => void;
 }
 
 export default function Sidebar({
@@ -20,6 +27,10 @@ export default function Sidebar({
   onRenamePasta,
   onDeletePasta,
   onConfiguracoes,
+  updateStatus,
+  updateErro,
+  onUpdateStatus,
+  onUpdateErro,
 }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,10 +40,25 @@ export default function Sidebar({
   const [nomeEditando, setNomeEditando] = useState('');
   const [confirmandoDeleteId, setConfirmandoDeleteId] = useState<number | null>(null);
   const [versaoApp, setVersaoApp] = useState('');
+  const [instalando, setInstalando] = useState(false);
+  const [erroExpandido, setErroExpandido] = useState(false);
+  const voltarIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     window.electronAPI.getAppVersion().then(setVersaoApp);
   }, []);
+
+  // Volta para idle após 4s quando estiver up-to-date
+  useEffect(() => {
+    if (updateStatus === 'up-to-date') {
+      voltarIdleRef.current = setTimeout(() => {
+        onUpdateStatus('idle');
+      }, 4000);
+    }
+    return () => {
+      if (voltarIdleRef.current) clearTimeout(voltarIdleRef.current);
+    };
+  }, [updateStatus, onUpdateStatus]);
 
   function iniciarEdicao(pasta: Pasta) {
     setEditandoId(pasta.id);
@@ -51,6 +77,203 @@ export default function Sidebar({
   function handleDeletePasta(id: number) {
     onDeletePasta(id);
     setConfirmandoDeleteId(null);
+  }
+
+  async function handleCheck() {
+    onUpdateErro('');
+    setErroExpandido(false);
+    onUpdateStatus('checking');
+    await window.electronAPI.checkForUpdates();
+  }
+
+  async function handleInstall() {
+    setInstalando(true);
+    await window.electronAPI.installUpdate();
+  }
+
+  function handleBaixarManual() {
+    window.electronAPI.copyToClipboard(RELEASE_URL);
+  }
+
+  function renderBotaoUpdate() {
+    // Ícone base para todos os estados
+    const icone = () => {
+      if (updateStatus === 'checking') return '🔄';
+      if (updateStatus === 'up-to-date') return '✅';
+      if (updateStatus === 'available') return '⬇️';
+      if (updateStatus === 'downloaded') return '✅';
+      if (updateStatus === 'error') return '⚠️';
+      return '🔄';
+    };
+
+    const texto = () => {
+      if (updateStatus === 'checking') return 'Verificando...';
+      if (updateStatus === 'up-to-date') return 'Tudo atualizado!';
+      if (updateStatus === 'available') return 'Baixando...';
+      if (updateStatus === 'downloaded') return 'Pronto para instalar';
+      if (updateStatus === 'error') return 'Erro na atualização';
+      return 'Buscar atualizações';
+    };
+
+    const corTexto = () => {
+      if (updateStatus === 'up-to-date' || updateStatus === 'downloaded') return '#CFA6FF';
+      if (updateStatus === 'error') return '#f87171';
+      return '#5A3A8A';
+    };
+
+    // Estado downloaded — botão de instalar
+    if (updateStatus === 'downloaded') {
+      return (
+        <button
+          type="button"
+          onClick={handleInstall}
+          disabled={instalando}
+          className="w-full flex items-center py-2 rounded-lg text-sm transition-colors mx-1 disabled:opacity-50"
+          style={{ color: '#CFA6FF' }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+          }}
+        >
+          <span className="w-10 flex items-center justify-center shrink-0 text-base">✅</span>
+          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
+            {instalando ? 'Instalando...' : 'Instalar agora'}
+          </span>
+        </button>
+      );
+    }
+
+    // Estado erro — botão principal + submenu expandido
+    if (updateStatus === 'error') {
+      return (
+        <div className="flex flex-col mx-1">
+          <button
+            type="button"
+            onClick={() => setErroExpandido(!erroExpandido)}
+            className="w-full flex items-center py-2 rounded-lg text-sm transition-colors"
+            style={{ color: '#f87171' }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            }}
+          >
+            <span className="w-10 flex items-center justify-center shrink-0 text-base">⚠️</span>
+            <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
+              Erro na atualização
+            </span>
+          </button>
+
+          {/* Submenu de erro — só aparece com sidebar aberta */}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col gap-1 pl-10 pr-2 pb-1">
+            {updateErro && (
+              <div className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => setErroExpandido(!erroExpandido)}
+                  className="text-xs text-left transition-colors"
+                  style={{ color: '#5A3A8A' }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+                  }}
+                >
+                  {erroExpandido ? '▲ Ocultar' : '▼ Ver erro'}
+                </button>
+                {erroExpandido && (
+                  <pre
+                    className="text-xs font-mono rounded px-2 py-1 whitespace-pre-wrap break-all max-h-20 overflow-y-auto"
+                    style={{
+                      backgroundColor: '#0B0F1A',
+                      color: '#f87171',
+                      border: '1px solid #3B136B',
+                    }}
+                  >
+                    {updateErro}
+                  </pre>
+                )}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleCheck}
+              className="text-xs text-left transition-colors"
+              style={{ color: '#5A3A8A' }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+              }}
+            >
+              🔄 Tentar novamente
+            </button>
+            <button
+              type="button"
+              onClick={handleBaixarManual}
+              className="text-xs text-left transition-colors"
+              style={{ color: '#5A3A8A' }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+              }}
+            >
+              📋 Copiar link para baixar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onUpdateStatus('idle');
+                setErroExpandido(false);
+              }}
+              className="text-xs text-left transition-colors"
+              style={{ color: '#5A3A8A' }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+              }}
+            >
+              ✕ Fechar
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Estados: idle, checking, available, up-to-date
+    return (
+      <button
+        type="button"
+        onClick={updateStatus === 'idle' || updateStatus === 'up-to-date' ? handleCheck : undefined}
+        disabled={updateStatus === 'checking' || updateStatus === 'available'}
+        className="w-full flex items-center py-2 rounded-lg text-sm transition-colors mx-1 disabled:opacity-60"
+        style={{ color: corTexto() }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+          if (updateStatus === 'idle') {
+            (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+          }
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+          (e.currentTarget as HTMLButtonElement).style.color = corTexto();
+        }}
+      >
+        <span className="w-10 flex items-center justify-center shrink-0 text-base">{icone()}</span>
+        <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
+          {texto()}
+        </span>
+      </button>
+    );
   }
 
   return (
@@ -86,7 +309,6 @@ export default function Sidebar({
               : 'text-[#7B5EA7] hover:bg-[#1E0A38] hover:text-[#CFA6FF]'
           }`}
         >
-          {/* w-10 = 40px → ícone centralizado dentro dos 48px da sidebar fechada */}
           <span className="w-10 flex items-center justify-center shrink-0 text-base">🗂</span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Todas as contas
@@ -347,6 +569,9 @@ export default function Sidebar({
             Configurações
           </span>
         </button>
+
+        {/* Atualização */}
+        {renderBotaoUpdate()}
 
         {/* Versão + Made by */}
         <div
