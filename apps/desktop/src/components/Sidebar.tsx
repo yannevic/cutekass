@@ -647,9 +647,20 @@ export default function Sidebar({
             <span className="text-xs whitespace-nowrap" style={{ color: '#5A3A8A' }}>
               v{versaoApp}
             </span>
-            <span className="text-xs whitespace-nowrap" style={{ color: '#3B136B' }}>
+            <button
+              type="button"
+              onClick={() => window.open('https://github.com/yannevic')}
+              className="text-xs whitespace-nowrap text-left transition-colors"
+              style={{ color: '#3B136B' }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#3B136B';
+              }}
+            >
               Made by Nana 🌸
-            </span>
+            </button>
           </div>
         </div>
       </div>
