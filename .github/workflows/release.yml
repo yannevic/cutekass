@@ -1,12 +1,11 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      changelog:
-        description: 'Notas do changelog (separe múltiplos itens com | ex: 🔧 Correção X | ✨ Feature Y)'
-        required: true
-        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/desktop/CHANGELOG_NEXT.txt'
 
 jobs:
   build:
@@ -55,7 +54,9 @@ jobs:
             fs.writeFileSync('./apps/desktop/package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
 
-          CHANGELOG_INPUT='${{ github.event.inputs.changelog }}'
+          CHANGELOG_INPUT=$(cat apps/desktop/CHANGELOG_NEXT.txt)
+          echo "changelog_input=$CHANGELOG_INPUT" >> $GITHUB_OUTPUT
+
           ITEMS_JS=$(node -e "
             const raw = process.argv[1];
             const items = raw.split('|').map(s => s.trim()).filter(Boolean);
@@ -100,7 +101,7 @@ jobs:
         with:
           tag_name: v${{ steps.bump.outputs.new_version }}
           name: CuteKass v${{ steps.bump.outputs.new_version }}
-          body: ${{ github.event.inputs.changelog }}
+          body: ${{ steps.bump.outputs.changelog_input }}
           files: |
             apps/desktop/dist/*.exe
             apps/desktop/dist/*.blockmap
