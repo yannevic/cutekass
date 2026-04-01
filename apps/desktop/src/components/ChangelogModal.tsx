@@ -1,0 +1,68 @@
+interface Props {
+  versao: string;
+  onFechar: () => void;
+}
+
+const CHANGELOG: Record<string, string[]> = {
+  '1.0.2': ['✨ Atualizações automáticas — o app avisa quando tem novidade e instala sozinho'],
+  '1.0.1': [
+    '🎉 Primeira versão pública do CuteKass',
+    '📁 Pastas para organizar contas',
+    '🔍 Busca e filtros por elo',
+    '⚡ Login automático no Riot Client',
+    '📋 Importar contas do bloco de notas',
+  ],
+};
+
+export default function ChangelogModal({ versao, onFechar }: Props) {
+  const novidades = CHANGELOG[versao] ?? ['Melhorias gerais e correções.'];
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div
+        className="w-full max-w-md rounded-2xl p-6 flex flex-col gap-4"
+        style={{ backgroundColor: '#1E0A38', border: '1px solid #3B136B' }}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold" style={{ color: '#CFA6FF' }}>
+            🌸 CuteKass {versao}
+          </h2>
+          <span
+            className="text-xs px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: '#3B136B', color: '#D94BFF' }}
+          >
+            novidades
+          </span>
+        </div>
+
+        <ul className="flex flex-col gap-2">
+          {novidades.map((item) => (
+            <li key={item} className="text-sm" style={{ color: '#CFA6FF' }}>
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-xs" style={{ color: '#5A3A8A' }}>
+            Made by Nana 🌸
+          </span>
+          <button
+            type="button"
+            onClick={onFechar}
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+            style={{ backgroundColor: '#7B2CF5', color: '#fff' }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#A23CFF';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#7B2CF5';
+            }}
+          >
+            Entendido!
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

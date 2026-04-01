@@ -51,12 +51,39 @@ export default function UpdateNotifier() {
 
     if (status === 'error') {
       return (
-        <div className="flex items-center gap-3">
-          <p className="text-red-400 text-sm">⚠️ Erro ao atualizar</p>
+        <div
+          className="fixed bottom-4 right-4 z-50 rounded-xl px-4 py-3 shadow-lg flex flex-col gap-2"
+          style={{ backgroundColor: '#1E0A38', border: '1px solid #3B136B' }}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm" style={{ color: '#f87171' }}>
+              ⚠️ Erro ao verificar atualizações
+            </p>
+            <button
+              type="button"
+              onClick={() => setStatus('idle')}
+              className="text-xs px-2 py-0.5 rounded"
+              style={{ color: '#5A3A8A' }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          {erro ? (
+            <p className="text-xs max-w-xs truncate" style={{ color: '#5A3A8A' }}>
+              {erro}
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={handleCheck}
-            className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1 rounded-lg"
+            className="text-xs px-3 py-1 rounded-lg self-start"
+            style={{ backgroundColor: '#3B136B', color: '#CFA6FF' }}
           >
             Tentar novamente
           </button>

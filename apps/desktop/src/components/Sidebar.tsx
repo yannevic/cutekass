@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { Pasta } from '../types/pasta';
 
@@ -28,6 +28,11 @@ export default function Sidebar({
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [nomeEditando, setNomeEditando] = useState('');
   const [confirmandoDeleteId, setConfirmandoDeleteId] = useState<number | null>(null);
+  const [versaoApp, setVersaoApp] = useState('');
+
+  useEffect(() => {
+    window.electronAPI.getAppVersion().then(setVersaoApp);
+  }, []);
 
   function iniciarEdicao(pasta: Pasta) {
     setEditandoId(pasta.id);
@@ -342,6 +347,27 @@ export default function Sidebar({
             Configurações
           </span>
         </button>
+
+        {/* Versão + Made by */}
+        <div
+          className="flex items-center py-2 mx-1 mt-1 border-t"
+          style={{ borderColor: '#3B136B' }}
+        >
+          <span
+            className="w-10 flex items-center justify-center shrink-0 text-xs"
+            style={{ color: '#3B136B' }}
+          >
+            v
+          </span>
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col pr-2">
+            <span className="text-xs whitespace-nowrap" style={{ color: '#5A3A8A' }}>
+              v{versaoApp}
+            </span>
+            <span className="text-xs whitespace-nowrap" style={{ color: '#3B136B' }}>
+              Made by Nana 🌸
+            </span>
+          </div>
+        </div>
       </div>
     </aside>
   );
