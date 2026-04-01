@@ -13,6 +13,8 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
@@ -24,8 +26,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
 
       - name: Instalar dependências
         run: npm ci
@@ -34,14 +34,12 @@ jobs:
         id: bump
         shell: bash
         run: |
-          # Ler versão atual e incrementar patch
           CURRENT=$(node -p "require('./apps/desktop/package.json').version")
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
           PATCH=$((PATCH + 1))
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-          # Atualizar package.json
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('./apps/desktop/package.json', 'utf8'));
@@ -49,7 +47,6 @@ jobs:
             fs.writeFileSync('./apps/desktop/package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
 
-          # Converter itens do changelog separados por |
           CHANGELOG_INPUT='${{ github.event.inputs.changelog }}'
           ITEMS_JS=$(node -e "
             const raw = process.argv[1];
@@ -57,7 +54,6 @@ jobs:
             console.log(JSON.stringify(items));
           " -- "$CHANGELOG_INPUT")
 
-          # Injetar nova entrada no ChangelogModal.tsx
           node -e "
             const fs = require('fs');
             const version = '$NEW_VERSION';
