@@ -17,6 +17,8 @@
     "productName": "CuteKass",
     "icon": "assets/cutekass.ico",
     "artifactName": "${productName}-Setup-${version}.${ext}",
+    "npmRebuild": true,
+    "buildDependenciesFromSource": true,
     "publish": {
       "provider": "github",
       "owner": "yannevic",
@@ -26,12 +28,6 @@
       "dist/**",
       "dist-electron/**",
       "assets/**"
-    ],
-    "extraResources": [
-      {
-        "from": "../../node_modules/better-sqlite3/build/Release/better_sqlite3.node",
-        "to": "better_sqlite3.node"
-      }
     ],
     "win": {
       "target": "nsis",
