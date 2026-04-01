@@ -36,4 +36,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateDownloaded: (cb: () => void) => ipcRenderer.on('update-downloaded', cb),
   onUpdateError: (cb: (msg: string) => void) =>
     ipcRenderer.on('update-error', (_e, msg) => cb(msg)),
+  reorderAccounts: (ids: number[]) => ipcRenderer.invoke('reorder-accounts', ids),
+  listarHistoricoBackup: () => ipcRenderer.invoke('listar-historico-backup'),
 });

@@ -75,6 +75,14 @@ export default function useAccounts() {
     await window.electronAPI.copyToClipboard(text);
   }, []);
 
+  const reorderAccounts = useCallback(
+    async (ids: number[]) => {
+      await window.electronAPI.reorderAccounts(ids);
+      await fetchAccounts();
+    },
+    [fetchAccounts]
+  );
+
   return {
     accounts,
     loading,
@@ -86,5 +94,6 @@ export default function useAccounts() {
     bulkMovePasta,
     copyToClipboard,
     bulkAddAccounts,
+    reorderAccounts,
   };
 }

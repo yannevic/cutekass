@@ -34,6 +34,8 @@ declare global {
       onUpdateAvailable: (cb: () => void) => void;
       onUpdateDownloaded: (cb: () => void) => void;
       onUpdateError: (cb: (msg: string) => void) => void;
+      reorderAccounts: (ids: number[]) => Promise<void>;
+      listarHistoricoBackup: () => Promise<{ id: number; criadoEm: string; conteudo: string }[]>;
     };
   }
 }

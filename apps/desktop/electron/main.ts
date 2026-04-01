@@ -21,6 +21,9 @@ import {
   exportAccounts,
   gerarBackup,
   addAccountsBulk,
+  reorderAccounts,
+  salvarHistoricoBackup,
+  listarHistoricoBackup,
 } from '../src/lib/db';
 
 // ─── Janela ───────────────────────────────────────────────────────────────────
@@ -95,6 +98,7 @@ function salvarBackup() {
       ? join(path.dirname(app.getPath('exe')), 'backup_contas.txt')
       : join(app.getPath('userData'), 'backup_contas.txt');
     writeFileSync(backupPath, conteudo, 'utf-8');
+    salvarHistoricoBackup();
   } catch {
     // silencioso — backup é secundário
   }
@@ -179,6 +183,11 @@ ipcMain.handle('copy-to-clipboard', (_e, text: string) => {
   clipboard.writeText(text);
 });
 
+ipcMain.handle('reorder-accounts', (_e, ids: number[]) => {
+  reorderAccounts(ids);
+});
+
+ipcMain.handle('listar-historico-backup', () => listarHistoricoBackup());
 // ─── Riot API ─────────────────────────────────────────────────────────────────
 
 ipcMain.handle('get-riot-key', () => riotApiKey);

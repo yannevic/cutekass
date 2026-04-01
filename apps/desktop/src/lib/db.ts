@@ -64,11 +64,30 @@ try {
 } catch {
   // migração já aplicada, ignorar
 }
+// Migração: coluna ordem
+try {
+  db.exec('ALTER TABLE accounts ADD COLUMN ordem INTEGER');
+  // inicializa ordem pelo id para quem já tem contas
+  db.exec('UPDATE accounts SET ordem = id WHERE ordem IS NULL');
+} catch {
+  // coluna já existe, ignorar
+}
+
+// Tabela de histórico de backup
+db.exec(`
+  CREATE TABLE IF NOT EXISTS backup_historico (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    conteudo  TEXT NOT NULL,
+    criadoEm  TEXT NOT NULL
+  )
+`);
 
 // ─── Accounts ─────────────────────────────────────────────────────────────────
 
 export function listAccounts(): Account[] {
-  return db.prepare('SELECT * FROM accounts WHERE deletedAt IS NULL').all() as Account[];
+  return db
+    .prepare('SELECT * FROM accounts WHERE deletedAt IS NULL ORDER BY ordem ASC, id ASC')
+    .all() as Account[];
 }
 
 export function listTrash(): Account[] {
@@ -239,4 +258,51 @@ export function addAccountsBulk(dados: Omit<Account, 'id'>[]): void {
 
 export function emptyTrash(): void {
   db.prepare('DELETE FROM accounts WHERE deletedAt IS NOT NULL').run();
+}
+
+export function reorderAccounts(ids: number[]): void {
+  const stmt = db.prepare('UPDATE accounts SET ordem = @ordem WHERE id = @id');
+  const atualizar = db.transaction((lista: number[]) => {
+    lista.forEach((id, index) => {
+      stmt.run({ ordem: index, id });
+    });
+  });
+  atualizar(ids);
+}
+
+export function salvarHistoricoBackup(): void {
+  const rows = db.prepare('SELECT login, senha, nick FROM accounts').all() as {
+    login: string;
+    senha: string;
+    nick: string | null;
+  }[];
+
+  if (rows.length === 0) return;
+
+  const conteudo = rows
+    .map((r) => {
+      const nickPart = r.nick ? ` ${r.nick}` : '';
+      return `${r.login}:${r.senha}${nickPart}`;
+    })
+    .join('\n');
+
+  db.prepare('INSERT INTO backup_historico (conteudo, criadoEm) VALUES (@conteudo, @criadoEm)').run(
+    { conteudo, criadoEm: new Date().toISOString() }
+  );
+
+  // Mantém só os últimos 3 registros
+  db.exec(`
+    DELETE FROM backup_historico
+    WHERE id NOT IN (
+      SELECT id FROM backup_historico ORDER BY id DESC LIMIT 3
+    )
+  `);
+}
+
+export function listarHistoricoBackup(): { id: number; criadoEm: string; conteudo: string }[] {
+  return db.prepare('SELECT * FROM backup_historico ORDER BY id DESC').all() as {
+    id: number;
+    criadoEm: string;
+    conteudo: string;
+  }[];
 }

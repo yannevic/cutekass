@@ -1,4 +1,19 @@
 import { useState, useMemo, useEffect } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import ImportModal from '../components/ImportModal';
 import { ParsedAccount } from '../lib/parser';
 import useAccounts from '../hooks/useAccounts';
@@ -15,6 +30,212 @@ import SettingsModal from '../components/SettingsModal';
 
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
 
+// ─── Card arrastável ──────────────────────────────────────────────────────────
+
+interface CardProps {
+  account: Account;
+  senhaVisivel: boolean;
+  estaSelecionado: boolean;
+  dropdownAberto: boolean;
+  onToggleSenha: () => void;
+  onToggleSelecionado: () => void;
+  onLoginRiot: () => void;
+  onCopiarLogin: () => void;
+  onCopiarSenha: () => void;
+  onAbrirDropdown: () => void;
+  onFecharDropdown: () => void;
+  onEditar: () => void;
+  onExcluir: () => void;
+}
+
+function AccountCard({
+  account,
+  senhaVisivel,
+  estaSelecionado,
+  dropdownAberto,
+  onToggleSenha,
+  onToggleSelecionado,
+  onLoginRiot,
+  onCopiarLogin,
+  onCopiarSenha,
+  onAbrirDropdown,
+  onFecharDropdown,
+  onEditar,
+  onExcluir,
+}: CardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: account.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={`group/card bg-void-900 border rounded-xl p-4 flex items-center gap-4 transition-all ${
+        estaSelecionado
+          ? 'ring-2 ring-rift-300 border-rift-300/30'
+          : 'border-void-800 hover:border-void-700'
+      }`}
+    >
+      {/* Handle de arrastar */}
+      <button
+        type="button"
+        className="text-rift-200/20 hover:text-rift-200/60 cursor-grab active:cursor-grabbing shrink-0 touch-none"
+        {...attributes}
+        {...listeners}
+        title="Arrastar para reordenar"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <circle cx="9" cy="5" r="1.5" />
+          <circle cx="15" cy="5" r="1.5" />
+          <circle cx="9" cy="12" r="1.5" />
+          <circle cx="15" cy="12" r="1.5" />
+          <circle cx="9" cy="19" r="1.5" />
+          <circle cx="15" cy="19" r="1.5" />
+        </svg>
+      </button>
+
+      <input
+        type="checkbox"
+        className={`w-4 h-4 accent-rift-300 cursor-pointer shrink-0 transition-opacity ${
+          estaSelecionado ? 'opacity-100' : 'opacity-0 group-hover/card:opacity-100'
+        }`}
+        checked={estaSelecionado}
+        onChange={onToggleSelecionado}
+      />
+
+      <div className="flex flex-col gap-1 min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-semibold text-rift-200">{account.nick ?? account.login}</p>
+          {account.elo ? <EloBadge elo={account.elo} /> : null}
+        </div>
+        <p className="text-sm text-rift-200/60">{account.login}</p>
+        <p className="text-sm text-rift-200/40 font-mono">
+          {senhaVisivel ? account.senha : '••••••••'}
+        </p>
+        {account.observacoes ? (
+          <p className="text-xs text-rift-200/40">{account.observacoes}</p>
+        ) : null}
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={onToggleSenha}
+          className="text-rift-200/40 hover:text-rift-200 p-1.5 rounded-lg hover:bg-void-800 transition-colors"
+          title={senhaVisivel ? 'Ocultar senha' : 'Ver senha'}
+        >
+          {senhaVisivel ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onLoginRiot}
+          className="text-xs bg-rift-500 hover:bg-rift-400 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors"
+        >
+          ▶ Logar
+        </button>
+
+        <button
+          type="button"
+          onClick={onCopiarLogin}
+          className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          Copiar login
+        </button>
+
+        <button
+          type="button"
+          onClick={onCopiarSenha}
+          className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          Copiar senha
+        </button>
+
+        <div className="relative" data-dropdown>
+          <button
+            type="button"
+            onClick={dropdownAberto ? onFecharDropdown : onAbrirDropdown}
+            className="text-rift-200/40 hover:text-rift-200 p-1.5 rounded-lg hover:bg-void-800 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <circle cx="5" cy="12" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="19" cy="12" r="2" />
+            </svg>
+          </button>
+
+          {dropdownAberto && (
+            <div className="absolute right-0 top-8 z-50 bg-void-900 border border-void-800 rounded-xl shadow-lg shadow-black/50 py-1 min-w-30">
+              <button
+                type="button"
+                onClick={onEditar}
+                className="w-full text-left text-sm px-4 py-2 text-rift-200 hover:bg-void-800 transition-colors"
+              >
+                ✏️ Editar
+              </button>
+              <button
+                type="button"
+                onClick={onExcluir}
+                className="w-full text-left text-sm px-4 py-2 text-red-400 hover:bg-void-800 transition-colors"
+              >
+                🗑️ Excluir
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+// ─── Home ─────────────────────────────────────────────────────────────────────
+
 export default function Home() {
   const {
     accounts,
@@ -27,6 +248,7 @@ export default function Home() {
     bulkMovePasta,
     copyToClipboard,
     bulkAddAccounts,
+    reorderAccounts,
   } = useAccounts();
   const { pastas, addPasta, updatePasta, deletePasta } = usePastas();
 
@@ -42,12 +264,29 @@ export default function Home() {
   const [filtroElo, setFiltroElo] = useState('Todos');
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
   const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
-  const [ordem, setOrdem] = useState<'recentes' | 'antigas' | 'alfabetica' | 'z-a'>('recentes');
+  const [ordem, setOrdem] = useState<'recentes' | 'antigas' | 'alfabetica' | 'z-a' | 'custom'>(
+    () => {
+      const salvo = localStorage.getItem('cutekass-ordem');
+      if (
+        salvo === 'custom' ||
+        salvo === 'recentes' ||
+        salvo === 'antigas' ||
+        salvo === 'alfabetica' ||
+        salvo === 'z-a'
+      ) {
+        return salvo;
+      }
+      return 'recentes';
+    }
+  );
   const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
   const [atualizandoElos, setAtualizandoElos] = useState(false);
   const [progressoElo, setProgressoElo] = useState<{ atual: number; total: number } | null>(null);
   const [erroAtualizacao, setErroAtualizacao] = useState('');
   const [erroLogin, setErroLogin] = useState<string>('');
+  const [ordemCustom, setOrdemCustom] = useState<number[]>([]);
+
+  const sensors = useSensors(useSensor(PointerSensor));
 
   useEffect(() => {
     function handleClickFora(e: MouseEvent) {
@@ -60,47 +299,64 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickFora);
   }, []);
 
+  // Sincroniza ordemCustom quando accounts mudam
+  useEffect(() => {
+    setOrdemCustom(accounts.map((a) => a.id));
+  }, [accounts]);
+
   const contasFiltradas = useMemo(() => {
-    return accounts
-      .filter((acc) => {
-        const termoBusca = busca.trim().toLowerCase();
-        const passaBusca =
-          !termoBusca ||
-          acc.nick?.toLowerCase().includes(termoBusca) ||
-          acc.login.toLowerCase().includes(termoBusca);
+    const base = accounts.filter((acc) => {
+      const termoBusca = busca.trim().toLowerCase();
+      const passaBusca =
+        !termoBusca ||
+        acc.nick?.toLowerCase().includes(termoBusca) ||
+        acc.login.toLowerCase().includes(termoBusca);
 
-        function passaElo() {
-          if (filtroElo === 'Todos') return true;
-          if (filtroElo === UNRANKED.nome) return !acc.elo || acc.elo === UNRANKED.nome;
-          return acc.elo?.startsWith(filtroElo) ?? false;
-        }
+      function passaElo() {
+        if (filtroElo === 'Todos') return true;
+        if (filtroElo === UNRANKED.nome) return !acc.elo || acc.elo === UNRANKED.nome;
+        return acc.elo?.startsWith(filtroElo) ?? false;
+      }
 
-        function passaPasta() {
-          if (pastaAtiva === null) return true;
-          return acc.pastaId === pastaAtiva;
-        }
+      function passaPasta() {
+        if (pastaAtiva === null) return true;
+        return acc.pastaId === pastaAtiva;
+      }
 
-        return passaBusca && passaElo() && passaPasta();
-      })
-      .sort((a, b) => {
-        if (ordem === 'alfabetica') {
-          const nomeA = (a.nick || a.login).toLowerCase();
-          const nomeB = (b.nick || b.login).toLowerCase();
-          if (nomeA < nomeB) return -1;
-          if (nomeA > nomeB) return 1;
-          return 0;
-        }
-        if (ordem === 'z-a') {
-          const nomeA = (a.nick || a.login).toLowerCase();
-          const nomeB = (b.nick || b.login).toLowerCase();
-          if (nomeA > nomeB) return -1;
-          if (nomeA < nomeB) return 1;
-          return 0;
-        }
-        if (ordem === 'antigas') return a.id - b.id;
-        return b.id - a.id;
+      return passaBusca && passaElo() && passaPasta();
+    });
+
+    if (ordem === 'custom') {
+      return [...base].sort((a, b) => ordemCustom.indexOf(a.id) - ordemCustom.indexOf(b.id));
+    }
+
+    if (ordem === 'alfabetica') {
+      return [...base].sort((a, b) => {
+        const nomeA = (a.nick || a.login).toLowerCase();
+        const nomeB = (b.nick || b.login).toLowerCase();
+        if (nomeA < nomeB) return -1;
+        if (nomeA > nomeB) return 1;
+        return 0;
       });
-  }, [accounts, busca, filtroElo, pastaAtiva, ordem]);
+    }
+
+    if (ordem === 'z-a') {
+      return [...base].sort((a, b) => {
+        const nomeA = (a.nick || a.login).toLowerCase();
+        const nomeB = (b.nick || b.login).toLowerCase();
+        if (nomeA > nomeB) return -1;
+        if (nomeA < nomeB) return 1;
+        return 0;
+      });
+    }
+
+    if (ordem === 'antigas') return [...base].sort((a, b) => a.id - b.id);
+    return [...base].sort((a, b) => b.id - a.id);
+  }, [accounts, busca, filtroElo, pastaAtiva, ordem, ordemCustom]);
+
+  useEffect(() => {
+    localStorage.setItem('cutekass-ordem', ordem);
+  }, [ordem]);
 
   const algumSelecionado = selecionados.size > 0;
   const todosSelecionados =
@@ -240,6 +496,19 @@ export default function Home() {
     }
   }
 
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = contasFiltradas.findIndex((a) => a.id === active.id);
+    const newIndex = contasFiltradas.findIndex((a) => a.id === over.id);
+    const novaOrdem = arrayMove(contasFiltradas, oldIndex, newIndex).map((a) => a.id);
+
+    setOrdemCustom(novaOrdem);
+    setOrdem('custom');
+    await reorderAccounts(novaOrdem);
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-void-950 text-rift-200 flex items-center justify-center">
@@ -357,14 +626,13 @@ export default function Home() {
           <select
             className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
             value={ordem}
-            onChange={(e) =>
-              setOrdem(e.target.value as 'recentes' | 'antigas' | 'alfabetica' | 'z-a')
-            }
+            onChange={(e) => setOrdem(e.target.value as typeof ordem)}
           >
             <option value="recentes">Mais recentes</option>
             <option value="antigas">Mais antigas</option>
             <option value="alfabetica">A → Z</option>
             <option value="z-a">Z → A</option>
+            {ordem === 'custom' && <option value="custom">Personalizada</option>}
           </select>
         </div>
 
@@ -376,162 +644,43 @@ export default function Home() {
               : 'Nenhuma conta encontrada.'}
           </p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {contasFiltradas.map((account) => {
-              const senhaVisivel = senhasVisiveis.has(account.id);
-              const estaSelecionado = selecionados.has(account.id);
-              return (
-                <li
-                  key={account.id}
-                  className={`group/card bg-void-900 border rounded-xl p-4 flex items-center gap-4 transition-all ${
-                    estaSelecionado
-                      ? 'ring-2 ring-rift-300 border-rift-300/30'
-                      : 'border-void-800 hover:border-void-700'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    className={`w-4 h-4 accent-rift-300 cursor-pointer shrink-0 transition-opacity ${
-                      estaSelecionado ? 'opacity-100' : 'opacity-0 group-hover/card:opacity-100'
-                    }`}
-                    checked={estaSelecionado}
-                    onChange={() => toggleSelecionado(account.id)}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={contasFiltradas.map((a) => a.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="flex flex-col gap-3">
+                {contasFiltradas.map((account) => (
+                  <AccountCard
+                    key={account.id}
+                    account={account}
+                    senhaVisivel={senhasVisiveis.has(account.id)}
+                    estaSelecionado={selecionados.has(account.id)}
+                    dropdownAberto={dropdownAberto === account.id}
+                    onToggleSenha={() => toggleSenha(account.id)}
+                    onToggleSelecionado={() => toggleSelecionado(account.id)}
+                    onLoginRiot={() => handleLoginRiot(account.login, account.senha)}
+                    onCopiarLogin={() => copyToClipboard(account.login)}
+                    onCopiarSenha={() => copyToClipboard(account.senha)}
+                    onAbrirDropdown={() => setDropdownAberto(account.id)}
+                    onFecharDropdown={() => setDropdownAberto(null)}
+                    onEditar={() => {
+                      abrirEdicao(account);
+                      setDropdownAberto(null);
+                    }}
+                    onExcluir={() => {
+                      setIdParaExcluir(account.id);
+                      setDropdownAberto(null);
+                    }}
                   />
-
-                  <div className="flex flex-col gap-1 min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-rift-200">{account.nick ?? account.login}</p>
-                      {account.elo ? <EloBadge elo={account.elo} /> : null}
-                    </div>
-                    <p className="text-sm text-rift-200/60">{account.login}</p>
-                    <p className="text-sm text-rift-200/40 font-mono">
-                      {senhaVisivel ? account.senha : '••••••••'}
-                    </p>
-                    {account.observacoes ? (
-                      <p className="text-xs text-rift-200/40">{account.observacoes}</p>
-                    ) : null}
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Olhinho */}
-                    <button
-                      type="button"
-                      onClick={() => toggleSenha(account.id)}
-                      className="text-rift-200/40 hover:text-rift-200 p-1.5 rounded-lg hover:bg-void-800 transition-colors"
-                      title={senhaVisivel ? 'Ocultar senha' : 'Ver senha'}
-                    >
-                      {senhaVisivel ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                          <line x1="1" y1="1" x2="23" y2="23" />
-                        </svg>
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      )}
-                    </button>
-
-                    {/* Logar */}
-                    <button
-                      type="button"
-                      onClick={() => handleLoginRiot(account.login, account.senha)}
-                      className="text-xs bg-rift-500 hover:bg-rift-400 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                      title="Logar no Riot Client"
-                    >
-                      ▶ Logar
-                    </button>
-
-                    {/* Copiar login */}
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(account.login)}
-                      className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      Copiar login
-                    </button>
-
-                    {/* Copiar senha */}
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(account.senha)}
-                      className="text-xs bg-void-800 hover:bg-void-700 text-rift-200 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      Copiar senha
-                    </button>
-
-                    {/* 3 pontinhos */}
-                    <div className="relative" data-dropdown>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDropdownAberto(dropdownAberto === account.id ? null : account.id)
-                        }
-                        className="text-rift-200/40 hover:text-rift-200 p-1.5 rounded-lg hover:bg-void-800 transition-colors"
-                        title="Mais opções"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <circle cx="5" cy="12" r="2" />
-                          <circle cx="12" cy="12" r="2" />
-                          <circle cx="19" cy="12" r="2" />
-                        </svg>
-                      </button>
-
-                      {dropdownAberto === account.id && (
-                        <div className="absolute right-0 top-8 z-50 bg-void-900 border border-void-800 rounded-xl shadow-lg shadow-black/50 py-1 min-w-30">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              abrirEdicao(account);
-                              setDropdownAberto(null);
-                            }}
-                            className="w-full text-left text-sm px-4 py-2 text-rift-200 hover:bg-void-800 transition-colors"
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIdParaExcluir(account.id);
-                              setDropdownAberto(null);
-                            }}
-                            className="w-full text-left text-sm px-4 py-2 text-red-400 hover:bg-void-800 transition-colors"
-                          >
-                            🗑️ Excluir
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
       </main>
 
