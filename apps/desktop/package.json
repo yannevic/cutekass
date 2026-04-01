@@ -19,7 +19,7 @@
     "publish": {
       "provider": "github",
       "owner": "yannevic",
-      "repo": "https://github.com/yannevic/cutekass"
+      "repo": "cutekass"
     },
     "files": [
       "dist/**",
