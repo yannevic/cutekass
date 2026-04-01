@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.11': [
+    '🌸 CuteKass v1.0.11  *  🔧 Correção do bug',
+  ],
+
   '1.0.9': [
     '🔄 Botão de atualização movido para a sidebar — agora fica no rodapé ao lado das configurações',
   ],
