@@ -255,7 +255,7 @@ ipcMain.handle('fetch-elo', async (_e, nick: string) => {
 });
 
 ipcMain.handle('login-riot', async (_e, login: string, senha: string) => {
-  const { execSync, execFileSync } = await import('child_process');
+  const { execSync, spawn } = await import('child_process');
   const { writeFileSync: fsWrite, unlinkSync, existsSync: fsExistsSync } = await import('fs');
   const { tmpdir } = await import('os');
   const { join: pathJoin } = await import('path');
@@ -263,6 +263,7 @@ ipcMain.handle('login-riot', async (_e, login: string, senha: string) => {
   const loginEscapado = login.replace(/'/g, "''");
   const senhaEscapada = senha.replace(/'/g, "''");
 
+  // Verifica se o client está aberto
   const checkFile = pathJoin(tmpdir(), `lol-check-${Date.now()}.ps1`);
   let clientAberto = '0';
   try {
@@ -283,14 +284,16 @@ ipcMain.handle('login-riot', async (_e, login: string, senha: string) => {
     }
   }
 
+  // Abre o client sem bloquear se não estiver aberto
   if (clientAberto === '0') {
     if (!riotClientPath || !fsExistsSync(riotClientPath)) {
       throw new Error(
         'Riot Client não está aberto. Configure o caminho do executável nas Configurações para abri-lo automaticamente.'
       );
     }
-    execFileSync(riotClientPath, { windowsHide: false });
-    execSync('powershell -NoProfile -Command "Start-Sleep -Seconds 8"', { windowsHide: true });
+    spawn(riotClientPath, [], { detached: true, stdio: 'ignore' }).unref();
+    // Espera sem bloquear o processo principal
+    await new Promise((resolve) => setTimeout(resolve, 8000));
   }
 
   const script = `
@@ -325,12 +328,12 @@ Start-Sleep -Milliseconds 300
 `;
 
   const tmpFile = pathJoin(tmpdir(), `lol-login-${Date.now()}.ps1`);
-
   try {
     fsWrite(tmpFile, script, 'utf-8');
     execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${tmpFile}"`, {
       windowsHide: true,
       encoding: 'utf-8',
+      timeout: 15000,
     });
   } catch (e: unknown) {
     const err = e as { message?: string; stderr?: string };
