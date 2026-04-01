@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.21': [
+    '🌸 CuteKass v1.0.21  *  🔧 Correção de bugs',
+  ],
+
   '1.0.20': [
     '🌸 CuteKass v1.0.19  *  🔧 Correção de bugs',
   ],
