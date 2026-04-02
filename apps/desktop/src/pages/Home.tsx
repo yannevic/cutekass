@@ -288,7 +288,7 @@ export default function Home({
     bulkAddAccounts,
     reorderAccounts,
   } = useAccounts();
-  const { pastas, addPasta, updatePasta, deletePasta } = usePastas();
+  const { pastas, addPasta, updatePasta, deletePasta, reorderPastas } = usePastas();
 
   const [modalAberto, setModalAberto] = useState(false);
   const [importModalAberto, setImportModalAberto] = useState(false);
@@ -604,7 +604,8 @@ export default function Home({
         pastaAtiva={pastaAtiva}
         onSelecionarPasta={selecionarPasta}
         onNovaPasta={() => setCriarPastaAberto(true)}
-        onRenamePasta={(id, nome, cor) => updatePasta(id, nome, cor)}
+        onRenamePasta={(id, nome, cor, icone) => updatePasta(id, nome, cor, icone)}
+        onReorderPastas={reorderPastas}
         onDeletePasta={(id) => deletePasta(id)}
         onConfiguracoes={() => setConfiguracoesAberto(true)}
         updateStatus={updateStatus}

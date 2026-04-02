@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PASTA_ICONS } from '../lib/pastaIcons';
 
 const CORES = [
   '#ef4444',
@@ -14,18 +15,19 @@ const CORES = [
 
 interface CreatePastaModalProps {
   onClose: () => void;
-  onCreate: (nome: string, cor: string) => Promise<void>;
+  onCreate: (nome: string, cor: string, icone: string) => Promise<void>;
 }
 
 export default function CreatePastaModal({ onClose, onCreate }: CreatePastaModalProps) {
   const [nome, setNome] = useState('');
   const [cor, setCor] = useState(CORES[5]);
+  const [icone, setIcone] = useState('folder');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
     if (!nome.trim()) return;
     setLoading(true);
-    await onCreate(nome.trim(), cor);
+    await onCreate(nome.trim(), cor, icone);
     setLoading(false);
     onClose();
   }
@@ -61,6 +63,38 @@ export default function CreatePastaModal({ onClose, onCreate }: CreatePastaModal
                   outlineOffset: '3px',
                 }}
               />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-xs text-rift-200/50">Ícone</label>
+          <div className="flex gap-2 flex-wrap">
+            {PASTA_ICONS.map((ic) => (
+              <button
+                key={ic.id}
+                type="button"
+                onClick={() => setIcone(ic.id)}
+                title={ic.label}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                style={{
+                  backgroundColor: icone === ic.id ? cor + '33' : 'transparent',
+                  border: icone === ic.id ? `1.5px solid ${cor}` : '1.5px solid transparent',
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: icone === ic.id ? cor : '#5A3A8A' }}
+                  dangerouslySetInnerHTML={{ __html: ic.svg }}
+                />
+              </button>
             ))}
           </div>
         </div>

@@ -15,9 +15,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   bulkMovePasta: (ids: number[], pastaId: number | null) =>
     ipcRenderer.invoke('bulk-move-pasta', ids, pastaId),
   getPastas: () => ipcRenderer.invoke('get-pastas'),
-  addPasta: (nome: string, cor: string) => ipcRenderer.invoke('add-pasta', nome, cor),
-  updatePasta: (id: number, nome: string, cor: string) =>
-    ipcRenderer.invoke('update-pasta', id, nome, cor),
+  addPasta: (nome: string, cor: string, icone: string) =>
+    ipcRenderer.invoke('add-pasta', nome, cor, icone),
+  updatePasta: (id: number, nome: string, cor: string, icone: string) =>
+    ipcRenderer.invoke('update-pasta', id, nome, cor, icone),
+  reorderPastas: (ids: number[]) => ipcRenderer.invoke('reorder-pastas', ids),
   deletePasta: (id: number) => ipcRenderer.invoke('delete-pasta', id),
   exportAccounts: (ids: number[]) => ipcRenderer.invoke('export-accounts', ids),
   getRiotKey: () => ipcRenderer.invoke('get-riot-key'),

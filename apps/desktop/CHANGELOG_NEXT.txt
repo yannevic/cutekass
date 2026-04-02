@@ -1,1 +1,1 @@
-✨ Links externos abrem no navegador do sistema | ✨ Selects customizados com estilo, posição e direção | ✨ Scrollbar customizada nos selects | ✨ Import aceita mais formatos de texto | ✨ Área clicável do drag handle aumentada | ✨ Checkbox dos cards customizado | ✨ BulkActionBar ocupa toda a largura da tela
+✨ Pastas agora têm ícones personalizáveis | ✨ Escolha o ícone ao criar ou editar uma pasta | ✨ Reordene pastas arrastando e soltando | ✨ Handle de drag some quando a sidebar está fechada

@@ -69,6 +69,21 @@ try {
   // coluna já existe, ignorar
 }
 
+// Migração: icone nas pastas
+try {
+  db.exec("ALTER TABLE pastas ADD COLUMN icone TEXT NOT NULL DEFAULT 'folder'");
+} catch {
+  // coluna já existe, ignorar
+}
+
+// Migração: ordem nas pastas
+try {
+  db.exec('ALTER TABLE pastas ADD COLUMN ordem INTEGER');
+  db.exec('UPDATE pastas SET ordem = id WHERE ordem IS NULL');
+} catch {
+  // coluna já existe, ignorar
+}
+
 // Tabela de histórico de backup
 db.exec(`
   CREATE TABLE IF NOT EXISTS backup_historico (
@@ -189,18 +204,33 @@ export function bulkMovePasta(ids: number[], pastaId: number | null): void {
 // ─── Pastas ───────────────────────────────────────────────────────────────────
 
 export function listPastas(): Pasta[] {
-  return db.prepare('SELECT * FROM pastas ORDER BY id ASC').all() as Pasta[];
+  return db.prepare('SELECT * FROM pastas ORDER BY ordem ASC, id ASC').all() as Pasta[];
 }
 
-export function addPasta(nome: string, cor: string): Pasta {
+export function addPasta(nome: string, cor: string, icone: string): Pasta {
   const result = db
-    .prepare('INSERT INTO pastas (nome, cor) VALUES (@nome, @cor)')
-    .run({ nome, cor });
-  return { id: result.lastInsertRowid as number, nome, cor };
+    .prepare('INSERT INTO pastas (nome, cor, icone) VALUES (@nome, @cor, @icone)')
+    .run({ nome, cor, icone });
+  return { id: result.lastInsertRowid as number, nome, cor, icone, ordem: 0 };
 }
 
-export function updatePasta(id: number, nome: string, cor: string): void {
-  db.prepare('UPDATE pastas SET nome = @nome, cor = @cor WHERE id = @id').run({ id, nome, cor });
+export function updatePasta(id: number, nome: string, cor: string, icone: string): void {
+  db.prepare('UPDATE pastas SET nome = @nome, cor = @cor, icone = @icone WHERE id = @id').run({
+    id,
+    nome,
+    cor,
+    icone,
+  });
+}
+
+export function reorderPastas(ids: number[]): void {
+  const stmt = db.prepare('UPDATE pastas SET ordem = @ordem WHERE id = @id');
+  const atualizar = db.transaction((lista: number[]) => {
+    lista.forEach((id, index) => {
+      stmt.run({ ordem: index, id });
+    });
+  });
+  atualizar(ids);
 }
 
 export function deletePasta(id: number): void {

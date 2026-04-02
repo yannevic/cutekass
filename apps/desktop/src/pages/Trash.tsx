@@ -26,7 +26,7 @@ export default function Trash({
   const [loading, setLoading] = useState(true);
   const [idParaExcluir, setIdParaExcluir] = useState<number | null>(null);
   const [confirmarEsvaziar, setConfirmarEsvaziar] = useState(false);
-  const { pastas, updatePasta, deletePasta } = usePastas();
+  const { pastas, updatePasta, deletePasta, reorderPastas } = usePastas();
   const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
 
   const fetchTrash = useCallback(async () => {
@@ -67,8 +67,9 @@ export default function Trash({
         pastaAtiva={null}
         onSelecionarPasta={() => {}}
         onNovaPasta={() => {}}
-        onRenamePasta={(id, nome, cor) => updatePasta(id, nome, cor)}
+        onRenamePasta={(id, nome, cor, icone) => updatePasta(id, nome, cor, icone)}
         onDeletePasta={(id) => deletePasta(id)}
+        onReorderPastas={reorderPastas}
         onConfiguracoes={() => setConfiguracoesAberto(true)}
         updateStatus={updateStatus}
         updateErro={updateErro}

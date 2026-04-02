@@ -16,8 +16,6 @@ declare global {
       bulkSetElo: (ids: number[], elo: string) => Promise<void>;
       bulkMovePasta: (ids: number[], pastaId: number | null) => Promise<void>;
       getPastas: () => Promise<Pasta[]>;
-      addPasta: (nome: string, cor: string) => Promise<Pasta>;
-      updatePasta: (id: number, nome: string, cor: string) => Promise<void>;
       deletePasta: (id: number) => Promise<void>;
       exportAccounts: (ids: number[]) => Promise<string>;
       getRiotKey: () => Promise<string>;
@@ -38,6 +36,9 @@ declare global {
       reorderAccounts: (ids: number[]) => Promise<void>;
       listarHistoricoBackup: () => Promise<{ id: number; criadoEm: string; conteudo: string }[]>;
       openExternal: (url: string) => Promise<void>;
+      addPasta: (nome: string, cor: string, icone: string) => Promise<Pasta>;
+      updatePasta: (id: number, nome: string, cor: string, icone: string) => Promise<void>;
+      reorderPastas: (ids: number[]) => Promise<void>;
       fetchLcuData: () => Promise<{
         nivel: number;
         essenciaAzul: number;

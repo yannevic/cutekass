@@ -25,6 +25,7 @@ import {
   reorderAccounts,
   salvarHistoricoBackup,
   listarHistoricoBackup,
+  reorderPastas,
 } from '../src/lib/db';
 
 // ─── Janela ───────────────────────────────────────────────────────────────────
@@ -211,11 +212,14 @@ ipcMain.handle('empty-trash', () => {
 });
 
 ipcMain.handle('get-pastas', () => listPastas());
-ipcMain.handle('add-pasta', (_e, nome: string, cor: string) => addPasta(nome, cor));
-ipcMain.handle('update-pasta', (_e, id: number, nome: string, cor: string) =>
-  updatePasta(id, nome, cor)
+ipcMain.handle('add-pasta', (_e, nome: string, cor: string, icone: string) =>
+  addPasta(nome, cor, icone)
+);
+ipcMain.handle('update-pasta', (_e, id: number, nome: string, cor: string, icone: string) =>
+  updatePasta(id, nome, cor, icone)
 );
 ipcMain.handle('delete-pasta', (_e, id: number) => deletePasta(id));
+ipcMain.handle('reorder-pastas', (_e, ids: number[]) => reorderPastas(ids));
 
 ipcMain.handle('copy-to-clipboard', (_e, text: string) => {
   clipboard.writeText(text);

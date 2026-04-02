@@ -14,16 +14,16 @@ export default function usePastas() {
   }, [fetchPastas]);
 
   const addPasta = useCallback(
-    async (nome: string, cor: string) => {
-      await window.electronAPI.addPasta(nome, cor);
+    async (nome: string, cor: string, icone: string) => {
+      await window.electronAPI.addPasta(nome, cor, icone);
       await fetchPastas();
     },
     [fetchPastas]
   );
 
   const updatePasta = useCallback(
-    async (id: number, nome: string, cor: string) => {
-      await window.electronAPI.updatePasta(id, nome, cor);
+    async (id: number, nome: string, cor: string, icone: string) => {
+      await window.electronAPI.updatePasta(id, nome, cor, icone);
       await fetchPastas();
     },
     [fetchPastas]
@@ -37,5 +37,13 @@ export default function usePastas() {
     [fetchPastas]
   );
 
-  return { pastas, addPasta, updatePasta, deletePasta };
+  const reorderPastas = useCallback(
+    async (ids: number[]) => {
+      await window.electronAPI.reorderPastas(ids);
+      await fetchPastas();
+    },
+    [fetchPastas]
+  );
+
+  return { pastas, addPasta, updatePasta, deletePasta, reorderPastas };
 }
