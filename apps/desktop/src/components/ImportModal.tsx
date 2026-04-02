@@ -39,18 +39,18 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
           Cole o conteúdo abaixo. Formatos aceitos por conta:
           <br />
           <span className="text-rift-200/80 font-mono">login:senha</span> ou{' '}
-          <span className="text-rift-200/80 font-mono">login</span> e{' '}
-          <span className="text-rift-200/80 font-mono">senha</span> em linhas separadas.
+          <span className="text-rift-200/80 font-mono">login:senha nick#TAG</span> — uma por linha,
+          sem espaço entre elas.
           <br />
-          Opcionalmente, adicione o nick na linha seguinte:{' '}
-          <span className="text-rift-200/80 font-mono">Nome#TAG</span>.
-          <br />
-          Separe cada conta com uma linha em branco.
+          Ou em linhas separadas: <span className="text-rift-200/80 font-mono">login</span> /{' '}
+          <span className="text-rift-200/80 font-mono">senha</span> /{' '}
+          <span className="text-rift-200/80 font-mono">nick#TAG</span> (opcional) — nesse caso
+          separe cada conta com uma linha em branco.
         </p>
 
         <textarea
           className="w-full h-40 bg-void-950 border border-void-800 rounded-lg p-3 text-rift-200 font-mono text-sm resize-none focus:outline-none focus:border-rift-400 transition-colors"
-          placeholder={'conta1\nsenha1\nNick#BR1\n\nconta2:senha2\nNick2#BR1'}
+          placeholder={'conta1:senha1\nconta2:senha2 Nick2#BR1\n\nconta3\nsenha3\nNick3#BR1'}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />

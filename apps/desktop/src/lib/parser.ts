@@ -5,13 +5,33 @@ export interface ParsedAccount {
 }
 
 export function parseAccountsText(text: string): ParsedAccount[] {
-  const blocks = text
-    .split(/\n[ \t]*\n/)
-    .map((b) => b.trim())
-    .filter(Boolean);
+  const lines = text.split('\n').map((l) => l.trim());
+
+  const blocks: string[][] = [];
+  let current: string[] = [];
+
+  lines.forEach((line) => {
+    if (line === '') {
+      if (current.length > 0) {
+        blocks.push(current);
+        current = [];
+      }
+      return;
+    }
+
+    // Se a linha tem ":" e current já tem conteúdo, é uma nova conta — fecha o bloco atual
+    const colonIndex = line.indexOf(':');
+    if (colonIndex !== -1 && current.length > 0) {
+      blocks.push(current);
+      current = [];
+    }
+
+    current.push(line);
+  });
+
+  if (current.length > 0) blocks.push(current);
 
   const results: ParsedAccount[] = [];
-
   blocks.forEach((block) => {
     const parsed = parseBlock(block);
     if (parsed) results.push(parsed);
@@ -20,32 +40,37 @@ export function parseAccountsText(text: string): ParsedAccount[] {
   return results;
 }
 
-function parseBlock(block: string): ParsedAccount | null {
-  const lines = block
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
-
+function parseBlock(lines: string[]): ParsedAccount | null {
   if (lines.length === 0) return null;
 
   let login = '';
   let senha = '';
   let nick: string | undefined;
 
-  // Tipo A: primeira linha é "login:senha"
   const colonIndex = lines[0].indexOf(':');
   if (colonIndex !== -1) {
-    login = lines[0].slice(0, colonIndex).trim();
-    senha = lines[0].slice(colonIndex + 1).trim();
-    // linha 1 pode ser nick#tag
-    if (lines[1] && lines[1].includes('#')) {
-      nick = lines[1];
+    // Tipo A: "login:senha" ou "login:senha nick#tag"
+    const afterColon = lines[0].slice(colonIndex + 1);
+    const spaceIndex = afterColon.indexOf(' ');
+
+    if (spaceIndex !== -1) {
+      login = lines[0].slice(0, colonIndex).trim();
+      senha = afterColon.slice(0, spaceIndex).trim();
+      const possible = afterColon.slice(spaceIndex + 1).trim();
+      if (possible.includes('#')) {
+        nick = possible;
+      }
+    } else {
+      login = lines[0].slice(0, colonIndex).trim();
+      senha = afterColon.trim();
+      if (lines[1] && lines[1].includes('#')) {
+        nick = lines[1];
+      }
     }
   } else if (lines.length >= 2) {
-    // Tipo B: login na linha 0, senha na linha 1
+    // Tipo B: login / senha / nick#tag (opcional)
     login = lines[0];
     senha = lines[1];
-    // linha 2 pode ser nick#tag
     if (lines[2] && lines[2].includes('#')) {
       nick = lines[2];
     }
