@@ -39,3 +39,20 @@ body {
 .scrollbar-hidden {
   scrollbar-width: none;
 }
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #5a1fa8;
+  border-radius: 999px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: #7b2cf5;
+}

@@ -29,6 +29,8 @@ import { ELO_TIERS, UNRANKED } from '../lib/eloConfig';
 import type { Account } from '../types/account';
 import SettingsModal from '../components/SettingsModal';
 import type { UpdateStatus } from '../components/UpdateNotifier';
+import Select from '../components/Select';
+import { corDoElo } from '../lib/eloConfig';
 
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
 
@@ -713,28 +715,26 @@ export default function Home({
           >
             Sem nick
           </button>
-          <select
-            className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
+          <Select
             value={filtroElo}
-            onChange={(e) => setFiltroElo(e.target.value)}
-          >
-            {OPCOES_FILTRO.map((op) => (
-              <option key={op} value={op}>
-                {op}
-              </option>
-            ))}
-          </select>
-          <select
-            className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
+            onChange={setFiltroElo}
+            options={OPCOES_FILTRO.map((op) => ({
+              value: op,
+              label: op,
+              color: op === 'Todos' ? undefined : corDoElo(op),
+            }))}
+          />
+          <Select
             value={ordem}
-            onChange={(e) => setOrdem(e.target.value as typeof ordem)}
-          >
-            <option value="recentes">Mais recentes</option>
-            <option value="antigas">Mais antigas</option>
-            <option value="alfabetica">A → Z</option>
-            <option value="z-a">Z → A</option>
-            {ordem === 'custom' && <option value="custom">Personalizada</option>}
-          </select>
+            onChange={(v) => setOrdem(v as typeof ordem)}
+            options={[
+              { value: 'recentes', label: 'Mais recentes' },
+              { value: 'antigas', label: 'Mais antigas' },
+              { value: 'alfabetica', label: 'A → Z' },
+              { value: 'z-a', label: 'Z → A' },
+              ...(ordem === 'custom' ? [{ value: 'custom', label: 'Personalizada' }] : []),
+            ]}
+          />
         </div>
 
         {/* Lista */}

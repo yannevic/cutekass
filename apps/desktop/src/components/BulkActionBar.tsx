@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ELO_TIERS, UNRANKED } from '../lib/eloConfig';
 import type { Pasta } from '../types/pasta';
+import Select from './Select';
+import { corDoElo } from '../lib/eloConfig';
 
 interface BulkActionBarProps {
   count: number;
@@ -101,19 +103,15 @@ export default function BulkActionBar({
 
       {acaoAtiva === 'elo' && (
         <>
-          <select
-            className="bg-void-800 border border-void-700 text-rift-200 text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
+          <Select
             value={eloSelecionado}
-            onChange={(e) => setEloSelecionado(e.target.value)}
-          >
-            <option value="">Selecionar elo...</option>
-            <option value={UNRANKED.nome}>{UNRANKED.nome}</option>
-            {ELO_TIERS.map((t) => (
-              <option key={t.nome} value={t.nome}>
-                {t.nome}
-              </option>
-            ))}
-          </select>
+            onChange={setEloSelecionado}
+            placeholder="Selecionar elo..."
+            options={[
+              { value: UNRANKED.nome, label: UNRANKED.nome },
+              ...ELO_TIERS.map((t) => ({ value: t.nome, label: t.nome, color: corDoElo(t.nome) })),
+            ]}
+          />
           <button
             type="button"
             onClick={handleSetElo}
@@ -134,19 +132,15 @@ export default function BulkActionBar({
 
       {acaoAtiva === 'pasta' && (
         <>
-          <select
-            className="bg-void-800 border border-void-700 text-rift-200 text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-rift-400 transition-colors"
+          <Select
             value={pastaSelecionada}
-            onChange={(e) => setPastaSelecionada(e.target.value)}
-          >
-            <option value="">Selecionar pasta...</option>
-            <option value="none">Sem pasta</option>
-            {pastas.map((p) => (
-              <option key={p.id} value={String(p.id)}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
+            onChange={setPastaSelecionada}
+            placeholder="Selecionar pasta..."
+            options={[
+              { value: 'none', label: 'Sem pasta' },
+              ...pastas.map((p) => ({ value: String(p.id), label: p.nome, color: p.cor })),
+            ]}
+          />
           <button
             type="button"
             onClick={handleMovePasta}
