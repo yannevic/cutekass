@@ -4,6 +4,16 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.34': [
+    '✨ Links externos abrem no navegador do sistema',
+    '✨ Selects customizados com estilo, posição e direção',
+    '✨ Scrollbar customizada nos selects',
+    '✨ Import aceita mais formatos de texto',
+    '✨ Área clicável do drag handle aumentada',
+    '✨ Checkbox dos cards customizado',
+    '✨ BulkActionBar ocupa toda a largura da tela',
+  ],
+
   '1.0.33': [
     '✨ Atualização de elos em lote sem travar a tela',
     '✨ Progresso visível ao atualizar elos',
