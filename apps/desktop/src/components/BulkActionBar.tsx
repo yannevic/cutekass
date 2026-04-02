@@ -10,6 +10,7 @@ interface BulkActionBarProps {
   onSetEloSelected: (elo: string) => void;
   onMoveTopastaSelected: (pastaId: number | null) => void;
   onClearSelection: () => void;
+  onAtualizarEloSelected: () => void;
 }
 
 type AcaoAtiva = 'elo' | 'pasta' | null;
@@ -22,6 +23,7 @@ export default function BulkActionBar({
   onSetEloSelected,
   onMoveTopastaSelected,
   onClearSelection,
+  onAtualizarEloSelected,
 }: BulkActionBarProps) {
   const [acaoAtiva, setAcaoAtiva] = useState<AcaoAtiva>(null);
   const [eloSelecionado, setEloSelecionado] = useState('');
@@ -59,6 +61,13 @@ export default function BulkActionBar({
 
       {acaoAtiva === null && (
         <>
+          <button
+            type="button"
+            onClick={onAtualizarEloSelected}
+            className="text-sm bg-void-800 hover:bg-void-700 px-3 py-1.5 rounded-lg text-rift-200 transition-colors"
+          >
+            ⟳ Atualizar elos
+          </button>
           <button
             type="button"
             onClick={() => setAcaoAtiva('elo')}

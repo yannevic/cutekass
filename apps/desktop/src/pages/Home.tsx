@@ -254,8 +254,10 @@ export default function Home({
   const {
     accounts,
     loading,
+    fetchAccounts,
     addAccount,
     updateAccount,
+    updateAccountSilent,
     deleteAccount,
     bulkDelete,
     bulkSetElo,
@@ -480,10 +482,17 @@ export default function Home({
     setImportModalAberto(false);
   }
 
-  async function handleAtualizarTodosElos() {
-    const comNick = accounts.filter((a) => a.nick && a.nick.includes('#'));
-    if (comNick.length === 0) {
-      setErroAtualizacao('Nenhuma conta possui nick no formato Nome#TAG.');
+  async function handleAtualizarElos(ids?: number[]) {
+    const alvo = ids
+      ? accounts.filter((a) => ids.includes(a.id) && a.nick && a.nick.includes('#'))
+      : accounts.filter((a) => a.nick && a.nick.includes('#'));
+
+    if (alvo.length === 0) {
+      setErroAtualizacao(
+        ids
+          ? 'Nenhuma conta selecionada possui nick no formato Nome#TAG.'
+          : 'Nenhuma conta possui nick no formato Nome#TAG.'
+      );
       return;
     }
 
@@ -495,29 +504,30 @@ export default function Home({
 
     setErroAtualizacao('');
     setAtualizandoElos(true);
-    setProgressoElo({ atual: 0, total: comNick.length });
+    setProgressoElo({ atual: 0, total: alvo.length });
 
     let erros = 0;
-    for (let i = 0; i < comNick.length; i += 1) {
-      const conta = comNick[i];
+    for (let i = 0; i < alvo.length; i += 1) {
+      const conta = alvo[i];
       try {
         // eslint-disable-next-line no-await-in-loop
         const elo = await window.electronAPI.fetchElo(conta.nick!);
         // eslint-disable-next-line no-await-in-loop
-        await updateAccount({ ...conta, elo });
+        await updateAccountSilent({ ...conta, elo });
       } catch {
         erros += 1;
       }
-      setProgressoElo({ atual: i + 1, total: comNick.length });
+      setProgressoElo({ atual: i + 1, total: alvo.length });
     }
+
+    // Só busca uma vez no final — sem piscar
+    await fetchAccounts(); // ← precisamos expor o fetchAccounts também
 
     setAtualizandoElos(false);
     setProgressoElo(null);
 
     if (erros > 0) {
-      setErroAtualizacao(
-        `${erros} conta${erros !== 1 ? 's' : ''} não puderam ser atualizadas. Verifique se a chave da API ainda é válida.`
-      );
+      setErroAtualizacao(`${erros} conta${erros !== 1 ? 's' : ''} não puderam ser atualizadas.`);
     }
   }
 
@@ -603,9 +613,13 @@ export default function Home({
           </div>
           <div className="flex gap-2 items-center">
             {progressoElo && (
-              <span className="text-xs text-rift-200/50">
-                {progressoElo.atual}/{progressoElo.total} atualizados
-              </span>
+              <div className="flex items-center gap-2 bg-void-900 border border-void-800 rounded-lg px-3 py-1.5">
+                <span className="text-xs text-rift-200/50">Atualizando elos</span>
+                <span className="text-sm font-bold text-rift-300">
+                  {progressoElo.atual}
+                  <span className="text-rift-200/30 font-normal">/{progressoElo.total}</span>
+                </span>
+              </div>
             )}
             <button
               type="button"
@@ -616,7 +630,7 @@ export default function Home({
             </button>
             <button
               type="button"
-              onClick={handleAtualizarTodosElos}
+              onClick={() => handleAtualizarElos()}
               disabled={atualizandoElos}
               className="bg-void-800 hover:bg-void-700 disabled:opacity-50 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
             >
@@ -780,6 +794,7 @@ export default function Home({
           onSetEloSelected={handleSetEloLote}
           onMoveTopastaSelected={handleMovePastaLote}
           onClearSelection={() => setSelecionados(new Set())}
+          onAtualizarEloSelected={() => handleAtualizarElos(Array.from(selecionados))} // ← adicionar
         />
       )}
 

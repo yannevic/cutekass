@@ -5,6 +5,9 @@ export default function useAccounts() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const updateAccountSilent = useCallback(async (data: Account) => {
+    await window.electronAPI.updateAccount(data);
+  }, []);
   const fetchAccounts = useCallback(async () => {
     setLoading(true);
     const data = await window.electronAPI.getAccounts();
@@ -86,8 +89,10 @@ export default function useAccounts() {
   return {
     accounts,
     loading,
+    fetchAccounts,
     addAccount,
     updateAccount,
+    updateAccountSilent,
     deleteAccount,
     bulkDelete,
     bulkSetElo,
