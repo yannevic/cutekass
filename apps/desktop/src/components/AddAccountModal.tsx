@@ -108,12 +108,11 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
   return (
     <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-      onClick={onClose}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div
-        className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50">
         <h2 className="text-lg font-bold text-rift-300">
           {editando ? 'Editar conta' : 'Adicionar conta'}
         </h2>

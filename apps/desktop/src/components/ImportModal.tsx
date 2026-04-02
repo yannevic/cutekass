@@ -31,7 +31,12 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-void-900 border border-void-800 rounded-xl w-full max-w-lg p-6 flex flex-col gap-4 shadow-xl shadow-black/50">
         <h2 className="text-rift-200 text-lg font-semibold">Importar do Bloco de Notas</h2>
 
