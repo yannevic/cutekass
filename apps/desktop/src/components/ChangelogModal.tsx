@@ -4,6 +4,20 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.33': [
+    '✨ Atualização de elos em lote sem travar a tela',
+    '✨ Progresso visível ao atualizar elos',
+    '✨ Atualizar elos só das contas selecionadas',
+    '✨ Login no Riot Client limpa os campos antes de digitar',
+    '✨ Exportar contas inclui nick e abre a pasta automaticamente',
+    '✨ Fonte Space Grotesk',
+    '✨ Validação de nick duplicado ao salvar conta',
+    '✨ Filtro por contas sem nick',
+    '✨ Scroll nas pastas da sidebar',
+    '✨ Import aceita mais formatos de texto',
+    '✨ Links externos abrem no navegador do sistema',
+  ],
+
   '1.0.32': [
     '✨ Link do GitHub ao clicar em "Made by Nana" da sidebar 💕',
   ],

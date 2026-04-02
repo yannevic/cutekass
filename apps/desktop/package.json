@@ -4,7 +4,7 @@
   "description": "Gerenciador de contas League of Legends",
   "author": "nana",
   "private": true,
-  "version": "1.0.32",
+  "version": "1.0.33",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
