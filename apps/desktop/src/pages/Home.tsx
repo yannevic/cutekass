@@ -148,6 +148,19 @@ function AccountCard({
         <div className="flex items-center gap-2 flex-wrap">
           <p className="font-semibold text-rift-200">{account.nick ?? account.login}</p>
           {account.elo ? <EloBadge elo={account.elo} /> : null}
+          {(account.wins != null || account.losses != null) && (
+            <p className="text-xs flex items-center gap-2">
+              <span className="text-green-400">{account.wins ?? 0}V</span>
+              <span className="text-red-400">{account.losses ?? 0}D</span>
+              <span className="text-rift-200/30">·</span>
+              <span className="text-yellow-400">
+                {Math.round(
+                  ((account.wins ?? 0) / ((account.wins ?? 0) + (account.losses ?? 1))) * 100
+                )}
+                % WR
+              </span>
+            </p>
+          )}
         </div>
         <p className="text-sm text-rift-200/60">{account.login}</p>
         <p className="text-sm text-rift-200/40 font-mono">
@@ -533,9 +546,14 @@ export default function Home({
       const conta = alvo[i];
       try {
         // eslint-disable-next-line no-await-in-loop
-        const elo = await window.electronAPI.fetchElo(conta.nick!);
+        const resultado = await window.electronAPI.fetchElo(conta.nick!);
         // eslint-disable-next-line no-await-in-loop
-        await updateAccountSilent({ ...conta, elo });
+        await updateAccountSilent({
+          ...conta,
+          elo: resultado.elo,
+          wins: resultado.wins,
+          losses: resultado.losses,
+        });
       } catch {
         erros += 1;
       }

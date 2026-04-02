@@ -307,6 +307,8 @@ ipcMain.handle('fetch-elo', async (_e, nick: string) => {
     tier: string;
     rank: string;
     leaguePoints: number;
+    wins: number;
+    losses: number;
   }[];
   const soloQ = leagueData.find((e) => e.queueType === 'RANKED_SOLO_5x5');
 
@@ -331,7 +333,11 @@ ipcMain.handle('fetch-elo', async (_e, nick: string) => {
   const lp = soloQ.leaguePoints;
 
   const altoElo = ['MASTER', 'GRANDMASTER', 'CHALLENGER'].includes(soloQ.tier);
-  return altoElo ? `${tier} ${lp}LP` : `${tier} ${rank} ${lp}LP`;
+  return {
+    elo: altoElo ? `${tier} ${lp}LP` : `${tier} ${rank} ${lp}LP`,
+    wins: soloQ.wins,
+    losses: soloQ.losses,
+  };
 });
 
 ipcMain.handle('login-riot', async (_e, login: string, senha: string) => {

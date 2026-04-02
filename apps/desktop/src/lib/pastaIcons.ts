@@ -65,6 +65,11 @@ export const PASTA_ICONS: PastaIcon[] = [
     label: 'Olho',
     svg: `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`,
   },
+  {
+    id: 'heart',
+    label: 'Coração',
+    svg: `<path d="M12 21C12 21 4 15 4 9c0-3.5 2.5-5.5 5-5 1.5.3 2.5 1.2 3 2 .5-.8 1.5-1.7 3-2 2.5-.5 5 1.5 5 5 0 6-8 12-8 12z"/>`,
+  },
 ];
 
 export function getIcon(id: string): PastaIcon {

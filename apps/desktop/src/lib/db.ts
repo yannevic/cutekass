@@ -83,6 +83,13 @@ try {
 } catch {
   // coluna já existe, ignorar
 }
+// Migração: wins e losses
+try {
+  db.exec('ALTER TABLE accounts ADD COLUMN wins INTEGER');
+  db.exec('ALTER TABLE accounts ADD COLUMN losses INTEGER');
+} catch {
+  // colunas já existem, ignorar
+}
 
 // Tabela de histórico de backup
 db.exec(`
@@ -131,6 +138,8 @@ export function addAccount(data: Omit<Account, 'id'>): Account {
     observacoes: data.observacoes ?? null,
     deletedAt: data.deletedAt ?? null,
     pastaId: data.pastaId ?? null,
+    wins: data.wins ?? null,
+    losses: data.losses ?? null,
   };
   const result = stmt.run(sanitized);
   return { id: result.lastInsertRowid as number, ...data };
@@ -150,7 +159,7 @@ export function updateAccount(data: Account): void {
   db.prepare(
     `UPDATE accounts
      SET login = @login, senha = @senha, nick = @nick,
-         elo = @elo, observacoes = @observacoes, pastaId = @pastaId
+         elo = @elo, observacoes = @observacoes, pastaId = @pastaId, wins = @wins, losses = @losses
      WHERE id = @id`
   ).run({
     id: data.id,
@@ -160,6 +169,8 @@ export function updateAccount(data: Account): void {
     elo: data.elo ?? null,
     observacoes: data.observacoes ?? null,
     pastaId: data.pastaId ?? null,
+    wins: data.wins ?? null,
+    losses: data.losses ?? null,
   });
 }
 

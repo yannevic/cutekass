@@ -7,4 +7,6 @@ export interface Account {
   observacoes?: string;
   deletedAt?: string;
   pastaId?: number | null;
+  wins?: number | null;
+  losses?: number | null;
 }

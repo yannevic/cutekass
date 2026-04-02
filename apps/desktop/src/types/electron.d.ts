@@ -20,7 +20,7 @@ declare global {
       exportAccounts: (ids: number[]) => Promise<string>;
       getRiotKey: () => Promise<string>;
       saveRiotKey: (key: string) => Promise<void>;
-      fetchElo: (nick: string) => Promise<string>;
+      fetchElo: (nick: string) => Promise<{ elo: string; wins: number; losses: number }>;
       loginRiot: (login: string, senha: string) => Promise<void>;
       getRiotClientPath: () => Promise<string>;
       saveRiotClientPath: (path: string) => Promise<void>;

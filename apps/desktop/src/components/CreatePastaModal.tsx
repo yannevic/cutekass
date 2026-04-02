@@ -3,14 +3,23 @@ import { PASTA_ICONS } from '../lib/pastaIcons';
 
 const CORES = [
   '#ef4444',
+  '#f43f5e',
   '#f97316',
   '#eab308',
+  '#ffd93d',
+  '#84cc16',
   '#22c55e',
+  '#10b981',
   '#06b6d4',
+  '#3b82f6',
   '#6366f1',
   '#a855f7',
   '#ec4899',
+  '#ff6b6b',
+  '#ffffff',
+  '#94a3b8',
   '#64748b',
+  '#1e293b',
 ];
 
 interface CreatePastaModalProps {

@@ -1,1 +1,1 @@
-✨ Pastas agora têm ícones personalizáveis | ✨ Escolha o ícone ao criar ou editar uma pasta | ✨ Reordene pastas arrastando e soltando | ✨ Handle de drag some quando a sidebar está fechada
+✨ Ícones personalizáveis nas pastas | ✨ Mais cores disponíveis para pastas | ✨ Reordene pastas arrastando e soltando | ✨ Wins, losses e winrate nas contas | ✨ Stats atualizados junto com o elo
