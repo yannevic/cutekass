@@ -390,10 +390,16 @@ $hwnd = $proc.MainWindowHandle
 Start-Sleep -Milliseconds 800
 
 Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.SendKeys]::SendWait('^a')
+[System.Windows.Forms.SendKeys]::SendWait('{DELETE}')
+Start-Sleep -Milliseconds 150
 [System.Windows.Forms.SendKeys]::SendWait('${loginEscapado}')
 Start-Sleep -Milliseconds 300
 [System.Windows.Forms.SendKeys]::SendWait('{TAB}')
 Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait('^a')
+[System.Windows.Forms.SendKeys]::SendWait('{DELETE}')
+Start-Sleep -Milliseconds 150
 [System.Windows.Forms.SendKeys]::SendWait('${senhaEscapada}')
 Start-Sleep -Milliseconds 300
 [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
