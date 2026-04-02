@@ -11,9 +11,17 @@ interface Props {
   updateErro: string;
   onUpdateStatus: (status: UpdateStatus) => void;
   onUpdateErro: (msg: string) => void;
+  sidebarAberta: boolean;
+  onSidebarHover: (hover: boolean) => void;
 }
 
-export default function Trash({ updateStatus, updateErro, onUpdateStatus, onUpdateErro }: Props) {
+export default function Trash({
+  updateStatus,
+  updateErro,
+  onUpdateStatus,
+  onUpdateErro,
+  onSidebarHover,
+}: Props) {
   const [contas, setContas] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [idParaExcluir, setIdParaExcluir] = useState<number | null>(null);
@@ -66,6 +74,7 @@ export default function Trash({ updateStatus, updateErro, onUpdateStatus, onUpda
         updateErro={updateErro}
         onUpdateStatus={onUpdateStatus}
         onUpdateErro={onUpdateErro}
+        onHoverChange={onSidebarHover}
       />
       <main className="flex-1 overflow-y-auto p-6">
         <h1 className="text-2xl font-bold text-rift-300 mb-6">🗑️ Lixeira</h1>

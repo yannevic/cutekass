@@ -17,6 +17,7 @@ interface SidebarProps {
   updateErro: string;
   onUpdateStatus: (status: UpdateStatus) => void;
   onUpdateErro: (msg: string) => void;
+  onHoverChange: (hover: boolean) => void;
 }
 
 // ─── Componente de nome com scroll ping-pong ──────────────────────────────────
@@ -89,15 +90,16 @@ function NomePasta({ nome }: { nome: string }) {
 export default function Sidebar({
   pastas,
   pastaAtiva,
+  updateStatus,
+  updateErro,
   onSelecionarPasta,
   onNovaPasta,
   onRenamePasta,
   onDeletePasta,
   onConfiguracoes,
-  updateStatus,
-  updateErro,
   onUpdateStatus,
   onUpdateErro,
+  onHoverChange,
 }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -110,6 +112,7 @@ export default function Sidebar({
   const [instalando, setInstalando] = useState(false);
   const [erroExpandido, setErroExpandido] = useState(false);
   const voltarIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [recolhido, setRecolhido] = useState(true);
 
   useEffect(() => {
     window.electronAPI.getAppVersion().then(setVersaoApp);
@@ -339,8 +342,20 @@ export default function Sidebar({
 
   return (
     <aside
-      className="group w-12 hover:w-52 shrink-0 h-screen flex flex-col border-r transition-all duration-300 overflow-hidden"
-      style={{ backgroundColor: '#12082A', borderColor: '#3B136B' }}
+      className="group shrink-0 h-screen flex flex-col border-r transition-all duration-300 overflow-hidden"
+      style={{
+        backgroundColor: '#12082A',
+        borderColor: '#3B136B',
+        width: recolhido ? '3rem' : '13rem',
+      }}
+      onMouseEnter={() => {
+        setRecolhido(false);
+        onHoverChange(true);
+      }}
+      onMouseLeave={() => {
+        setRecolhido(true);
+        onHoverChange(false);
+      }}
     >
       {/* Logo */}
       <div className="h-14 flex items-center shrink-0 border-b" style={{ borderColor: '#3B136B' }}>

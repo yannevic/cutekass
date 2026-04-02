@@ -13,6 +13,8 @@ interface BulkActionBarProps {
   onMoveTopastaSelected: (pastaId: number | null) => void;
   onClearSelection: () => void;
   onAtualizarEloSelected: () => void;
+  hidden?: boolean;
+  leftOffset: number;
 }
 
 type AcaoAtiva = 'elo' | 'pasta' | null;
@@ -21,6 +23,8 @@ export default function BulkActionBar({
   count,
   pastas,
   selectedIds,
+  leftOffset,
+  hidden,
   onDeleteSelected,
   onSetEloSelected,
   onMoveTopastaSelected,
@@ -56,7 +60,12 @@ export default function BulkActionBar({
   }
 
   return (
-    <div className="fixed bottom-0 left-52 right-0 bg-void-900 border-t border-void-800 px-6 py-3 flex items-center gap-3 flex-wrap z-40">
+    <div
+      className={`fixed bottom-0 right-0 transition-all duration-300 bg-void-900 border-t border-void-800 px-6 py-3 flex items-center gap-3 flex-wrap z-40 ${
+        hidden ? 'hidden' : 'opacity-100'
+      }`}
+      style={{ left: leftOffset }}
+    >
       <span className="text-sm text-rift-200/70 font-medium shrink-0">
         {count} selecionada{count !== 1 ? 's' : ''}
       </span>

@@ -41,6 +41,8 @@ interface HomeProps {
   updateErro: string;
   onUpdateStatus: (status: UpdateStatus) => void;
   onUpdateErro: (msg: string) => void;
+  sidebarAberta: boolean;
+  onSidebarHover: (hover: boolean) => void;
 }
 
 interface CardProps {
@@ -268,6 +270,8 @@ export default function Home({
   updateErro,
   onUpdateStatus,
   onUpdateErro,
+  sidebarAberta,
+  onSidebarHover,
 }: HomeProps) {
   const {
     accounts,
@@ -607,6 +611,7 @@ export default function Home({
         updateErro={updateErro}
         onUpdateStatus={onUpdateStatus}
         onUpdateErro={onUpdateErro}
+        onHoverChange={onSidebarHover}
       />
 
       <main className={`flex-1 overflow-y-auto p-6 ${algumSelecionado ? 'pb-20' : ''}`}>
@@ -828,7 +833,9 @@ export default function Home({
           onSetEloSelected={handleSetEloLote}
           onMoveTopastaSelected={handleMovePastaLote}
           onClearSelection={() => setSelecionados(new Set())}
-          onAtualizarEloSelected={() => handleAtualizarElos(Array.from(selecionados))} // ← adicionar
+          onAtualizarEloSelected={() => handleAtualizarElos(Array.from(selecionados))}
+          leftOffset={sidebarAberta ? 208 : 48}
+          hidden={sidebarAberta}
         />
       )}
 

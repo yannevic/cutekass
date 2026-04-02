@@ -10,6 +10,7 @@ export default function App() {
   const [mostrarChangelog, setMostrarChangelog] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [updateErro, setUpdateErro] = useState('');
+  const [sidebarAberta, setSidebarAberta] = useState(false);
 
   useEffect(() => {
     async function verificarChangelog() {
@@ -42,6 +43,8 @@ export default function App() {
               updateErro={updateErro}
               onUpdateStatus={setUpdateStatus}
               onUpdateErro={setUpdateErro}
+              sidebarAberta={sidebarAberta}
+              onSidebarHover={setSidebarAberta}
             />
           }
         />
@@ -53,6 +56,8 @@ export default function App() {
               updateErro={updateErro}
               onUpdateStatus={setUpdateStatus}
               onUpdateErro={setUpdateErro}
+              sidebarAberta={sidebarAberta}
+              onSidebarHover={setSidebarAberta}
             />
           }
         />
