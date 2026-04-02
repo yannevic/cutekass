@@ -4,6 +4,13 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.35': [
+    '✨ Pastas agora têm ícones personalizáveis',
+    '✨ Escolha o ícone ao criar ou editar uma pasta',
+    '✨ Reordene pastas arrastando e soltando',
+    '✨ Handle de drag some quando a sidebar está fechada',
+  ],
+
   '1.0.34': [
     '✨ Links externos abrem no navegador do sistema',
     '✨ Selects customizados com estilo, posição e direção',
