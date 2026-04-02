@@ -1,6 +1,22 @@
 @import 'tailwindcss';
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/assets/fonts/SpaceGrotesk-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/assets/fonts/SpaceGrotesk-Medium.ttf') format('truetype');
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/assets/fonts/SpaceGrotesk-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+}
 
 @theme {
+  --font-sans: 'Space Grotesk', sans-serif;
   --color-void-950: #0b0f1a; /* fundo principal */
   --color-void-900: #1e0a38; /* fundo cards */
   --color-void-800: #3b136b; /* bordas / divisores */
@@ -15,6 +31,7 @@
 }
 
 body {
+  font-family: 'Space Grotesk', sans-serif;
   background-color: #0b0f1a;
   color: #cfa6ff;
 }
