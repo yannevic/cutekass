@@ -356,7 +356,10 @@ export default function Sidebar({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-hidden py-2 flex flex-col gap-1">
+      <nav
+        className="flex-1 py-2 flex flex-col gap-1 min-h-0 scrollbar-hidden"
+        style={{ overflowY: 'auto', msOverflowStyle: 'none' }}
+      >
         {/* Todas as contas */}
         <button
           type="button"

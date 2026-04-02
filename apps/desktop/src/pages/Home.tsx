@@ -278,6 +278,7 @@ export default function Home({
   const [filtroElo, setFiltroElo] = useState('Todos');
   const [pastaAtiva, setPastaAtiva] = useState<number | null>(null);
   const [filtraSemPasta, setFiltraSemPasta] = useState(false);
+  const [filtraSemNick, setFiltraSemNick] = useState(false);
   const [dropdownAberto, setDropdownAberto] = useState<number | null>(null);
   const [lcuModal, setLcuModal] = useState<{
     nick: string;
@@ -338,6 +339,7 @@ export default function Home({
         !termoBusca ||
         acc.nick?.toLowerCase().includes(termoBusca) ||
         acc.login.toLowerCase().includes(termoBusca);
+      const passaNick = !filtraSemNick || !acc.nick; // ← dentro do filter
 
       function passaElo() {
         if (filtroElo === 'Todos') return true;
@@ -351,7 +353,7 @@ export default function Home({
         return acc.pastaId === pastaAtiva;
       }
 
-      return passaBusca && passaElo() && passaPasta();
+      return passaBusca && passaElo() && passaPasta() && passaNick;
     });
 
     if (ordem === 'custom') {
@@ -380,7 +382,7 @@ export default function Home({
 
     if (ordem === 'antigas') return [...base].sort((a, b) => a.id - b.id);
     return [...base].sort((a, b) => b.id - a.id);
-  }, [accounts, busca, filtroElo, pastaAtiva, filtraSemPasta, ordem, ordemCustom]);
+  }, [accounts, busca, filtroElo, pastaAtiva, filtraSemPasta, filtraSemNick, ordem, ordemCustom]);
 
   useEffect(() => {
     localStorage.setItem('cutekass-ordem', ordem);
@@ -685,6 +687,17 @@ export default function Home({
             }`}
           >
             Sem pasta
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltraSemNick((v) => !v)}
+            className={`text-sm px-3 py-2 rounded-lg border transition-colors font-medium whitespace-nowrap ${
+              filtraSemNick
+                ? 'bg-[#3B136B] border-[#7B2CF5] text-[#CFA6FF]'
+                : 'bg-void-900 border-void-800 text-rift-200/50 hover:text-rift-200 hover:border-void-700'
+            }`}
+          >
+            Sem nick
           </button>
           <select
             className="bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 transition-colors"

@@ -122,13 +122,21 @@ export function addAccount(data: Omit<Account, 'id'>): Account {
 }
 
 export function updateAccount(data: Account): void {
+  // Verifica nick duplicado (ignora a própria conta e nicks vazios)
+  if (data.nick) {
+    const duplicado = db
+      .prepare(
+        'SELECT id FROM accounts WHERE LOWER(nick) = LOWER(?) AND id != ? AND deletedAt IS NULL'
+      )
+      .get(data.nick, data.id) as { id: number } | undefined;
+    if (duplicado) throw new Error(`O nick ${data.nick} já está vinculado a outra conta.`);
+  }
+
   db.prepare(
-    `
-    UPDATE accounts
-    SET login = @login, senha = @senha, nick = @nick,
-        elo = @elo, observacoes = @observacoes, pastaId = @pastaId
-    WHERE id = @id
-  `
+    `UPDATE accounts
+     SET login = @login, senha = @senha, nick = @nick,
+         elo = @elo, observacoes = @observacoes, pastaId = @pastaId
+     WHERE id = @id`
   ).run({
     id: data.id,
     login: data.login,

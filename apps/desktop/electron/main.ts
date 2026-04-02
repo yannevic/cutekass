@@ -31,8 +31,8 @@ import {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 900,
-    height: 650,
+    width: 1100,
+    height: 720,
     minWidth: 700,
     minHeight: 500,
     autoHideMenuBar: true,

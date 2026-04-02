@@ -33,26 +33,39 @@ export default function LcuModal({
   const [busca, setBusca] = useState('');
   const [vinculando, setVinculando] = useState(false);
   const [sucesso, setSucesso] = useState('');
+  const [erroVincular, setErroVincular] = useState('');
 
   const contasFiltradas = useMemo(() => {
+    const semNick = accounts.filter((a) => !a.nick);
     const termo = busca.trim().toLowerCase();
-    if (!termo) return accounts;
-    return accounts.filter(
-      (a) => a.login.toLowerCase().includes(termo) || (a.nick ?? '').toLowerCase().includes(termo)
-    );
+    if (!termo) return semNick;
+    return semNick.filter((a) => a.login.toLowerCase().includes(termo));
   }, [accounts, busca]);
 
   async function handleVincular(conta: Account) {
     if (!dados?.nick) return;
     setVinculando(true);
-    await onVincular(conta, dados.nick);
-    setVinculando(false);
-    setSucesso(`Nick vinculado a ${conta.login}!`);
-    setTimeout(() => {
-      setSucesso('');
-      setEtapa('info');
-      setBusca('');
-    }, 1800);
+    setErroVincular('');
+    try {
+      await onVincular(conta, dados.nick);
+      setSucesso(`Nick vinculado a ${conta.login}!`);
+      setTimeout(() => {
+        setSucesso('');
+        setEtapa('info');
+        setBusca('');
+      }, 1800);
+    } catch (e) {
+      const raw =
+        e instanceof Error
+          ? e.message
+          : typeof e === 'object' && e !== null && 'message' in e
+            ? String((e as { message: unknown }).message)
+            : String(e);
+      const msg = raw.replace(/^Error invoking remote method '[^']+': Error: /, '');
+      setErroVincular(msg);
+    } finally {
+      setVinculando(false);
+    }
   }
 
   function handleCopiarNick() {
@@ -165,6 +178,7 @@ export default function LcuModal({
         )}
 
         {/* ── Etapa 2: vincular ── */}
+
         {etapa === 'vincular' && (
           <>
             <p className="text-xs text-rift-200/50 -mt-2">
@@ -174,11 +188,14 @@ export default function LcuModal({
 
             <input
               className="bg-void-800 border border-void-700 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/30 transition-colors"
-              placeholder="Buscar por login ou nick..."
+              placeholder="Buscar por login..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               autoFocus
             />
+            {erroVincular ? (
+              <p className="text-red-400 text-xs text-center -mt-2">{erroVincular}</p>
+            ) : null}
 
             {sucesso ? (
               <p className="text-green-400 text-sm text-center py-2">{sucesso}</p>

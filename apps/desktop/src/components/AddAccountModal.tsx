@@ -24,6 +24,7 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
   const [autocompleteAberto, setAutocompleteAberto] = useState(false);
   const [buscandoElo, setBuscandoElo] = useState(false);
   const [erroElo, setErroElo] = useState('');
+  const [erroSalvar, setErroSalvar] = useState('');
 
   const sugestoes = useMemo(() => {
     const termo = eloInput.trim().toLowerCase();
@@ -56,29 +57,52 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
 
   async function handleSubmit() {
     if (!login.trim() || !senha.trim()) return;
-    setSalvando(true);
-    const eloFinal = eloInput.trim() || undefined;
-    if (editando) {
-      await onEdit({
-        ...contaParaEditar,
-        login,
-        senha,
-        nick: nick.trim() || undefined,
-        elo: eloFinal,
-        observacoes: observacoes.trim() || undefined,
-      });
-    } else {
-      await onAdd({
-        login,
-        senha,
-        nick: nick.trim() || undefined,
-        elo: eloFinal,
-        observacoes: observacoes.trim() || undefined,
-        deletedAt: undefined,
-      });
+
+    const nickTrimado = nick.trim();
+    if (nickTrimado) {
+      const posHash = nickTrimado.indexOf('#');
+      if (posHash <= 0 || posHash === nickTrimado.length - 1) {
+        setErroSalvar('Nick deve estar no formato Nome#TAG');
+        return;
+      }
     }
-    setSalvando(false);
-    onClose();
+
+    setSalvando(true);
+    setErroSalvar('');
+    const eloFinal = eloInput.trim() || undefined;
+    try {
+      if (editando) {
+        await onEdit({
+          ...contaParaEditar,
+          login,
+          senha,
+          nick: nickTrimado || undefined,
+          elo: eloFinal,
+          observacoes: observacoes.trim() || undefined,
+        });
+      } else {
+        await onAdd({
+          login,
+          senha,
+          nick: nickTrimado || undefined,
+          elo: eloFinal,
+          observacoes: observacoes.trim() || undefined,
+          deletedAt: undefined,
+        });
+      }
+      onClose();
+    } catch (e) {
+      const raw =
+        e instanceof Error
+          ? e.message
+          : typeof e === 'object' && e !== null && 'message' in e
+            ? String((e as { message: unknown }).message)
+            : String(e);
+      const msg = raw.replace(/^Error invoking remote method '[^']+': Error: /, '');
+      setErroSalvar(msg);
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -195,6 +219,10 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
             placeholder="ex: conta smurfada, ban temporário..."
           />
         </div>
+
+        {erroSalvar ? <p className="text-red-400 text-xs text-center -mt-1">{erroSalvar}</p> : null}
+
+        <div className="flex gap-3 justify-end mt-2"></div>
 
         <div className="flex gap-3 justify-end mt-2">
           <button
