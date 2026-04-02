@@ -131,6 +131,10 @@ function salvarBackup() {
 
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 
+ipcMain.handle('open-external', (_, url: string) => {
+  shell.openExternal(url);
+});
+
 ipcMain.handle('check-for-updates', () => {
   if (app.isPackaged) autoUpdater.checkForUpdates();
 });

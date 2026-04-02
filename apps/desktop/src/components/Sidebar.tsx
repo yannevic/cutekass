@@ -652,7 +652,7 @@ export default function Sidebar({
             </span>
             <button
               type="button"
-              onClick={() => window.open('https://github.com/yannevic')}
+              onClick={() => window.electronAPI.openExternal('https://github.com/yannevic')}
               className="text-xs whitespace-nowrap text-left transition-colors"
               style={{ color: '#3B136B' }}
               onMouseEnter={(e) => {

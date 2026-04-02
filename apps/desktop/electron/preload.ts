@@ -40,4 +40,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   reorderAccounts: (ids: number[]) => ipcRenderer.invoke('reorder-accounts', ids),
   listarHistoricoBackup: () => ipcRenderer.invoke('listar-historico-backup'),
   fetchLcuData: () => ipcRenderer.invoke('fetch-lcu-data'),
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
 });
