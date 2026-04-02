@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.32': [
+    '✨ Link do GitHub ao clicar em "Made by Nana" da sidebar 💕',
+  ],
+
   '1.0.31': [
     '✨ Disponível agora avaliação de conta contendo nick, nível, campeões, essências, skins',
   ],
