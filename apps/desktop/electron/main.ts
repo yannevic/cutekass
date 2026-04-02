@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, clipboard, net } from 'electron';
+import { app, BrowserWindow, ipcMain, clipboard, net, shell } from 'electron';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import path, { join } from 'path';
 import https from 'https';
@@ -192,9 +192,13 @@ ipcMain.handle('bulk-move-pasta', (_e, ids: number[], pastaId: number | null) =>
 
 ipcMain.handle('export-accounts', (_e, ids: number[]) => {
   const conteudo = exportAccounts(ids);
+  if (!conteudo) return;
   const downloadsPath = app.getPath('downloads');
-  const fileName = `contas_${Date.now()}.txt`;
-  writeFileSync(join(downloadsPath, fileName), conteudo, 'utf-8');
+  const fileName = 'contas.txt';
+  const filePath = join(downloadsPath, fileName);
+  writeFileSync(filePath, conteudo, 'utf-8');
+  shell.showItemInFolder(filePath);
+  return fileName;
 });
 
 ipcMain.handle('empty-trash', () => {

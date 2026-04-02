@@ -26,6 +26,7 @@ export default function BulkActionBar({
   const [acaoAtiva, setAcaoAtiva] = useState<AcaoAtiva>(null);
   const [eloSelecionado, setEloSelecionado] = useState('');
   const [pastaSelecionada, setPastaSelecionada] = useState('');
+  const [exportado, setExportado] = useState(false);
 
   function handleSetElo() {
     if (!eloSelecionado) return;
@@ -43,7 +44,11 @@ export default function BulkActionBar({
   }
 
   async function handleExportar() {
-    await window.electronAPI.exportAccounts(selectedIds);
+    const fileName = await window.electronAPI.exportAccounts(selectedIds);
+    if (fileName) {
+      setExportado(true);
+      setTimeout(() => setExportado(false), 2000);
+    }
   }
 
   return (
@@ -73,7 +78,7 @@ export default function BulkActionBar({
             onClick={handleExportar}
             className="text-sm bg-void-800 hover:bg-void-700 px-3 py-1.5 rounded-lg text-rift-200 transition-colors"
           >
-            ↓ Exportar
+            {exportado ? '✓ Exportado!' : '↓ Exportar'}
           </button>
           <button
             type="button"

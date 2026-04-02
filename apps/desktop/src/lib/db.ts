@@ -211,9 +211,14 @@ export function exportAccounts(ids: number[]): string {
   if (ids.length === 0) return '';
   const placeholders = ids.map(() => '?').join(',');
   const rows = db
-    .prepare(`SELECT login, senha FROM accounts WHERE id IN (${placeholders})`)
-    .all(...ids) as { login: string; senha: string }[];
-  return rows.map((r) => `${r.login}:${r.senha}`).join('\n');
+    .prepare(`SELECT login, senha, nick FROM accounts WHERE id IN (${placeholders})`)
+    .all(...ids) as { login: string; senha: string; nick: string | null }[];
+  return rows
+    .map((r) => {
+      const nickPart = r.nick ? ` ${r.nick}` : '';
+      return `${r.login}:${r.senha}${nickPart}`;
+    })
+    .join('\n');
 }
 export function gerarBackup(): string {
   const rows = db
