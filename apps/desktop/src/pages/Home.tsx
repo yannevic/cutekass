@@ -97,7 +97,7 @@ function AccountCard({
       {/* Handle de arrastar */}
       <button
         type="button"
-        className="text-rift-200/20 hover:text-rift-200/60 cursor-grab active:cursor-grabbing shrink-0 touch-none"
+        className="text-rift-200/20 hover:text-rift-200/60 cursor-grab active:cursor-grabbing shrink-0 touch-none px-2 -mx-2 self-stretch flex items-center rounded-lg hover:bg-void-800 transition-colors"
         {...attributes}
         {...listeners}
         title="Arrastar para reordenar"
@@ -117,14 +117,30 @@ function AccountCard({
         </svg>
       </button>
 
-      <input
-        type="checkbox"
-        className={`w-4 h-4 accent-rift-300 cursor-pointer shrink-0 transition-opacity ${
-          estaSelecionado ? 'opacity-100' : 'opacity-0 group-hover/card:opacity-100'
+      <button
+        type="button"
+        onClick={onToggleSelecionado}
+        className={`w-4 h-4 rounded shrink-0 border-2 flex items-center justify-center transition-all cursor-pointer ${
+          estaSelecionado
+            ? 'bg-rift-300 border-rift-300'
+            : 'bg-transparent border-rift-200/30 hover:border-rift-200/60 opacity-0 group-hover/card:opacity-100'
         }`}
-        checked={estaSelecionado}
-        onChange={onToggleSelecionado}
-      />
+      >
+        {estaSelecionado && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-2.5 h-2.5 text-void-950"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        )}
+      </button>
 
       <div className="flex flex-col gap-1 min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
@@ -598,12 +614,30 @@ export default function Home({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             {contasFiltradas.length > 0 && algumSelecionado && (
-              <input
-                type="checkbox"
-                className="w-4 h-4 accent-rift-300 cursor-pointer"
-                checked={todosSelecionados}
-                onChange={toggleSelecionarTodos}
-              />
+              <button
+                type="button"
+                onClick={toggleSelecionarTodos}
+                className={`w-4 h-4 rounded shrink-0 border-2 flex items-center justify-center transition-all cursor-pointer ${
+                  todosSelecionados
+                    ? 'bg-rift-300 border-rift-300'
+                    : 'bg-transparent border-rift-200/30 hover:border-rift-200/60'
+                }`}
+              >
+                {todosSelecionados && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-2.5 h-2.5 text-void-950"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
             )}
             <h2 className="text-xl font-bold text-rift-200">
               {filtraSemPasta
