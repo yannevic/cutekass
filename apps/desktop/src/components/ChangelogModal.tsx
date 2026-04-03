@@ -4,6 +4,14 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.36': [
+    '✨ Ícones personalizáveis nas pastas',
+    '✨ Mais cores disponíveis para pastas',
+    '✨ Reordene pastas arrastando e soltando',
+    '✨ Wins, losses e winrate nas contas',
+    '✨ Stats atualizados junto com o elo',
+  ],
+
   '1.0.35': [
     '✨ Pastas agora têm ícones personalizáveis',
     '✨ Escolha o ícone ao criar ou editar uma pasta',
