@@ -4,6 +4,14 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.37': [
+    '✨ Edição de cor das pastas na sidebar',
+    '✨ Cor do WR muda por faixa✨ Simule quantos jogos faltam para subir de elo',
+    '✨ Calcule em quantos dias você chega no objetivo pelo seu ritmo de jogo',
+    '✨ Edição de cor das pastas na sidebar',
+    '✨ Cor do WR muda por faixa: azul 100%, dourado 80~99%, roxo 70~79%, cinza abaixo de 70%',
+  ],
+
   '1.0.36': [
     '✨ Ícones personalizáveis nas pastas',
     '✨ Mais cores disponíveis para pastas',
