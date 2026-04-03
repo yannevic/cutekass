@@ -1,1 +1,1 @@
-✨ Correção no cálculo de jogos do simulador | ✨ Correção ao editar cor das pastas na sidebar
+✨ Dados do cliente salvos no card da conta | ✨ Ícone no card mostra data da última avaliação | ✨ Botão de vincular some se nick já está vinculado

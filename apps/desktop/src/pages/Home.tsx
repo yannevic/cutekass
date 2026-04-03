@@ -60,6 +60,7 @@ interface CardProps {
   onFecharDropdown: () => void;
   onEditar: () => void;
   onExcluir: () => void;
+  onAbrirLcu: () => void;
 }
 
 function AccountCard({
@@ -76,6 +77,7 @@ function AccountCard({
   onFecharDropdown,
   onEditar,
   onExcluir,
+  onAbrirLcu,
 }: CardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: account.id,
@@ -173,6 +175,22 @@ function AccountCard({
                 % WR
               </span>
             </p>
+          )}
+          {account.lcuAtualizadoEm != null && (
+            <button
+              type="button"
+              onClick={onAbrirLcu}
+              title={`Dados LCU de ${new Date(account.lcuAtualizadoEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+              className="flex items-center gap-1 text-xs text-rift-200/40 hover:text-rift-300 bg-void-800 hover:bg-void-700 px-1.5 py-0.5 rounded-md transition-colors"
+            >
+              🔍
+              <span className="text-rift-200/30 text-[10px]">
+                {new Date(account.lcuAtualizadoEm).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                })}
+              </span>
+            </button>
           )}
         </div>
         <p className="text-sm text-rift-200/60">{account.login}</p>
@@ -365,6 +383,18 @@ export default function Home({
   const [erroAtualizacao, setErroAtualizacao] = useState('');
   const [erroLogin, setErroLogin] = useState<string>('');
   const [ordemCustom, setOrdemCustom] = useState<number[]>([]);
+
+  const [lcuContaModal, setLcuContaModal] = useState<{
+    nick: string;
+    dados: {
+      nivel: number;
+      essenciaAzul: number;
+      essenciaLaranja: number;
+      numCampeoes: number;
+      numSkins: number;
+      nick: string;
+    };
+  } | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -612,6 +642,26 @@ export default function Home({
     setLcuModal({ nick: 'Conta atual', dados: null, erro: '', carregando: true });
     try {
       const dados = await window.electronAPI.fetchLcuData();
+
+      // Se o nick da LCU bater com alguma conta salva, persiste os dados LCU
+      if (dados.nick) {
+        const contaVinculada = accounts.find(
+          (a) => a.nick?.toLowerCase() === dados.nick.toLowerCase()
+        );
+        if (contaVinculada) {
+          await updateAccountSilent({
+            ...contaVinculada,
+            lcuNivel: dados.nivel,
+            lcuEssenciaAzul: dados.essenciaAzul,
+            lcuEssenciaLaranja: dados.essenciaLaranja,
+            lcuCampeoes: dados.numCampeoes,
+            lcuSkins: dados.numSkins,
+            lcuAtualizadoEm: new Date().toISOString(),
+          });
+          await fetchAccounts();
+        }
+      }
+
       setLcuModal({ nick: 'Conta atual', dados, erro: '', carregando: false });
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Erro ao ler o cliente do LoL.';
@@ -856,6 +906,20 @@ export default function Home({
                       setIdParaExcluir(account.id);
                       setDropdownAberto(null);
                     }}
+                    onAbrirLcu={() => {
+                      if (account.lcuAtualizadoEm == null) return;
+                      setLcuContaModal({
+                        nick: account.nick ?? account.login,
+                        dados: {
+                          nivel: account.lcuNivel ?? 0,
+                          essenciaAzul: account.lcuEssenciaAzul ?? 0,
+                          essenciaLaranja: account.lcuEssenciaLaranja ?? 0,
+                          numCampeoes: account.lcuCampeoes ?? 0,
+                          numSkins: account.lcuSkins ?? 0,
+                          nick: account.nick ?? '',
+                        },
+                      });
+                    }}
                   />
                 ))}
               </ul>
@@ -922,6 +986,17 @@ export default function Home({
           carregando={lcuModal.carregando}
           accounts={accounts}
           onFechar={() => setLcuModal(null)}
+          onVincular={handleVincularNick}
+        />
+      ) : null}
+      {lcuContaModal ? (
+        <LcuModal
+          nick={lcuContaModal.nick}
+          dados={lcuContaModal.dados}
+          erro=""
+          carregando={false}
+          accounts={accounts}
+          onFechar={() => setLcuContaModal(null)}
           onVincular={handleVincularNick}
         />
       ) : null}

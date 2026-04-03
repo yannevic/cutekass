@@ -91,6 +91,18 @@ try {
   // colunas já existem, ignorar
 }
 
+// Migração: dados LCU por conta
+try {
+  db.exec('ALTER TABLE accounts ADD COLUMN lcuNivel INTEGER');
+  db.exec('ALTER TABLE accounts ADD COLUMN lcuEssenciaAzul INTEGER');
+  db.exec('ALTER TABLE accounts ADD COLUMN lcuEssenciaLaranja INTEGER');
+  db.exec('ALTER TABLE accounts ADD COLUMN lcuCampeoes INTEGER');
+  db.exec('ALTER TABLE accounts ADD COLUMN lcuSkins INTEGER');
+  db.exec('ALTER TABLE accounts ADD COLUMN lcuAtualizadoEm TEXT');
+} catch {
+  // colunas já existem, ignorar
+}
+
 // Tabela de histórico de backup
 db.exec(`
   CREATE TABLE IF NOT EXISTS backup_historico (
@@ -159,7 +171,9 @@ export function updateAccount(data: Account): void {
   db.prepare(
     `UPDATE accounts
      SET login = @login, senha = @senha, nick = @nick,
-         elo = @elo, observacoes = @observacoes, pastaId = @pastaId, wins = @wins, losses = @losses
+         elo = @elo, observacoes = @observacoes, pastaId = @pastaId, wins = @wins, losses = @losses,
+         lcuNivel = @lcuNivel, lcuEssenciaAzul = @lcuEssenciaAzul, lcuEssenciaLaranja = @lcuEssenciaLaranja,
+         lcuCampeoes = @lcuCampeoes, lcuSkins = @lcuSkins, lcuAtualizadoEm = @lcuAtualizadoEm
      WHERE id = @id`
   ).run({
     id: data.id,
@@ -171,6 +185,12 @@ export function updateAccount(data: Account): void {
     pastaId: data.pastaId ?? null,
     wins: data.wins ?? null,
     losses: data.losses ?? null,
+    lcuNivel: data.lcuNivel ?? null,
+    lcuEssenciaAzul: data.lcuEssenciaAzul ?? null,
+    lcuEssenciaLaranja: data.lcuEssenciaLaranja ?? null,
+    lcuCampeoes: data.lcuCampeoes ?? null,
+    lcuSkins: data.lcuSkins ?? null,
+    lcuAtualizadoEm: data.lcuAtualizadoEm ?? null,
   });
 }
 

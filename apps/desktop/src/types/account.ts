@@ -9,4 +9,10 @@ export interface Account {
   pastaId?: number | null;
   wins?: number | null;
   losses?: number | null;
+  lcuNivel?: number | null;
+  lcuEssenciaAzul?: number | null;
+  lcuEssenciaLaranja?: number | null;
+  lcuCampeoes?: number | null;
+  lcuSkins?: number | null;
+  lcuAtualizadoEm?: string | null;
 }

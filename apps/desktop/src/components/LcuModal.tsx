@@ -155,7 +155,8 @@ export default function LcuModal({
                   ))}
                 </ul>
 
-                {dados.nick ? (
+                {dados.nick &&
+                !accounts.some((a) => a.nick?.toLowerCase() === dados.nick.toLowerCase()) ? (
                   <button
                     type="button"
                     onClick={() => setEtapa('vincular')}
