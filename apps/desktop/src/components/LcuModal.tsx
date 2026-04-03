@@ -106,9 +106,9 @@ export default function LcuModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-void-900 border border-void-800 rounded-2xl p-6 w-80 shadow-2xl shadow-black/60 flex flex-col gap-4">
-        {/* Cabeçalho */}
-        <div className="flex items-center justify-between">
+      <div className="bg-void-900 border border-void-800 rounded-2xl p-6 w-[620px] shadow-2xl shadow-black/60 flex flex-col gap-4">
+        {/* ── Cabeçalho ── */}
+        <div className="flex items-center justify-between gap-4">
           {etapa === 'vincular' ? (
             <button
               type="button"
@@ -122,44 +122,59 @@ export default function LcuModal({
               ← Voltar
             </button>
           ) : (
-            <h2 className="font-bold text-rift-200 text-base">🔍 {nick}</h2>
+            <h2 className="font-bold text-rift-200 text-base shrink-0">🔍 {nick}</h2>
           )}
+
+          {/* Busca de skins no cabeçalho — só na etapa info */}
+          {etapa === 'info' && dados && dados.skinsNomes.length > 0 && (
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-xs text-rift-200/40 font-semibold uppercase tracking-wider shrink-0">
+                Skins
+              </span>
+              <input
+                className="flex-1 min-w-0 bg-void-800 border border-void-700 rounded-lg px-3 py-1.5 text-xs text-rift-200 outline-none focus:ring-1 focus:ring-rift-400 placeholder-rift-200/30 transition-colors"
+                placeholder="Buscar skin..."
+                value={buscaSkin}
+                onChange={(e) => setBuscaSkin(e.target.value)}
+              />
+            </div>
+          )}
+
           <button
             type="button"
             onClick={onFechar}
-            className="text-rift-200/40 hover:text-rift-200 transition-colors text-lg leading-none"
+            className="text-rift-200/40 hover:text-rift-200 transition-colors text-lg leading-none shrink-0"
           >
             ✕
           </button>
         </div>
 
         {/* ── Etapa 1: infos ── */}
-        {etapa === 'info' && (
-          <>
-            {carregando && (
-              <p className="text-rift-200/50 text-sm text-center py-4">Lendo cliente...</p>
-            )}
+        {carregando && (
+          <p className="text-rift-200/50 text-sm text-center py-4">Lendo cliente...</p>
+        )}
 
-            {erro && !carregando && <p className="text-red-400 text-sm text-center">{erro}</p>}
+        {erro && !carregando && <p className="text-red-400 text-sm text-center">{erro}</p>}
 
-            {dados && !carregando && (
-              <>
-                {/* Nick#tag com copiar */}
-                {dados.nick ? (
-                  <div className="flex items-center justify-between bg-void-800/60 rounded-xl px-4 py-2.5">
-                    <span className="text-sm text-rift-200/70 font-mono">{dados.nick}</span>
-                    <button
-                      type="button"
-                      onClick={handleCopiarNick}
-                      className="text-rift-200/40 hover:text-rift-200 transition-colors text-xs ml-2"
-                      title="Copiar nick"
-                    >
-                      📋
-                    </button>
-                  </div>
-                ) : null}
+        {etapa === 'info' && dados && !carregando && (
+          <div className="flex flex-col gap-3">
+            {/* ── Linha 1: nick copiável + lista de skins ── */}
+            <div className="flex flex-row gap-4 items-start">
+              {/* Coluna esquerda: nick + stats + vincular */}
+              <div className="flex flex-col gap-2 w-[220px] shrink-0">
+                <div className="flex items-center justify-between bg-void-800/60 rounded-xl px-4 py-2">
+                  <span className="text-sm text-rift-200/70 font-mono truncate">{dados.nick}</span>
+                  <button
+                    type="button"
+                    onClick={handleCopiarNick}
+                    className="text-rift-200/40 hover:text-rift-200 transition-colors text-xs ml-2 shrink-0"
+                    title="Copiar nick"
+                  >
+                    📋
+                  </button>
+                </div>
 
-                <ul className="flex flex-col gap-3">
+                <ul className="flex flex-col gap-2">
                   {[
                     { icone: '🎮', label: 'Nível', valor: dados.nivel },
                     { icone: '🏆', label: 'Campeões', valor: dados.numCampeoes },
@@ -182,108 +197,89 @@ export default function LcuModal({
                       <span className="text-sm text-rift-200/70">
                         {icone} {label}
                       </span>
-                      <span className="font-bold text-rift-200">{valor}</span>
+                      <span className="font-bold text-rift-200 tabular-nums">{valor}</span>
                     </li>
                   ))}
                 </ul>
 
-                {dados.skinsNomes.length > 0 && (
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-rift-200/40 font-semibold uppercase tracking-wide shrink-0">
-                        Lista de skins
-                      </p>
-                      <input
-                        className="flex-1 min-w-0 bg-void-800 border border-void-700 rounded-lg px-2 py-1 text-xs text-rift-200 outline-none focus:ring-1 focus:ring-rift-400 placeholder-rift-200/30 transition-colors"
-                        placeholder="Buscar skin..."
-                        value={buscaSkin}
-                        onChange={(e) => setBuscaSkin(e.target.value)}
-                      />
-                    </div>
-                    <ul
-                      className="flex flex-col gap-1 max-h-40 overflow-y-auto scrollbar-custom pr-1"
-                      style={{ scrollbarWidth: 'thin', scrollbarColor: '#5a1fa8 transparent' }}
-                    >
-                      {dados.skinsNomes
-                        .filter((nome) =>
-                          nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
-                        )
-                        .map((nome) => (
-                          <li
-                            key={nome}
-                            className="text-xs text-rift-200/70 bg-void-800/60 rounded-lg px-3 py-1.5"
-                          >
-                            {nome}
-                          </li>
-                        ))}
-                      {dados.skinsNomes.filter((nome) =>
-                        nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
-                      ).length === 0 && (
-                        <li className="text-xs text-rift-200/30 text-center py-2">
-                          Nenhuma skin encontrada.
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                )}
-
-                {dados.skinsNomes.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    {gerandoColagem && progressoColagem && (
-                      <div className="flex flex-col gap-1">
-                        <div className="w-full bg-void-800 rounded-full h-1.5">
-                          <div
-                            className="bg-rift-500 h-1.5 rounded-full transition-all"
-                            style={{
-                              width: `${Math.round((progressoColagem.atual / progressoColagem.total) * 100)}%`,
-                            }}
-                          />
-                        </div>
-                        <p className="text-xs text-rift-200/40 text-center">Gerando colagem...</p>
-                      </div>
-                    )}
-                    {erroColagem && (
-                      <p className="text-red-400 text-xs text-center">{erroColagem}</p>
-                    )}
-                    {sucessoColagem && (
-                      <p className="text-green-400 text-xs text-center">{sucessoColagem}</p>
-                    )}
+                {dados.nick &&
+                  !accounts.some((a) => a.nick?.toLowerCase() === dados.nick.toLowerCase()) && (
                     <button
                       type="button"
-                      onClick={handleGerarColagem}
-                      disabled={gerandoColagem}
-                      className="w-full text-sm bg-void-800 hover:bg-void-700 border border-void-700 hover:border-rift-500 text-rift-200 font-semibold py-2 rounded-xl transition-colors disabled:opacity-50"
+                      onClick={() => setEtapa('vincular')}
+                      className="w-full text-sm bg-rift-500 hover:bg-rift-400 text-white font-semibold py-2 rounded-xl transition-colors mt-1"
                     >
-                      {gerandoColagem ? '⏳ Gerando...' : '🖼️ Gerar colagem'}
+                      🔗 Vincular a uma conta
                     </button>
+                  )}
+              </div>
+
+              {/* Coluna direita: lista de skins */}
+              {dados.skinsNomes.length > 0 && (
+                <ul
+                  className="flex flex-col gap-1 overflow-y-auto flex-1 min-w-0 pr-1"
+                  style={{
+                    height: '298px',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#5a1fa8 transparent',
+                  }}
+                >
+                  {dados.skinsNomes
+                    .filter((nome) => nome.toLowerCase().includes(buscaSkin.trim().toLowerCase()))
+                    .map((nome) => (
+                      <li
+                        key={nome}
+                        className="text-xs text-rift-200/70 bg-void-800/60 rounded-lg px-3 py-1.5 shrink-0"
+                      >
+                        {nome}
+                      </li>
+                    ))}
+                  {dados.skinsNomes.filter((nome) =>
+                    nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
+                  ).length === 0 && (
+                    <li className="text-xs text-rift-200/30 text-center py-4">
+                      Nenhuma skin encontrada.
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+
+            {/* ── Botão gerar colagem (centralizado) ── */}
+            {dados.skinsNomes.length > 0 && (
+              <div className="flex flex-col items-center gap-2">
+                {gerandoColagem && progressoColagem && (
+                  <div className="flex flex-col gap-1 w-full">
+                    <div className="w-full bg-void-800 rounded-full h-1.5">
+                      <div
+                        className="bg-rift-500 h-1.5 rounded-full transition-all"
+                        style={{
+                          width: `${Math.round((progressoColagem.atual / progressoColagem.total) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-rift-200/40 text-center">Gerando colagem...</p>
                   </div>
                 )}
+                {erroColagem && <p className="text-red-400 text-xs text-center">{erroColagem}</p>}
+                {sucessoColagem && (
+                  <p className="text-green-400 text-xs text-center">{sucessoColagem}</p>
+                )}
 
-                {dados.nick &&
-                !accounts.some((a) => a.nick?.toLowerCase() === dados.nick.toLowerCase()) ? (
-                  <button
-                    type="button"
-                    onClick={() => setEtapa('vincular')}
-                    className="w-full text-sm bg-rift-500 hover:bg-rift-400 text-white font-semibold py-2 rounded-xl transition-colors"
-                  >
-                    🔗 Vincular a uma conta
-                  </button>
-                ) : null}
-              </>
+                <button
+                  type="button"
+                  onClick={handleGerarColagem}
+                  disabled={gerandoColagem}
+                  className="text-sm bg-rift-500 hover:bg-rift-400 disabled:opacity-50 text-white font-semibold px-8 py-2 rounded-xl transition-colors"
+                >
+                  {gerandoColagem ? '⏳ Gerando...' : '🖼️ Gerar colagem'}
+                </button>
+              </div>
             )}
-
-            <button
-              type="button"
-              onClick={onFechar}
-              className="text-sm text-rift-200/40 hover:text-rift-200 transition-colors text-center"
-            >
-              Fechar
-            </button>
-          </>
+          </div>
         )}
 
         {/* ── Etapa 2: vincular ── */}
-
         {etapa === 'vincular' && (
           <>
             <p className="text-xs text-rift-200/50 -mt-2">
@@ -298,9 +294,9 @@ export default function LcuModal({
               onChange={(e) => setBusca(e.target.value)}
               autoFocus
             />
-            {erroVincular ? (
+            {erroVincular && (
               <p className="text-red-400 text-xs text-center -mt-2">{erroVincular}</p>
-            ) : null}
+            )}
 
             {sucesso ? (
               <p className="text-green-400 text-sm text-center py-2">{sucesso}</p>
@@ -320,9 +316,7 @@ export default function LcuModal({
                         className="w-full text-left bg-void-800/60 hover:bg-void-700/60 rounded-xl px-4 py-2.5 transition-colors disabled:opacity-50"
                       >
                         <p className="text-sm font-semibold text-rift-200">{conta.login}</p>
-                        {conta.nick ? (
-                          <p className="text-xs text-rift-200/40">{conta.nick}</p>
-                        ) : null}
+                        {conta.nick && <p className="text-xs text-rift-200/40">{conta.nick}</p>}
                       </button>
                     </li>
                   ))

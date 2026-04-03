@@ -1,1 +1,1 @@
-✨ Gerar colagem de skins: cria pasta com splash arts da conta em Downloads!
+✨ Layout reformulado em duas colunas (stats à esquerda, skins à direita) com melhorias adicionais
