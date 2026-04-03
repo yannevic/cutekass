@@ -4,6 +4,11 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.38': [
+    '✨ Correção no cálculo de jogos do simulador',
+    '✨ Correção ao editar cor das pastas na sidebar',
+  ],
+
   '1.0.37': [
     '✨ Edição de cor das pastas na sidebar',
     '✨ Cor do WR muda por faixa✨ Simule quantos jogos faltam para subir de elo',
