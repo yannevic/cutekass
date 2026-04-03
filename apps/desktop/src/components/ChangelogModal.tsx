@@ -4,6 +4,12 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.39': [
+    '✨ Dados do cliente salvos no card da conta',
+    '✨ Ícone no card mostra data da última avaliação',
+    '✨ Botão de vincular some se nick já está vinculado',
+  ],
+
   '1.0.38': [
     '✨ Correção no cálculo de jogos do simulador',
     '✨ Correção ao editar cor das pastas na sidebar',
