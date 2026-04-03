@@ -36,6 +36,12 @@ export default function LcuModal({
   const [sucesso, setSucesso] = useState('');
   const [erroVincular, setErroVincular] = useState('');
   const [buscaSkin, setBuscaSkin] = useState('');
+  const [gerandoColagem, setGerandoColagem] = useState(false);
+  const [progressoColagem, setProgressoColagem] = useState<{ atual: number; total: number } | null>(
+    null
+  );
+  const [erroColagem, setErroColagem] = useState('');
+  const [sucessoColagem, setSucessoColagem] = useState('');
 
   const contasFiltradas = useMemo(() => {
     const semNick = accounts.filter((a) => !a.nick);
@@ -67,6 +73,30 @@ export default function LcuModal({
       setErroVincular(msg);
     } finally {
       setVinculando(false);
+    }
+  }
+
+  async function handleGerarColagem() {
+    if (!dados?.skinsNomes?.length) return;
+    setGerandoColagem(true);
+    setErroColagem('');
+    setSucessoColagem('');
+    setProgressoColagem({ atual: 0, total: dados.skinsNomes.length });
+    try {
+      const nomeArquivo = await window.electronAPI.gerarColagemSkins(dados.skinsNomes, dados.nick);
+      setSucessoColagem(`Pasta salva em Downloads: ${nomeArquivo}`);
+    } catch (e) {
+      const raw =
+        e instanceof Error
+          ? e.message
+          : typeof e === 'object' && e !== null && 'message' in e
+            ? String((e as { message: unknown }).message)
+            : String(e);
+      const msg = raw.replace(/^Error invoking remote method '[^']+': Error: /, '');
+      setErroColagem(msg);
+    } finally {
+      setGerandoColagem(false);
+      setProgressoColagem(null);
     }
   }
 
@@ -194,6 +224,38 @@ export default function LcuModal({
                         </li>
                       )}
                     </ul>
+                  </div>
+                )}
+
+                {dados.skinsNomes.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {gerandoColagem && progressoColagem && (
+                      <div className="flex flex-col gap-1">
+                        <div className="w-full bg-void-800 rounded-full h-1.5">
+                          <div
+                            className="bg-rift-500 h-1.5 rounded-full transition-all"
+                            style={{
+                              width: `${Math.round((progressoColagem.atual / progressoColagem.total) * 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-rift-200/40 text-center">Gerando colagem...</p>
+                      </div>
+                    )}
+                    {erroColagem && (
+                      <p className="text-red-400 text-xs text-center">{erroColagem}</p>
+                    )}
+                    {sucessoColagem && (
+                      <p className="text-green-400 text-xs text-center">{sucessoColagem}</p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleGerarColagem}
+                      disabled={gerandoColagem}
+                      className="w-full text-sm bg-void-800 hover:bg-void-700 border border-void-700 hover:border-rift-500 text-rift-200 font-semibold py-2 rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      {gerandoColagem ? '⏳ Gerando...' : '🖼️ Gerar colagem'}
+                    </button>
                   </div>
                 )}
 

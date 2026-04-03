@@ -1,1 +1,1 @@
-✨ Lista de skins da conta no modal LCU, com busca por nome
+✨ Gerar colagem de skins: cria pasta com splash arts da conta em Downloads

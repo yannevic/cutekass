@@ -20,7 +20,8 @@
     "npmRebuild": true,
     "buildDependenciesFromSource": true,
     "asarUnpack": [
-      "node_modules/better-sqlite3/**"
+      "node_modules/better-sqlite3/**",
+      "node_modules/canvas/**"
     ],
     "publish": {
       "provider": "github",
@@ -53,6 +54,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "7zip-bin": "^5.2.0",
     "better-sqlite3": "^9.4.3",
+    "canvas": "^2.11.2",
     "electron-updater": "^6.3.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
