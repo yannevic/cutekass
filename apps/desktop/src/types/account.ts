@@ -14,5 +14,6 @@ export interface Account {
   lcuEssenciaLaranja?: number | null;
   lcuCampeoes?: number | null;
   lcuSkins?: number | null;
+  lcuSkinsLista?: string | null;
   lcuAtualizadoEm?: string | null;
 }

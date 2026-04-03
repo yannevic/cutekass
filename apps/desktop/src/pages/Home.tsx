@@ -356,6 +356,7 @@ export default function Home({
       essenciaLaranja: number;
       numCampeoes: number;
       numSkins: number;
+      skinsNomes: string[];
       nick: string;
     } | null;
     erro: string;
@@ -392,6 +393,7 @@ export default function Home({
       essenciaLaranja: number;
       numCampeoes: number;
       numSkins: number;
+      skinsNomes: string[];
       nick: string;
     };
   } | null>(null);
@@ -656,6 +658,7 @@ export default function Home({
             lcuEssenciaLaranja: dados.essenciaLaranja,
             lcuCampeoes: dados.numCampeoes,
             lcuSkins: dados.numSkins,
+            lcuSkinsLista: JSON.stringify(dados.skinsNomes),
             lcuAtualizadoEm: new Date().toISOString(),
           });
           await fetchAccounts();
@@ -916,6 +919,9 @@ export default function Home({
                           essenciaLaranja: account.lcuEssenciaLaranja ?? 0,
                           numCampeoes: account.lcuCampeoes ?? 0,
                           numSkins: account.lcuSkins ?? 0,
+                          skinsNomes: account.lcuSkinsLista
+                            ? (JSON.parse(account.lcuSkinsLista) as string[])
+                            : [],
                           nick: account.nick ?? '',
                         },
                       });

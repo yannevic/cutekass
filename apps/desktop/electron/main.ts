@@ -563,12 +563,20 @@ ipcMain.handle('fetch-lcu-data', async () => {
       })
     : [];
 
+  const skinsNomes = skinsRaw
+    .map((sk) => {
+      const dadosSkin = skinsMap[String(sk.itemId)] as { name?: string } | undefined;
+      return dadosSkin?.name ?? '';
+    })
+    .filter((nome) => nome !== '');
+
   return {
     nivel,
     essenciaAzul,
     essenciaLaranja,
     numCampeoes,
     numSkins: skinsRaw.length,
+    skinsNomes,
     nick: nickLcu,
   };
 });

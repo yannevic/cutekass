@@ -104,6 +104,12 @@ try {
 }
 
 // Tabela de histórico de backup
+// Migração: lista de skins LCU
+try {
+  db.exec('ALTER TABLE accounts ADD COLUMN lcuSkinsLista TEXT');
+} catch {
+  // coluna já existe, ignorar
+}
 db.exec(`
   CREATE TABLE IF NOT EXISTS backup_historico (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -173,7 +179,7 @@ export function updateAccount(data: Account): void {
      SET login = @login, senha = @senha, nick = @nick,
          elo = @elo, observacoes = @observacoes, pastaId = @pastaId, wins = @wins, losses = @losses,
          lcuNivel = @lcuNivel, lcuEssenciaAzul = @lcuEssenciaAzul, lcuEssenciaLaranja = @lcuEssenciaLaranja,
-         lcuCampeoes = @lcuCampeoes, lcuSkins = @lcuSkins, lcuAtualizadoEm = @lcuAtualizadoEm
+         lcuCampeoes = @lcuCampeoes, lcuSkins = @lcuSkins, lcuSkinsLista = @lcuSkinsLista, lcuAtualizadoEm = @lcuAtualizadoEm
      WHERE id = @id`
   ).run({
     id: data.id,
@@ -190,6 +196,7 @@ export function updateAccount(data: Account): void {
     lcuEssenciaLaranja: data.lcuEssenciaLaranja ?? null,
     lcuCampeoes: data.lcuCampeoes ?? null,
     lcuSkins: data.lcuSkins ?? null,
+    lcuSkinsLista: data.lcuSkinsLista ?? null,
     lcuAtualizadoEm: data.lcuAtualizadoEm ?? null,
   });
 }

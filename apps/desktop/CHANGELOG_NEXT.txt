@@ -1,1 +1,1 @@
-✨ Dados do cliente salvos no card da conta | ✨ Ícone no card mostra data da última avaliação | ✨ Botão de vincular some se nick já está vinculado
+✨ Lista de skins da conta no modal LCU, com busca por nome

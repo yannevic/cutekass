@@ -7,6 +7,7 @@ interface LcuDados {
   essenciaLaranja: number;
   numCampeoes: number;
   numSkins: number;
+  skinsNomes: string[];
   nick: string;
 }
 
@@ -34,6 +35,7 @@ export default function LcuModal({
   const [vinculando, setVinculando] = useState(false);
   const [sucesso, setSucesso] = useState('');
   const [erroVincular, setErroVincular] = useState('');
+  const [buscaSkin, setBuscaSkin] = useState('');
 
   const contasFiltradas = useMemo(() => {
     const semNick = accounts.filter((a) => !a.nick);
@@ -154,6 +156,46 @@ export default function LcuModal({
                     </li>
                   ))}
                 </ul>
+
+                {dados.skinsNomes.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-rift-200/40 font-semibold uppercase tracking-wide shrink-0">
+                        Lista de skins
+                      </p>
+                      <input
+                        className="flex-1 min-w-0 bg-void-800 border border-void-700 rounded-lg px-2 py-1 text-xs text-rift-200 outline-none focus:ring-1 focus:ring-rift-400 placeholder-rift-200/30 transition-colors"
+                        placeholder="Buscar skin..."
+                        value={buscaSkin}
+                        onChange={(e) => setBuscaSkin(e.target.value)}
+                      />
+                    </div>
+                    <ul
+                      className="flex flex-col gap-1 max-h-40 overflow-y-auto scrollbar-custom pr-1"
+                      style={{ scrollbarWidth: 'thin', scrollbarColor: '#5a1fa8 transparent' }}
+                    >
+                      {dados.skinsNomes
+                        .filter((nome) =>
+                          nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
+                        )
+                        .map((nome) => (
+                          <li
+                            key={nome}
+                            className="text-xs text-rift-200/70 bg-void-800/60 rounded-lg px-3 py-1.5"
+                          >
+                            {nome}
+                          </li>
+                        ))}
+                      {dados.skinsNomes.filter((nome) =>
+                        nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
+                      ).length === 0 && (
+                        <li className="text-xs text-rift-200/30 text-center py-2">
+                          Nenhuma skin encontrada.
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
 
                 {dados.nick &&
                 !accounts.some((a) => a.nick?.toLowerCase() === dados.nick.toLowerCase()) ? (

@@ -45,6 +45,7 @@ declare global {
         essenciaLaranja: number;
         numCampeoes: number;
         numSkins: number;
+        skinsNomes: string[];
         nick: string;
       }>;
     };
