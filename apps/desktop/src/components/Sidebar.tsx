@@ -488,17 +488,19 @@ export default function Sidebar({
   function confirmarRename(pasta: Pasta) {
     const nomeTrimado = nomeEditando.trim();
     if (nomeTrimado) {
-      onRenamePasta(pasta.id, nomeTrimado, pasta.cor, iconeEditando);
+      onRenamePasta(pasta.id, nomeTrimado, corEditando, iconeEditando);
     }
     setEditandoId(null);
     setNomeEditando('');
     setIconeEditando('folder');
+    setCorEditando('#6366f1');
   }
 
   function cancelarEdicao() {
     setEditandoId(null);
     setNomeEditando('');
     setIconeEditando('folder');
+    setCorEditando('#6366f1');
   }
 
   function handleDragEnd(event: DragEndEvent) {

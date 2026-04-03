@@ -26,7 +26,7 @@ function eloParaPontos(elo: string): number {
   const tierIdx = ELOS_COM_DIVISAO.findIndex((t) => t.nome === tier.nome);
   const divStr = elo.replace(tier.nome, '').trim();
   const divIdx = DIVISOES.indexOf(divStr);
-  const divOrdem = divIdx === -1 ? 0 : DIVISOES.length - 1 - divIdx; // IV=0, III=1, II=2, I=3
+  const divOrdem = divIdx === -1 ? 0 : divIdx; // IV=0, III=1, II=2, I=3
   return (tierIdx * 4 + divOrdem) * 100;
 }
 
@@ -43,7 +43,7 @@ function pontosParaElo(pontos: number): string {
   const tierIdx = Math.floor(slot / 4);
   const divOrdem = slot % 4; // 0=IV, 1=III, 2=II, 3=I
   const tier = ELOS_COM_DIVISAO[Math.min(tierIdx, ELOS_COM_DIVISAO.length - 1)];
-  const div = DIVISOES[DIVISOES.length - 1 - divOrdem];
+  const div = DIVISOES[divOrdem];
   return `${tier.nome} ${div}`;
 }
 
@@ -56,7 +56,7 @@ function calcularJogos(
   const baseAtual = eloParaPontos(eloAtual);
   const baseAlvo = eloParaPontos(eloAlvo);
   const pontosAtual = baseAtual + lpAtual;
-  const pontosAlvo = baseAlvo + 100; // precisa chegar ao fim do elo alvo
+  const pontosAlvo = baseAlvo; // precisa chegar ao início do elo alvo // precisa chegar ao fim do elo alvo
   const diff = pontosAlvo - pontosAtual;
   if (diff <= 0) return 0;
   return Math.ceil(diff / lpGanho);
