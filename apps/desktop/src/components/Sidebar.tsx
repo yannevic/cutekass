@@ -21,6 +21,27 @@ import { PASTA_ICONS, getIcon } from '../lib/pastaIcons';
 
 const RELEASE_URL = 'https://github.com/yannevic/cutekass/releases/latest';
 
+const CORES = [
+  '#ef4444',
+  '#f43f5e',
+  '#f97316',
+  '#eab308',
+  '#ffd93d',
+  '#84cc16',
+  '#22c55e',
+  '#10b981',
+  '#06b6d4',
+  '#3b82f6',
+  '#6366f1',
+  '#a855f7',
+  '#ec4899',
+  '#ff6b6b',
+  '#ffffff',
+  '#94a3b8',
+  '#64748b',
+  '#1e293b',
+];
+
 interface SidebarProps {
   pastas: Pasta[];
   pastaAtiva: number | null;
@@ -119,6 +140,7 @@ interface PastaItemProps {
   onCancelarEdicao: () => void;
   onNomeChange: (v: string) => void;
   onIconeChange: (v: string) => void;
+  onCorChange: (v: string) => void;
   onConfirmarDelete: () => void;
   onPedirDelete: () => void;
   onCancelarDelete: () => void;
@@ -138,6 +160,8 @@ function PastaItem({
   onCancelarEdicao,
   onNomeChange,
   onIconeChange,
+  onCorChange,
+  corEditando,
   onConfirmarDelete,
   onPedirDelete,
   onCancelarDelete,
@@ -205,7 +229,22 @@ function PastaItem({
                 if (e.key === 'Escape') onCancelarEdicao();
               }}
             />
-
+            {/* Picker de cor inline */}
+            <div className="flex gap-1 flex-wrap">
+              {CORES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => onCorChange(c)}
+                  className="w-5 h-5 rounded-full transition-transform hover:scale-110 shrink-0"
+                  style={{
+                    backgroundColor: c,
+                    outline: corEditando === c ? `2px solid ${c}` : 'none',
+                    outlineOffset: '2px',
+                  }}
+                />
+              ))}
+            </div>
             {/* Picker de ícone inline */}
             <div className="flex gap-1 flex-wrap">
               {PASTA_ICONS.map((ic) => (
@@ -216,10 +255,10 @@ function PastaItem({
                   title={ic.label}
                   className="w-7 h-7 rounded flex items-center justify-center transition-all"
                   style={{
-                    backgroundColor: iconeEditando === ic.id ? `${pasta.cor}33` : 'transparent',
+                    backgroundColor: iconeEditando === ic.id ? `${corEditando}33` : 'transparent',
                     border:
                       iconeEditando === ic.id
-                        ? `1.5px solid ${pasta.cor}`
+                        ? `1.5px solid ${corEditando}`
                         : '1.5px solid transparent',
                   }}
                 >
@@ -232,7 +271,7 @@ function PastaItem({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    style={{ color: iconeEditando === ic.id ? pasta.cor : '#5A3A8A' }}
+                    style={{ color: iconeEditando === ic.id ? corEditando : '#5A3A8A' }}
                     dangerouslySetInnerHTML={{ __html: ic.svg }}
                   />
                 </button>
@@ -414,6 +453,7 @@ export default function Sidebar({
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [nomeEditando, setNomeEditando] = useState('');
   const [iconeEditando, setIconeEditando] = useState('folder');
+  const [corEditando, setCorEditando] = useState('#6366f1');
   const [confirmandoDeleteId, setConfirmandoDeleteId] = useState<number | null>(null);
   const [versaoApp, setVersaoApp] = useState('');
   const [instalando, setInstalando] = useState(false);
@@ -442,6 +482,7 @@ export default function Sidebar({
     setEditandoId(pasta.id);
     setNomeEditando(pasta.nome);
     setIconeEditando(pasta.icone ?? 'folder');
+    setCorEditando(pasta.cor);
   }
 
   function confirmarRename(pasta: Pasta) {
@@ -727,7 +768,7 @@ export default function Sidebar({
                 editandoId={editandoId}
                 nomeEditando={nomeEditando}
                 iconeEditando={iconeEditando}
-                corEditando={pasta.cor}
+                corEditando={corEditando}
                 confirmandoDeleteId={confirmandoDeleteId}
                 onSelecionar={() => {
                   onSelecionarPasta(pasta.id);
@@ -738,6 +779,7 @@ export default function Sidebar({
                 onCancelarEdicao={cancelarEdicao}
                 onNomeChange={setNomeEditando}
                 onIconeChange={setIconeEditando}
+                onCorChange={setCorEditando}
                 onConfirmarDelete={() => {
                   onDeletePasta(pasta.id);
                   setConfirmandoDeleteId(null);

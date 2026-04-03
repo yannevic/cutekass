@@ -153,7 +153,19 @@ function AccountCard({
               <span className="text-green-400">{account.wins ?? 0}V</span>
               <span className="text-red-400">{account.losses ?? 0}D</span>
               <span className="text-rift-200/30">·</span>
-              <span className="text-yellow-400">
+              <span
+                style={{
+                  color: (() => {
+                    const wr = Math.round(
+                      ((account.wins ?? 0) / ((account.wins ?? 0) + (account.losses ?? 1))) * 100
+                    );
+                    if (wr === 100) return '#06b6d4';
+                    if (wr >= 80) return '#eab308';
+                    if (wr >= 70) return '#a855f7';
+                    return '#64748b';
+                  })(),
+                }}
+              >
                 {Math.round(
                   ((account.wins ?? 0) / ((account.wins ?? 0) + (account.losses ?? 1))) * 100
                 )}
