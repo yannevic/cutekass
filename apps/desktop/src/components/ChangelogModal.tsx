@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.43': [
+    '✨ Layout reformulado em duas colunas (stats à esquerda, skins à direita) com melhorias adicionais',
+  ],
+
   '1.0.42': [
     '✨ Gerar colagem de skins: cria pasta com splash arts da conta em Downloads!',
   ],
