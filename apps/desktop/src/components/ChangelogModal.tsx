@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.41': [
+    '✨ Gerar colagem de skins: cria pasta com splash arts da conta em Downloads',
+  ],
+
   '1.0.40': [
     '✨ Lista de skins da conta no modal LCU, com busca por nome',
   ],
