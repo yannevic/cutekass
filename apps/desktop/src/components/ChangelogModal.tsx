@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.40': [
+    '✨ Lista de skins da conta no modal LCU, com busca por nome',
+  ],
+
   '1.0.39': [
     '✨ Dados do cliente salvos no card da conta',
     '✨ Ícone no card mostra data da última avaliação',
