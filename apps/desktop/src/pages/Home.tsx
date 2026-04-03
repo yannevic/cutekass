@@ -30,6 +30,7 @@ import type { Account } from '../types/account';
 import SettingsModal from '../components/SettingsModal';
 import type { UpdateStatus } from '../components/UpdateNotifier';
 import Select from '../components/Select';
+import SimuladorModal from '../components/SimuladorModal';
 import { corDoElo } from '../lib/eloConfig';
 
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
@@ -358,6 +359,7 @@ export default function Home({
     }
   );
   const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
+  const [simuladorAberto, setSimuladorAberto] = useState(false);
   const [atualizandoElos, setAtualizandoElos] = useState(false);
   const [progressoElo, setProgressoElo] = useState<{ atual: number; total: number } | null>(null);
   const [erroAtualizacao, setErroAtualizacao] = useState('');
@@ -695,6 +697,13 @@ export default function Home({
             )}
             <button
               type="button"
+              onClick={() => setSimuladorAberto(true)}
+              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+            >
+              🎯 Simular ranking
+            </button>
+            <button
+              type="button"
               onClick={handleAvaliarGeral}
               className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
             >
@@ -904,7 +913,7 @@ export default function Home({
       ) : null}
 
       {configuracoesAberto ? <SettingsModal onClose={() => setConfiguracoesAberto(false)} /> : null}
-
+      {simuladorAberto ? <SimuladorModal onClose={() => setSimuladorAberto(false)} /> : null}
       {lcuModal ? (
         <LcuModal
           nick={lcuModal.nick}

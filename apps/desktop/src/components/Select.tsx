@@ -44,7 +44,7 @@ export default function Select({ value, onChange, options, placeholder }: Select
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative w-full">
       <button
         type="button"
         onClick={handleAbrir}
@@ -70,12 +70,14 @@ export default function Select({ value, onChange, options, placeholder }: Select
 
       {aberto && (
         <ul
-          className="absolute left-0 right-0 z-50 bg-void-900 border border-void-800 rounded-lg shadow-lg shadow-black/50 overflow-y-auto max-h-52 scrollbar-custom"
+          className="absolute left-0 z-50 bg-void-900 border border-void-800 rounded-lg shadow-lg shadow-black/50 overflow-y-auto max-h-52 scrollbar-custom"
           style={{
             ...(abrePraCima
               ? { bottom: '100%', marginBottom: '4px' }
               : { top: '100%', marginTop: '4px' }),
             msOverflowStyle: 'none',
+            minWidth: '100%',
+            maxWidth: '200px',
           }}
         >
           {options.map((opcao) => (
