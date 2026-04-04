@@ -35,6 +35,7 @@ export default function BulkActionBar({
   const [eloSelecionado, setEloSelecionado] = useState('');
   const [pastaSelecionada, setPastaSelecionada] = useState('');
   const [exportado, setExportado] = useState(false);
+  const [exportModalAberto, setExportModalAberto] = useState(false);
 
   function handleSetElo() {
     if (!eloSelecionado) return;
@@ -51,7 +52,8 @@ export default function BulkActionBar({
     setPastaSelecionada('');
   }
 
-  async function handleExportar() {
+  async function handleExportarSemSenha() {
+    setExportModalAberto(false);
     const fileName = await window.electronAPI.exportAccounts(selectedIds);
     if (fileName) {
       setExportado(true);
@@ -95,7 +97,7 @@ export default function BulkActionBar({
           </button>
           <button
             type="button"
-            onClick={handleExportar}
+            onClick={() => setExportModalAberto(true)}
             className="text-sm bg-void-800 hover:bg-void-700 px-3 py-1.5 rounded-lg text-rift-200 transition-colors"
           >
             {exportado ? '✓ Exportado!' : '↓ Exportar'}
@@ -175,6 +177,38 @@ export default function BulkActionBar({
       >
         Cancelar seleção
       </button>
+      {exportModalAberto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md shadow-2xl flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-rift-200">Exportar contas</h3>
+
+            <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-lg px-4 py-3">
+              <p className="text-yellow-300 text-sm font-semibold mb-1">⚠️ Atenção</p>
+              <p className="text-yellow-200/70 text-sm">
+                O arquivo exportado contém logins e senhas em texto puro. Guarde-o em local seguro e
+                não compartilhe com ninguém.
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setExportModalAberto(false)}
+                className="text-sm text-rift-200/50 hover:text-rift-200 px-4 py-2 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleExportarSemSenha}
+                className="text-sm bg-rift-500 hover:bg-rift-400 text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+              >
+                ↓ Exportar mesmo assim
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

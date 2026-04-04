@@ -18,6 +18,7 @@ declare global {
       getPastas: () => Promise<Pasta[]>;
       deletePasta: (id: number) => Promise<void>;
       exportAccounts: (ids: number[]) => Promise<string>;
+      exportAccountsEncrypted: (ids: number[], senha: string) => Promise<void>;
       getRiotKey: () => Promise<string>;
       saveRiotKey: (key: string) => Promise<void>;
       fetchElo: (nick: string) => Promise<{ elo: string; wins: number; losses: number }>;

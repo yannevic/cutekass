@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, clipboard, net, shell } from 'electron';
+import { createCipheriv, randomBytes, pbkdf2Sync } from 'crypto';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import path, { join } from 'path';
 import https from 'https';
@@ -207,6 +208,26 @@ ipcMain.handle('export-accounts', (_e, ids: number[]) => {
   writeFileSync(filePath, conteudo, 'utf-8');
   shell.showItemInFolder(filePath);
   return fileName;
+});
+
+ipcMain.handle('export-accounts-encrypted', (_e, ids: number[], senha: string) => {
+  if (typeof senha !== 'string' || senha.trim().length === 0) {
+    throw new Error('Senha inválida.');
+  }
+  const conteudo = exportAccounts(ids);
+  if (!conteudo) return;
+
+  const salt = randomBytes(16);
+  const key = pbkdf2Sync(senha.trim(), salt, 100000, 32, 'sha256');
+  const iv = randomBytes(16);
+  const cipher = createCipheriv('aes-256-cbc', key, iv);
+  const encrypted = Buffer.concat([cipher.update(conteudo, 'utf-8'), cipher.final()]);
+  const resultado = Buffer.concat([salt, iv, encrypted]);
+
+  const downloadsPath = app.getPath('downloads');
+  const filePath = join(downloadsPath, 'contas_seguro.enc');
+  writeFileSync(filePath, resultado);
+  shell.showItemInFolder(filePath);
 });
 
 ipcMain.handle('empty-trash', () => {
