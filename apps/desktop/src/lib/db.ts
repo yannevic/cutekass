@@ -40,18 +40,25 @@ function abrirBanco(chave: string): DatabaseConstructor.Database {
     bancoCript.pragma('user_version');
     return bancoCript;
   } catch {
-    // Banco existia sem criptografia — migrar
+    // Banco existia sem criptografia — migrar via sqlcipher_export
   }
 
+  const dbMigrado = path.join(app.getPath('userData'), 'accounts_enc.db');
+
   const bancoSemChave = new DatabaseConstructor(dbPath);
-  bancoSemChave.pragma(`rekey = '${chave}'`);
+  bancoSemChave.pragma(`cipher = 'sqlcipher'`);
+  bancoSemChave.prepare(`ATTACH DATABASE '${dbMigrado}' AS encrypted KEY '${chave}'`).run();
+  bancoSemChave.prepare(`SELECT sqlcipher_export('encrypted')`).run();
+  bancoSemChave.prepare(`DETACH DATABASE encrypted`).run();
   bancoSemChave.close();
+
+  fs.renameSync(dbPath, dbPath + '.bak');
+  fs.renameSync(dbMigrado, dbPath);
 
   const bancoFinal = new DatabaseConstructor(dbPath);
   bancoFinal.pragma(`key = '${chave}'`);
   return bancoFinal;
 }
-
 let db: DatabaseConstructor.Database;
 
 export async function inicializarDb(): Promise<void> {
