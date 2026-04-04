@@ -1,1 +1,1 @@
-✨ Layout reformulado em duas colunas (stats à esquerda, skins à direita) com melhorias adicionais
+✨ Banco criptografado com AES-256, chave protegida pelo Credential Manager do sistema e termos de uso adicionados

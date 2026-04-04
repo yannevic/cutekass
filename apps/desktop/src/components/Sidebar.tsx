@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import QRCode from 'qrcode';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DndContext,
@@ -461,6 +462,27 @@ export default function Sidebar({
   const voltarIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [recolhido, setRecolhido] = useState(true);
 
+  const [apoioAberto, setApoioAberto] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const PIX_CODE =
+    '00020126580014BR.GOV.BCB.PIX0136827b71fa-5760-4a58-aa1b-56423896f5495204000053039865802BR5924Yanne Vitoria Cavalcante6009SAO PAULO62140510BRmuHg47VZ6304AF50';
+
+  const gerarQr = useCallback(() => {
+    if (!canvasRef.current) return;
+    QRCode.toCanvas(canvasRef.current, PIX_CODE, {
+      width: 200,
+      margin: 2,
+      color: { dark: '#1E0A38', light: '#CFA6FF' },
+    });
+  }, []);
+
+  useEffect(() => {
+    if (apoioAberto) {
+      setTimeout(gerarQr, 50);
+    }
+  }, [apoioAberto, gerarQr]);
+
   const sensors = useSensors(useSensor(PointerSensor));
 
   useEffect(() => {
@@ -881,6 +903,26 @@ export default function Sidebar({
             Configurações
           </span>
         </button>
+        {/* Apoiar */}
+        <button
+          type="button"
+          onClick={() => setApoioAberto(true)}
+          className="w-full flex items-center py-2 rounded-lg text-sm transition-colors mx-1"
+          style={{ color: '#5A3A8A' }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1E0A38';
+            (e.currentTarget as HTMLButtonElement).style.color = '#ec4899';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+          }}
+        >
+          <span className="w-10 flex items-center justify-center shrink-0 text-base">🌸</span>
+          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
+            Apoiar
+          </span>
+        </button>
 
         {/* Atualização */}
         {renderBotaoUpdate()}
@@ -917,6 +959,69 @@ export default function Sidebar({
           </div>
         </div>
       </div>
+      {apoioAberto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div
+            className="flex flex-col gap-4 rounded-2xl p-6 w-full max-w-xs shadow-2xl"
+            style={{ backgroundColor: '#1E0A38', border: '1px solid #3B136B' }}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-base" style={{ color: '#CFA6FF' }}>
+                🌸 Apoiar o CuteKass
+              </h3>
+              <button
+                type="button"
+                onClick={() => setApoioAberto(false)}
+                className="text-sm transition-colors"
+                style={{ color: '#5A3A8A' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs leading-relaxed" style={{ color: '#7B5EA7' }}>
+              O CuteKass é gratuito e feito com muito carinho. Se quiser apoiar, qualquer valor é
+              bem vindo! 🌸
+            </p>
+
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-xs font-semibold" style={{ color: '#CFA6FF' }}>
+                Pix
+              </p>
+              <canvas ref={canvasRef} className="rounded-xl" />
+              <p className="text-xs" style={{ color: '#5A3A8A' }}>
+                Escaneie com o app do banco
+              </p>
+            </div>
+
+            <div className="border-t pt-3 flex flex-col gap-2" style={{ borderColor: '#3B136B' }}>
+              <p className="text-xs font-semibold" style={{ color: '#CFA6FF' }}>
+                Ko-fi
+              </p>
+              <button
+                type="button"
+                onClick={() => window.electronAPI.openExternal('https://ko-fi.com/nanafofa')}
+                className="text-xs text-left transition-colors underline underline-offset-2"
+                style={{ color: '#a855f7' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = '#CFA6FF';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.color = '#a855f7';
+                }}
+              >
+                ☕ ko-fi.com/nanafofa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
