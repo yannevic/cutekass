@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.44': [
+    '✨ Banco criptografado com AES-256, chave protegida pelo Credential Manager do sistema e termos de uso adicionados',
+  ],
+
   '1.0.43': [
     '✨ Layout reformulado em duas colunas (stats à esquerda, skins à direita) com melhorias adicionais',
   ],
