@@ -1,13 +1,61 @@
-import Database from 'better-sqlite3';
+import DatabaseConstructor from 'better-sqlite3-multiple-ciphers';
 import path from 'path';
+import fs from 'fs';
+import { randomUUID } from 'crypto';
 import { app } from 'electron';
 import type { Account } from '../types/account';
 import type { Pasta } from '../types/pasta';
 
 const dbPath = path.join(app.getPath('userData'), 'accounts.db');
+const keyPath = path.join(app.getPath('userData'), 'key.dat');
+const keyBackupPath = path.join(app.getPath('userData'), 'key.bak');
 
-const db = new Database(dbPath);
+// ─── Chave de criptografia ────────────────────────────────────────────────────
 
+function carregarOuCriarChave(): string {
+  if (fs.existsSync(keyPath)) {
+    return fs.readFileSync(keyPath, 'utf-8').trim();
+  }
+  if (fs.existsSync(keyBackupPath)) {
+    const chave = fs.readFileSync(keyBackupPath, 'utf-8').trim();
+    fs.writeFileSync(keyPath, chave, 'utf-8');
+    return chave;
+  }
+  const chave = randomUUID().replace(/-/g, '');
+  fs.writeFileSync(keyPath, chave, 'utf-8');
+  fs.writeFileSync(keyBackupPath, chave, 'utf-8');
+  return chave;
+}
+
+const chave = carregarOuCriarChave();
+
+// ─── Abertura do banco com migração automática ────────────────────────────────
+
+function abrirBanco(): DatabaseConstructor.Database {
+  // Tenta abrir com a chave (banco já criptografado)
+  try {
+    const bancoCript = new DatabaseConstructor(dbPath);
+    bancoCript.pragma(`key = '${chave}'`);
+    // Testa se consegue ler — se o banco já estava criptografado com essa chave, funciona
+    bancoCript.pragma('user_version');
+    return bancoCript;
+  } catch {
+    // Banco existia sem criptografia (usuários antigos) — migrar
+  }
+
+  // Abre sem chave
+  const bancoSemChave = new DatabaseConstructor(dbPath);
+  // Aplica criptografia no banco existente
+  bancoSemChave.pragma(`rekey = '${chave}'`);
+  bancoSemChave.close();
+
+  // Abre agora com a chave normalmente
+  const bancoFinal = new DatabaseConstructor(dbPath);
+  bancoFinal.pragma(`key = '${chave}'`);
+  return bancoFinal;
+}
+
+const db = abrirBanco();
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
 db.exec(`
