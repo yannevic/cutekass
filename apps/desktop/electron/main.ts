@@ -134,7 +134,9 @@ function salvarBackup() {
 // ─── IPC handlers ─────────────────────────────────────────────────────────────
 
 ipcMain.handle('open-external', (_, url: string) => {
-  shell.openExternal(url);
+  if (typeof url === 'string' && url.startsWith('https://')) {
+    shell.openExternal(url);
+  }
 });
 
 ipcMain.handle('check-for-updates', () => {
@@ -236,15 +238,16 @@ ipcMain.handle('listar-historico-backup', () => listarHistoricoBackup());
 
 ipcMain.handle('get-riot-key', () => riotApiKey);
 
-ipcMain.handle('save-riot-key', (_e, key: string) => {
-  riotApiKey = key.trim();
+ipcMain.handle('save-riot-key', (_e, key: unknown) => {
+  if (typeof key !== 'string') return;
+  riotApiKey = key.trim().slice(0, 200);
   saveConfig({ riotApiKey, riotClientPath });
 });
-
 ipcMain.handle('get-riot-client-path', () => riotClientPath);
 
-ipcMain.handle('save-riot-client-path', (_e, path: string) => {
-  riotClientPath = path.trim();
+ipcMain.handle('save-riot-client-path', (_e, clientPath: unknown) => {
+  if (typeof clientPath !== 'string') return;
+  riotClientPath = clientPath.trim().slice(0, 500);
   saveConfig({ riotApiKey, riotClientPath });
 });
 
