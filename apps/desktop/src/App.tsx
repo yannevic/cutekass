@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Trash from './pages/Trash';
 import UpdateNotifier, { UpdateStatus } from './components/UpdateNotifier';
 import ChangelogModal from './components/ChangelogModal';
+import TermosModal from './components/TermosModal';
 
 export default function App() {
   const [versao, setVersao] = useState('');
@@ -11,6 +12,7 @@ export default function App() {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>('idle');
   const [updateErro, setUpdateErro] = useState('');
   const [sidebarAberta, setSidebarAberta] = useState(false);
+  const [mostrarTermos, setMostrarTermos] = useState(false);
 
   useEffect(() => {
     async function verificarChangelog() {
@@ -21,6 +23,10 @@ export default function App() {
       if (!jaViu) {
         setMostrarChangelog(true);
       }
+      const jaAceitouTermos = localStorage.getItem('termos-aceitos');
+      if (!jaAceitouTermos) {
+        setMostrarTermos(true);
+      }
     }
     verificarChangelog();
   }, []);
@@ -29,6 +35,10 @@ export default function App() {
     const chave = `changelog-visto-${versao}`;
     localStorage.setItem(chave, 'true');
     setMostrarChangelog(false);
+  }
+  function aceitarTermos() {
+    localStorage.setItem('termos-aceitos', 'true');
+    setMostrarTermos(false);
   }
 
   return (
@@ -65,6 +75,7 @@ export default function App() {
       {mostrarChangelog && versao ? (
         <ChangelogModal versao={versao} onFechar={fecharChangelog} />
       ) : null}
+      {mostrarTermos ? <TermosModal onAceitar={aceitarTermos} /> : null}
     </>
   );
 }
