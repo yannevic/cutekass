@@ -4,6 +4,7 @@ import path, { join } from 'path';
 import https from 'https';
 import { autoUpdater } from 'electron-updater';
 import {
+  inicializarDb,
   emptyTrash,
   listAccounts,
   listTrash,
@@ -746,7 +747,10 @@ ipcMain.handle('gerar-colagem-skins', async (_e, skinsNomes: string[], nick: str
 });
 // ─── Ciclo de vida ────────────────────────────────────────────────────────────
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  await inicializarDb();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

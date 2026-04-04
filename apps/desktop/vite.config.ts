@@ -15,7 +15,7 @@ export default defineConfig({
         vite: {
           build: {
             rollupOptions: {
-              external: ['better-sqlite3-multiple-ciphers', 'canvas'],
+              external: ['better-sqlite3-multiple-ciphers', 'keytar', 'canvas'],
             },
           },
         },

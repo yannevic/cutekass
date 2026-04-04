@@ -3,168 +3,168 @@ import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
 import { app } from 'electron';
+import keytar from 'keytar';
 import type { Account } from '../types/account';
 import type { Pasta } from '../types/pasta';
 
 const dbPath = path.join(app.getPath('userData'), 'accounts.db');
-const keyPath = path.join(app.getPath('userData'), 'key.dat');
 const keyBackupPath = path.join(app.getPath('userData'), 'key.bak');
+
+const KEYTAR_SERVICE = 'CuteKass';
+const KEYTAR_ACCOUNT = 'db-key';
 
 // ─── Chave de criptografia ────────────────────────────────────────────────────
 
-function carregarOuCriarChave(): string {
-  if (fs.existsSync(keyPath)) {
-    return fs.readFileSync(keyPath, 'utf-8').trim();
-  }
-  if (fs.existsSync(keyBackupPath)) {
-    const chave = fs.readFileSync(keyBackupPath, 'utf-8').trim();
-    fs.writeFileSync(keyPath, chave, 'utf-8');
-    return chave;
-  }
-  const chave = randomUUID().replace(/-/g, '');
-  fs.writeFileSync(keyPath, chave, 'utf-8');
-  fs.writeFileSync(keyBackupPath, chave, 'utf-8');
-  return chave;
-}
+async function carregarOuCriarChave(): Promise<string> {
+  const chaveSalva = await keytar.getPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT);
+  if (chaveSalva) return chaveSalva;
 
-const chave = carregarOuCriarChave();
+  if (fs.existsSync(keyBackupPath)) {
+    const chaveBackup = fs.readFileSync(keyBackupPath, 'utf-8').trim();
+    await keytar.setPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT, chaveBackup);
+    return chaveBackup;
+  }
+
+  const chaveNova = randomUUID().replace(/-/g, '');
+  await keytar.setPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT, chaveNova);
+  fs.writeFileSync(keyBackupPath, chaveNova, 'utf-8');
+  return chaveNova;
+}
 
 // ─── Abertura do banco com migração automática ────────────────────────────────
 
-function abrirBanco(): DatabaseConstructor.Database {
-  // Tenta abrir com a chave (banco já criptografado)
+function abrirBanco(chave: string): DatabaseConstructor.Database {
   try {
     const bancoCript = new DatabaseConstructor(dbPath);
     bancoCript.pragma(`key = '${chave}'`);
-    // Testa se consegue ler — se o banco já estava criptografado com essa chave, funciona
     bancoCript.pragma('user_version');
     return bancoCript;
   } catch {
-    // Banco existia sem criptografia (usuários antigos) — migrar
+    // Banco existia sem criptografia — migrar
   }
 
-  // Abre sem chave
   const bancoSemChave = new DatabaseConstructor(dbPath);
-  // Aplica criptografia no banco existente
   bancoSemChave.pragma(`rekey = '${chave}'`);
   bancoSemChave.close();
 
-  // Abre agora com a chave normalmente
   const bancoFinal = new DatabaseConstructor(dbPath);
   bancoFinal.pragma(`key = '${chave}'`);
   return bancoFinal;
 }
 
-const db = abrirBanco();
+let db: DatabaseConstructor.Database;
+
+export async function inicializarDb(): Promise<void> {
+  const chave = await carregarOuCriarChave();
+  db = abrirBanco(chave);
+  configurarSchema();
+}
+
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS pastas (
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT NOT NULL,
-    cor  TEXT NOT NULL DEFAULT '#6366f1'
-  );
+function configurarSchema(): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS pastas (
+      id   INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      cor  TEXT NOT NULL DEFAULT '#6366f1'
+    );
 
-  CREATE TABLE IF NOT EXISTS accounts (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    login       TEXT NOT NULL,
-    senha       TEXT NOT NULL,
-    nick        TEXT,
-    elo         TEXT,
-    observacoes TEXT,
-    deletedAt   TEXT,
-    pastaId     INTEGER
-  );
-`);
+    CREATE TABLE IF NOT EXISTS accounts (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      login       TEXT NOT NULL,
+      senha       TEXT NOT NULL,
+      nick        TEXT,
+      elo         TEXT,
+      observacoes TEXT,
+      deletedAt   TEXT,
+      pastaId     INTEGER
+    );
+  `);
 
-// Migração: adiciona pastaId em bancos que ainda não têm a coluna
-try {
-  db.exec('ALTER TABLE accounts ADD COLUMN pastaId INTEGER');
-} catch {
-  // coluna já existe, ignorar
-}
-
-try {
-  const col = (
-    db.prepare(`PRAGMA table_info(accounts)`).all() as { name: string; notnull: number }[]
-  ).find((c) => c.name === 'nick');
-  if (col?.notnull === 1) {
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS accounts_new (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        login       TEXT NOT NULL,
-        senha       TEXT NOT NULL,
-        nick        TEXT,
-        elo         TEXT,
-        observacoes TEXT,
-        deletedAt   TEXT,
-        pastaId     INTEGER
-      );
-      INSERT INTO accounts_new SELECT id, login, senha, nick, elo, observacoes, deletedAt, pastaId FROM accounts;
-      DROP TABLE accounts;
-      ALTER TABLE accounts_new RENAME TO accounts;
-    `);
+  try {
+    db.exec('ALTER TABLE accounts ADD COLUMN pastaId INTEGER');
+  } catch {
+    // coluna já existe, ignorar
   }
-} catch {
-  // migração já aplicada, ignorar
-}
-// Migração: coluna ordem
-try {
-  db.exec('ALTER TABLE accounts ADD COLUMN ordem INTEGER');
-  // inicializa ordem pelo id para quem já tem contas
-  db.exec('UPDATE accounts SET ordem = id WHERE ordem IS NULL');
-} catch {
-  // coluna já existe, ignorar
-}
 
-// Migração: icone nas pastas
-try {
-  db.exec("ALTER TABLE pastas ADD COLUMN icone TEXT NOT NULL DEFAULT 'folder'");
-} catch {
-  // coluna já existe, ignorar
-}
+  try {
+    const col = (
+      db.prepare(`PRAGMA table_info(accounts)`).all() as { name: string; notnull: number }[]
+    ).find((c) => c.name === 'nick');
+    if (col?.notnull === 1) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS accounts_new (
+          id          INTEGER PRIMARY KEY AUTOINCREMENT,
+          login       TEXT NOT NULL,
+          senha       TEXT NOT NULL,
+          nick        TEXT,
+          elo         TEXT,
+          observacoes TEXT,
+          deletedAt   TEXT,
+          pastaId     INTEGER
+        );
+        INSERT INTO accounts_new SELECT id, login, senha, nick, elo, observacoes, deletedAt, pastaId FROM accounts;
+        DROP TABLE accounts;
+        ALTER TABLE accounts_new RENAME TO accounts;
+      `);
+    }
+  } catch {
+    // migração já aplicada, ignorar
+  }
 
-// Migração: ordem nas pastas
-try {
-  db.exec('ALTER TABLE pastas ADD COLUMN ordem INTEGER');
-  db.exec('UPDATE pastas SET ordem = id WHERE ordem IS NULL');
-} catch {
-  // coluna já existe, ignorar
-}
-// Migração: wins e losses
-try {
-  db.exec('ALTER TABLE accounts ADD COLUMN wins INTEGER');
-  db.exec('ALTER TABLE accounts ADD COLUMN losses INTEGER');
-} catch {
-  // colunas já existem, ignorar
-}
+  try {
+    db.exec('ALTER TABLE accounts ADD COLUMN ordem INTEGER');
+    db.exec('UPDATE accounts SET ordem = id WHERE ordem IS NULL');
+  } catch {
+    // coluna já existe, ignorar
+  }
 
-// Migração: dados LCU por conta
-try {
-  db.exec('ALTER TABLE accounts ADD COLUMN lcuNivel INTEGER');
-  db.exec('ALTER TABLE accounts ADD COLUMN lcuEssenciaAzul INTEGER');
-  db.exec('ALTER TABLE accounts ADD COLUMN lcuEssenciaLaranja INTEGER');
-  db.exec('ALTER TABLE accounts ADD COLUMN lcuCampeoes INTEGER');
-  db.exec('ALTER TABLE accounts ADD COLUMN lcuSkins INTEGER');
-  db.exec('ALTER TABLE accounts ADD COLUMN lcuAtualizadoEm TEXT');
-} catch {
-  // colunas já existem, ignorar
-}
+  try {
+    db.exec("ALTER TABLE pastas ADD COLUMN icone TEXT NOT NULL DEFAULT 'folder'");
+  } catch {
+    // coluna já existe, ignorar
+  }
 
-// Tabela de histórico de backup
-// Migração: lista de skins LCU
-try {
-  db.exec('ALTER TABLE accounts ADD COLUMN lcuSkinsLista TEXT');
-} catch {
-  // coluna já existe, ignorar
+  try {
+    db.exec('ALTER TABLE pastas ADD COLUMN ordem INTEGER');
+    db.exec('UPDATE pastas SET ordem = id WHERE ordem IS NULL');
+  } catch {
+    // coluna já existe, ignorar
+  }
+
+  try {
+    db.exec('ALTER TABLE accounts ADD COLUMN wins INTEGER');
+    db.exec('ALTER TABLE accounts ADD COLUMN losses INTEGER');
+  } catch {
+    // colunas já existem, ignorar
+  }
+
+  try {
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuNivel INTEGER');
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuEssenciaAzul INTEGER');
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuEssenciaLaranja INTEGER');
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuCampeoes INTEGER');
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuSkins INTEGER');
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuAtualizadoEm TEXT');
+  } catch {
+    // colunas já existem, ignorar
+  }
+
+  try {
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuSkinsLista TEXT');
+  } catch {
+    // coluna já existe, ignorar
+  }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS backup_historico (
+      id        INTEGER PRIMARY KEY AUTOINCREMENT,
+      conteudo  TEXT NOT NULL,
+      criadoEm  TEXT NOT NULL
+    )
+  `);
 }
-db.exec(`
-  CREATE TABLE IF NOT EXISTS backup_historico (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    conteudo  TEXT NOT NULL,
-    criadoEm  TEXT NOT NULL
-  )
-`);
 
 // ─── Accounts ─────────────────────────────────────────────────────────────────
 
@@ -212,7 +212,6 @@ export function addAccount(data: Omit<Account, 'id'>): Account {
 }
 
 export function updateAccount(data: Account): void {
-  // Verifica nick duplicado (ignora a própria conta e nicks vazios)
   if (data.nick) {
     const duplicado = db
       .prepare(
@@ -323,6 +322,7 @@ export function deletePasta(id: number): void {
   db.prepare('UPDATE accounts SET pastaId = NULL WHERE pastaId = @id').run({ id });
   db.prepare('DELETE FROM pastas WHERE id = @id').run({ id });
 }
+
 export function exportAccounts(ids: number[]): string {
   if (ids.length === 0) return '';
   const placeholders = ids.map(() => '?').join(',');
@@ -336,6 +336,7 @@ export function exportAccounts(ids: number[]): string {
     })
     .join('\n');
 }
+
 export function gerarBackup(): string {
   const rows = db
     .prepare('SELECT login, senha, nick FROM accounts WHERE deletedAt IS NULL')
@@ -348,6 +349,7 @@ export function gerarBackup(): string {
     })
     .join('\n');
 }
+
 export function addAccountsBulk(dados: Omit<Account, 'id'>[]): void {
   const stmt = db.prepare(`
     INSERT INTO accounts (login, senha, nick, elo, observacoes, deletedAt, pastaId)
@@ -415,7 +417,6 @@ export function salvarHistoricoBackup(): void {
     { conteudo, criadoEm: new Date().toISOString() }
   );
 
-  // Mantém só os últimos 3 registros
   db.exec(`
     DELETE FROM backup_historico
     WHERE id NOT IN (
