@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.46': [
+    '✨ Aviso de backup antes de formatar o PC nas Configurações',
+  ],
+
   '1.0.45': [
     '✨ Banco criptografado com AES-256, chave protegida pelo Credential Manager do sistema e termos de uso adicionados no app',
   ],
