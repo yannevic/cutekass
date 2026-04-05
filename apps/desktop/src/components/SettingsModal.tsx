@@ -20,6 +20,8 @@ export default function SettingsModal({ onClose }: Props) {
   const [backups, setBackups] = useState<Backup[]>([]);
   const [backupExpandido, setBackupExpandido] = useState<number | null>(null);
   const [copiado, setCopiado] = useState<number | null>(null);
+  const [exportandoBackup, setExportandoBackup] = useState(false);
+  const [exportadoBackup, setExportadoBackup] = useState(false);
 
   useEffect(() => {
     window.electronAPI.getRiotKey().then(setChave);
@@ -52,6 +54,15 @@ export default function SettingsModal({ onClose }: Props) {
     await window.electronAPI.copyToClipboard(conteudo);
     setCopiado(id);
     setTimeout(() => setCopiado(null), 2000);
+  }
+
+  async function handleExportarTudo() {
+    setExportandoBackup(true);
+    const ids = await window.electronAPI.getAccounts().then((acc) => acc.map((a) => a.id));
+    await window.electronAPI.exportAccounts(ids);
+    setExportandoBackup(false);
+    setExportadoBackup(true);
+    setTimeout(() => setExportadoBackup(false), 3000);
   }
 
   function formatarData(iso: string) {
@@ -141,6 +152,36 @@ export default function SettingsModal({ onClose }: Props) {
             className="px-4 py-2 rounded-lg bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm disabled:opacity-50 transition-colors"
           >
             {salvoClient ? '✓ Salvo!' : salvandoClient ? 'Salvando...' : 'Salvar caminho'}
+          </button>
+        </div>
+
+        <div className="border-t border-void-800" />
+
+        {/* Aviso de backup antes de formatar */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm text-rift-200/70 font-medium">🖥️ Vai formatar o PC?</label>
+          <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg px-4 py-3 flex flex-col gap-2">
+            <p className="text-yellow-200/80 text-xs leading-relaxed">
+              ⚠️ O banco de dados e a chave de criptografia ficam salvos neste computador. Se você
+              formatar sem exportar,{' '}
+              <span className="text-yellow-300 font-semibold">todas as contas serão perdidas</span>.
+            </p>
+            <p className="text-yellow-200/60 text-xs leading-relaxed">
+              Exporte suas contas antes de formatar. O arquivo gerado contém login, senha e nick de
+              todas as contas — suficiente para reimportar tudo depois.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleExportarTudo}
+            disabled={exportandoBackup}
+            className="px-4 py-2 rounded-lg bg-void-800 hover:bg-void-700 disabled:opacity-50 text-sm text-rift-200 font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            {exportadoBackup
+              ? '✓ Exportado! Salve o arquivo em local seguro.'
+              : exportandoBackup
+                ? 'Exportando...'
+                : '↓ Exportar todas as contas agora'}
           </button>
         </div>
 

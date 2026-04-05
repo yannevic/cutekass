@@ -1,1 +1,1 @@
-✨ Banco criptografado com AES-256, chave protegida pelo Credential Manager do sistema e termos de uso adicionados no app
+✨ Aviso de backup antes de formatar o PC nas Configurações
