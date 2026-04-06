@@ -1,1 +1,1 @@
-✨ Aviso de backup antes de formatar o PC nas Configurações
+✨ Erro ao atualizar elos mostra "Saiba mais" com detalhes de cada conta | ✨ Ordenação por elo (maior ou menor primeiro, sem rank sempre por último) | ✨ Validação da chave da API da Riot nas Configurações

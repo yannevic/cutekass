@@ -35,6 +35,18 @@ import { corDoElo } from '../lib/eloConfig';
 
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
 
+function rankDeElo(elo: string | undefined | null): number {
+  // Sem elo ou Unranked = rank mais baixo possível (sempre no fim)
+  if (!elo || elo === UNRANKED.nome) return 9999;
+  const tierIdx = ELO_TIERS.findIndex((t) => elo.startsWith(t.nome));
+  if (tierIdx === -1) return 9999;
+  // Divisão: IV=0, III=1, II=2, I=3 → soma ao índice do tier * 10
+  const divMatch = elo.match(/\b(IV|III|II|I)\b/);
+  const divMap: Record<string, number> = { IV: 0, III: 1, II: 2, I: 3 };
+  const divOffset = divMatch ? (divMap[divMatch[1]] ?? 0) : 0;
+  return tierIdx * 10 + divOffset;
+}
+
 // ─── Card arrastável ──────────────────────────────────────────────────────────
 
 interface HomeProps {
@@ -362,26 +374,30 @@ export default function Home({
     erro: string;
     carregando: boolean;
   } | null>(null);
-  const [ordem, setOrdem] = useState<'recentes' | 'antigas' | 'alfabetica' | 'z-a' | 'custom'>(
-    () => {
-      const salvo = localStorage.getItem('cutekass-ordem');
-      if (
-        salvo === 'custom' ||
-        salvo === 'recentes' ||
-        salvo === 'antigas' ||
-        salvo === 'alfabetica' ||
-        salvo === 'z-a'
-      ) {
-        return salvo;
-      }
-      return 'recentes';
+  const [ordem, setOrdem] = useState<
+    'recentes' | 'antigas' | 'alfabetica' | 'z-a' | 'elo-asc' | 'elo-desc' | 'custom'
+  >(() => {
+    const salvo = localStorage.getItem('cutekass-ordem');
+    if (
+      salvo === 'custom' ||
+      salvo === 'recentes' ||
+      salvo === 'antigas' ||
+      salvo === 'alfabetica' ||
+      salvo === 'z-a' ||
+      salvo === 'elo-asc' ||
+      salvo === 'elo-desc'
+    ) {
+      return salvo;
     }
-  );
+    return 'recentes';
+  });
   const [configuracoesAberto, setConfiguracoesAberto] = useState(false);
   const [simuladorAberto, setSimuladorAberto] = useState(false);
   const [atualizandoElos, setAtualizandoElos] = useState(false);
   const [progressoElo, setProgressoElo] = useState<{ atual: number; total: number } | null>(null);
   const [erroAtualizacao, setErroAtualizacao] = useState('');
+  const [errosDetalhe, setErrosDetalhe] = useState<{ nick: string; motivo: string }[]>([]);
+  const [detalhesAbertos, setDetalhesAbertos] = useState(false);
   const [erroLogin, setErroLogin] = useState<string>('');
   const [ordemCustom, setOrdemCustom] = useState<number[]>([]);
 
@@ -460,6 +476,18 @@ export default function Home({
         if (nomeA > nomeB) return -1;
         if (nomeA < nomeB) return 1;
         return 0;
+      });
+    }
+    if (ordem === 'elo-asc' || ordem === 'elo-desc') {
+      return [...base].sort((a, b) => {
+        const ra = rankDeElo(a.elo);
+        const rb = rankDeElo(b.elo);
+        const semA = ra === 9999;
+        const semB = rb === 9999;
+        if (semA && semB) return 0;
+        if (semA) return 1;
+        if (semB) return -1;
+        return ordem === 'elo-asc' ? ra - rb : rb - ra;
       });
     }
 
@@ -574,20 +602,24 @@ export default function Home({
           ? 'Nenhuma conta selecionada possui nick no formato Nome#TAG.'
           : 'Nenhuma conta possui nick no formato Nome#TAG.'
       );
+      setErrosDetalhe([]);
       return;
     }
 
     const chave = await window.electronAPI.getRiotKey();
     if (!chave) {
       setErroAtualizacao('Chave da API da Riot não configurada. Acesse as Configurações.');
+      setErrosDetalhe([]);
       return;
     }
 
     setErroAtualizacao('');
+    setErrosDetalhe([]);
     setAtualizandoElos(true);
     setProgressoElo({ atual: 0, total: alvo.length });
 
-    let erros = 0;
+    const falhas: { nick: string; motivo: string }[] = [];
+
     for (let i = 0; i < alvo.length; i += 1) {
       const conta = alvo[i];
       try {
@@ -600,20 +632,29 @@ export default function Home({
           wins: resultado.wins,
           losses: resultado.losses,
         });
-      } catch {
-        erros += 1;
+      } catch (e) {
+        const raw =
+          e instanceof Error
+            ? e.message
+            : typeof e === 'object' && e !== null && 'message' in e
+              ? String((e as { message: unknown }).message)
+              : String(e);
+        const motivo = raw.replace(/^Error invoking remote method '[^']+': Error: /, '');
+        falhas.push({ nick: conta.nick ?? conta.login, motivo });
       }
       setProgressoElo({ atual: i + 1, total: alvo.length });
     }
 
-    // Só busca uma vez no final — sem piscar
-    await fetchAccounts(); // ← precisamos expor o fetchAccounts também
+    await fetchAccounts();
 
     setAtualizandoElos(false);
     setProgressoElo(null);
 
-    if (erros > 0) {
-      setErroAtualizacao(`${erros} conta${erros !== 1 ? 's' : ''} não puderam ser atualizadas.`);
+    if (falhas.length > 0) {
+      setErrosDetalhe(falhas);
+      setErroAtualizacao(
+        `${falhas.length} conta${falhas.length !== 1 ? 's' : ''} não pud${falhas.length !== 1 ? 'eram' : 'e'} ser atualizada${falhas.length !== 1 ? 's' : ''}.`
+      );
     }
   }
 
@@ -789,15 +830,42 @@ export default function Home({
 
         {/* Erros */}
         {erroAtualizacao && (
-          <div className="mb-4 flex items-center justify-between bg-red-900/30 border border-red-700/50 text-red-300 text-sm px-4 py-2 rounded-lg">
-            <span>{erroAtualizacao}</span>
-            <button
-              type="button"
-              onClick={() => setErroAtualizacao('')}
-              className="ml-4 text-red-400 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
+          <div className="mb-4 bg-red-900/30 border border-red-700/50 text-red-300 text-sm rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2">
+              <div className="flex items-center gap-3">
+                <span>{erroAtualizacao}</span>
+                {errosDetalhe.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setDetalhesAbertos((v) => !v)}
+                    className="text-red-400 hover:text-white underline underline-offset-2 transition-colors text-xs"
+                  >
+                    {detalhesAbertos ? 'Ocultar detalhes' : 'Saiba mais'}
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setErroAtualizacao('');
+                  setErrosDetalhe([]);
+                  setDetalhesAbertos(false);
+                }}
+                className="ml-4 text-red-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            {detalhesAbertos && errosDetalhe.length > 0 && (
+              <div className="border-t border-red-700/50 px-4 py-3 flex flex-col gap-2 max-h-48 overflow-y-auto scrollbar-custom">
+                {errosDetalhe.map((falha) => (
+                  <div key={falha.nick} className="flex flex-col gap-0.5">
+                    <span className="font-semibold text-red-200">{falha.nick}</span>
+                    <span className="text-red-300/70 text-xs">{falha.motivo}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
         {erroLogin && (
@@ -864,6 +932,8 @@ export default function Home({
               { value: 'antigas', label: 'Mais antigas' },
               { value: 'alfabetica', label: 'A → Z' },
               { value: 'z-a', label: 'Z → A' },
+              { value: 'elo-desc', label: 'Elo ↑ maior primeiro' },
+              { value: 'elo-asc', label: 'Elo ↓ menor primeiro' },
               ...(ordem === 'custom' ? [{ value: 'custom', label: 'Personalizada' }] : []),
             ]}
           />

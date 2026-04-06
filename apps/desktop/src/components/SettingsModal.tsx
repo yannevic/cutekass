@@ -15,6 +15,8 @@ export default function SettingsModal({ onClose }: Props) {
   const [caminhoClient, setCaminhoClient] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
+  const [validando, setValidando] = useState(false);
+  const [statusChave, setStatusChave] = useState<'idle' | 'valida' | 'invalida'>('idle');
   const [salvandoClient, setSalvandoClient] = useState(false);
   const [salvoClient, setSalvoClient] = useState(false);
   const [backups, setBackups] = useState<Backup[]>([]);
@@ -30,9 +32,42 @@ export default function SettingsModal({ onClose }: Props) {
   }, []);
 
   async function handleSalvar() {
+    if (!chave.trim()) {
+      await window.electronAPI.saveRiotKey('');
+      setStatusChave('idle');
+      return;
+    }
     setSalvando(true);
+    setValidando(true);
+    setStatusChave('idle');
     await window.electronAPI.saveRiotKey(chave);
+    // Valida fazendo uma chamada real à API da Riot
+    // Valida via IPC — fetchElo roda no main.ts, sem CORS
+    try {
+      await window.electronAPI.fetchElo('CuteKassValidacao#BR1');
+      setStatusChave('valida');
+    } catch (e) {
+      const raw =
+        e instanceof Error
+          ? e.message
+          : typeof e === 'object' && e !== null && 'message' in e
+            ? String((e as { message: unknown }).message)
+            : String(e);
+      const msg = raw.replace(/^Error invoking remote method '[^']+': Error: /, '');
+      // 401/403 = chave inválida; 404 = nick não existe mas chave é válida
+      if (
+        msg.includes('401') ||
+        msg.includes('403') ||
+        msg.toLowerCase().includes('forbidden') ||
+        msg.toLowerCase().includes('unauthorized')
+      ) {
+        setStatusChave('invalida');
+      } else {
+        setStatusChave('valida');
+      }
+    }
     setSalvando(false);
+    setValidando(false);
     setSalvo(true);
     setTimeout(() => setSalvo(false), 2000);
   }
@@ -47,6 +82,7 @@ export default function SettingsModal({ onClose }: Props) {
 
   function handleLimpar() {
     setChave('');
+    setStatusChave('idle');
     window.electronAPI.saveRiotKey('');
   }
 
@@ -79,7 +115,7 @@ export default function SettingsModal({ onClose }: Props) {
   return (
     <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-      onClick={onClose}
+      onClick={statusChave === 'invalida' ? undefined : onClose}
     >
       <div
         className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50 max-h-[90vh] overflow-y-auto"
@@ -101,14 +137,30 @@ export default function SettingsModal({ onClose }: Props) {
             onChange={(e) => setChave(e.target.value)}
             placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
           />
+          {statusChave === 'valida' && (
+            <p className="text-xs text-green-400 flex items-center gap-1">
+              ✓ Chave válida e salva.
+            </p>
+          )}
+          {statusChave === 'invalida' && (
+            <p className="text-xs text-red-400 flex items-center gap-1">
+              ✕ Chave inválida ou expirada. Gere uma nova em developer.riotgames.com.
+            </p>
+          )}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={handleSalvar}
-              disabled={salvando}
+              disabled={salvando || validando}
               className="flex-1 px-4 py-2 rounded-lg bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm disabled:opacity-50 transition-colors"
             >
-              {salvo ? '✓ Salvo!' : salvando ? 'Salvando...' : 'Salvar chave'}
+              {validando
+                ? '⟳ Validando...'
+                : salvo
+                  ? '✓ Salvo!'
+                  : salvando
+                    ? 'Salvando...'
+                    : 'Salvar e validar'}
             </button>
             {chave && (
               <button
@@ -235,11 +287,17 @@ export default function SettingsModal({ onClose }: Props) {
           )}
         </div>
 
-        <div className="border-t border-void-800 pt-3">
+        <div className="border-t border-void-800 pt-3 flex flex-col gap-2">
+          {statusChave === 'invalida' && (
+            <p className="text-xs text-red-400/70 text-center">
+              Corrija ou limpe a chave inválida para fechar.
+            </p>
+          )}
           <button
             type="button"
-            onClick={onClose}
-            className="w-full px-4 py-2 rounded-lg bg-void-800 hover:bg-void-700 text-sm text-rift-200/60 transition-colors"
+            onClick={statusChave === 'invalida' ? undefined : onClose}
+            disabled={statusChave === 'invalida'}
+            className="w-full px-4 py-2 rounded-lg bg-void-800 hover:bg-void-700 disabled:opacity-40 disabled:cursor-not-allowed text-sm text-rift-200/60 transition-colors"
           >
             Fechar
           </button>
