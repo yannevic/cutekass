@@ -4,6 +4,12 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.47': [
+    '✨ Erro ao atualizar elos mostra "Saiba mais" com detalhes de cada conta',
+    '✨ Ordenação por elo (maior ou menor primeiro, sem rank sempre por último)',
+    '✨ Validação da chave da API da Riot nas Configurações',
+  ],
+
   '1.0.46': [
     '✨ Aviso de backup antes de formatar o PC nas Configurações',
   ],
