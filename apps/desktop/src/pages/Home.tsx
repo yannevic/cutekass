@@ -36,15 +36,16 @@ import { corDoElo } from '../lib/eloConfig';
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
 
 function rankDeElo(elo: string | undefined | null): number {
-  // Sem elo ou Unranked = rank mais baixo possível (sempre no fim)
-  if (!elo || elo === UNRANKED.nome) return 9999;
+  if (!elo || elo === UNRANKED.nome) return 999999;
   const tierIdx = ELO_TIERS.findIndex((t) => elo.startsWith(t.nome));
-  if (tierIdx === -1) return 9999;
-  // Divisão: IV=0, III=1, II=2, I=3 → soma ao índice do tier * 10
+  if (tierIdx === -1) return 999999;
   const divMatch = elo.match(/\b(IV|III|II|I)\b/);
   const divMap: Record<string, number> = { IV: 0, III: 1, II: 2, I: 3 };
   const divOffset = divMatch ? (divMap[divMatch[1]] ?? 0) : 0;
-  return tierIdx * 10 + divOffset;
+  const lpMatch = elo.match(/(\d+)LP/);
+  const lp = lpMatch ? parseInt(lpMatch[1], 10) : 0;
+  // tier * 10000 + divisão * 1000 + LP (garante que LP nunca vaze entre divisões)
+  return tierIdx * 10000 + divOffset * 1000 + lp;
 }
 
 // ─── Card arrastável ──────────────────────────────────────────────────────────
@@ -482,11 +483,11 @@ export default function Home({
       return [...base].sort((a, b) => {
         const ra = rankDeElo(a.elo);
         const rb = rankDeElo(b.elo);
-        const semA = ra === 9999;
-        const semB = rb === 9999;
-        if (semA && semB) return 0;
-        if (semA) return 1;
-        if (semB) return -1;
+        const semEloA = ra >= 999999;
+        const semEloB = rb >= 999999;
+        if (semEloA && semEloB) return 0;
+        if (semEloA) return 1;
+        if (semEloB) return -1;
         return ordem === 'elo-asc' ? ra - rb : rb - ra;
       });
     }

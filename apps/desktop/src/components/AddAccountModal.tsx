@@ -46,8 +46,8 @@ export default function AddAccountModal({ contaParaEditar, onAdd, onEdit, onClos
     setErroElo('');
     setBuscandoElo(true);
     try {
-      const eloEncontrado = await window.electronAPI.fetchElo(nickTrimado);
-      setEloInput(eloEncontrado);
+      const resultado = await window.electronAPI.fetchElo(nickTrimado);
+      setEloInput(resultado.elo);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Erro ao buscar elo';
       setErroElo(msg);
