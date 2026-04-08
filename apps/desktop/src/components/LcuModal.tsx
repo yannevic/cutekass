@@ -42,6 +42,7 @@ export default function LcuModal({
   );
   const [erroColagem, setErroColagem] = useState('');
   const [sucessoColagem, setSucessoColagem] = useState('');
+  const [avisoIdioma, setAvisoIdioma] = useState(false);
 
   const contasFiltradas = useMemo(() => {
     const semNick = accounts.filter((a) => !a.nick);
@@ -81,10 +82,23 @@ export default function LcuModal({
     setGerandoColagem(true);
     setErroColagem('');
     setSucessoColagem('');
+    setAvisoIdioma(false);
     setProgressoColagem({ atual: 0, total: dados.skinsNomes.length });
     try {
-      const nomeArquivo = await window.electronAPI.gerarColagemSkins(dados.skinsNomes, dados.nick);
-      setSucessoColagem(`Pasta salva em Downloads: ${nomeArquivo}`);
+      const idioma = localStorage.getItem('cutekass-idioma-lcu') ?? 'pt_BR';
+      const resultado = await window.electronAPI.gerarColagemSkins(
+        dados.skinsNomes,
+        dados.nick,
+        idioma
+      );
+      const skinsEsperadas = dados.skinsNomes.length;
+      if (resultado.skinsNaoEncontradas > 0) {
+        setAvisoIdioma(true);
+        setSucessoColagem(`Pasta salva em Downloads: ${resultado.nomePasta}`);
+      } else {
+        setSucessoColagem(`Pasta salva em Downloads: ${resultado.nomePasta}`);
+      }
+      void skinsEsperadas;
     } catch (e) {
       const raw =
         e instanceof Error
@@ -106,7 +120,7 @@ export default function LcuModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-void-900 border border-void-800 rounded-2xl p-6 w-[620px] shadow-2xl shadow-black/60 flex flex-col gap-4">
+      <div className="bg-void-900 border border-void-800 rounded-2xl p-6 w-155 shadow-2xl shadow-black/60 flex flex-col gap-4">
         {/* ── Cabeçalho ── */}
         <div className="flex items-center justify-between gap-4">
           {etapa === 'vincular' ? (
@@ -161,7 +175,7 @@ export default function LcuModal({
             {/* ── Linha 1: nick copiável + lista de skins ── */}
             <div className="flex flex-row gap-4 items-start">
               {/* Coluna esquerda: nick + stats + vincular */}
-              <div className="flex flex-col gap-2 w-[220px] shrink-0">
+              <div className="flex flex-col gap-2 w-55 shrink-0">
                 <div className="flex items-center justify-between bg-void-800/60 rounded-xl px-4 py-2">
                   <span className="text-sm text-rift-200/70 font-mono truncate">{dados.nick}</span>
                   <button
@@ -265,7 +279,12 @@ export default function LcuModal({
                 {sucessoColagem && (
                   <p className="text-green-400 text-xs text-center">{sucessoColagem}</p>
                 )}
-
+                {avisoIdioma && (
+                  <p className="text-yellow-400 text-xs text-center">
+                    ⚠️ Algumas skins não foram encontradas. Verifique o idioma do client nas
+                    Configurações.
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={handleGerarColagem}

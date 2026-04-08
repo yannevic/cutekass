@@ -24,11 +24,15 @@ export default function SettingsModal({ onClose }: Props) {
   const [copiado, setCopiado] = useState<number | null>(null);
   const [exportandoBackup, setExportandoBackup] = useState(false);
   const [exportadoBackup, setExportadoBackup] = useState(false);
+  const [idiomaClient, setIdiomaClient] = useState(
+    () => localStorage.getItem('cutekass-idioma-lcu') ?? 'pt_BR'
+  );
 
   useEffect(() => {
     window.electronAPI.getRiotKey().then(setChave);
     window.electronAPI.getRiotClientPath().then(setCaminhoClient);
     window.electronAPI.listarHistoricoBackup().then(setBackups);
+    setIdiomaClient(localStorage.getItem('cutekass-idioma-lcu') ?? 'pt_BR');
   }, []);
 
   async function handleSalvar() {
@@ -208,6 +212,44 @@ export default function SettingsModal({ onClose }: Props) {
         </div>
 
         <div className="border-t border-void-800" />
+
+        {/* Idioma do League Client */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm text-rift-200/70 font-medium">🌐 Idioma do League Client</label>
+          <p className="text-xs text-rift-200/40">
+            Usado para baixar as skins corretamente. Deve corresponder ao idioma configurado no seu
+            client do LoL.
+          </p>
+          <div className="flex flex-col gap-1.5">
+            {[
+              { value: 'pt_BR', label: '🇧🇷 Português (Brasil)' },
+              { value: 'en_US', label: '🇺🇸 English (US)' },
+              { value: 'es_ES', label: '🇪🇸 Español (España)' },
+              { value: 'es_MX', label: '🇲🇽 Español (México)' },
+              { value: 'fr_FR', label: '🇫🇷 Français' },
+              { value: 'de_DE', label: '🇩🇪 Deutsch' },
+            ].map((op) => (
+              <button
+                key={op.value}
+                type="button"
+                onClick={() => {
+                  setIdiomaClient(op.value);
+                  localStorage.setItem('cutekass-idioma-lcu', op.value);
+                }}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors text-left ${
+                  idiomaClient === op.value
+                    ? 'bg-[#3B136B] border-[#7B2CF5] text-[#CFA6FF]'
+                    : 'bg-void-950 border-void-800 text-rift-200/60 hover:border-void-700 hover:text-rift-200'
+                }`}
+              >
+                {op.label}
+                {idiomaClient === op.value && (
+                  <span className="ml-auto text-rift-300 text-xs">✓ Ativo</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Aviso de backup antes de formatar */}
         <div className="flex flex-col gap-2">

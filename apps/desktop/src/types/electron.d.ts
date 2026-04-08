@@ -40,7 +40,11 @@ declare global {
       addPasta: (nome: string, cor: string, icone: string) => Promise<Pasta>;
       updatePasta: (id: number, nome: string, cor: string, icone: string) => Promise<void>;
       reorderPastas: (ids: number[]) => Promise<void>;
-      gerarColagemSkins: (skinsNomes: string[], nick: string) => Promise<string>;
+      gerarColagemSkins: (
+        skinsNomes: string[],
+        nick: string,
+        idioma: string
+      ) => Promise<{ nomePasta: string; skinsNaoEncontradas: number }>;
       fetchLcuData: () => Promise<{
         nivel: number;
         essenciaAzul: number;

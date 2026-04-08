@@ -43,8 +43,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('update-error', (_e, msg) => cb(msg)),
   reorderAccounts: (ids: number[]) => ipcRenderer.invoke('reorder-accounts', ids),
   listarHistoricoBackup: () => ipcRenderer.invoke('listar-historico-backup'),
-  gerarColagemSkins: (skinsNomes: string[], nick: string) =>
-    ipcRenderer.invoke('gerar-colagem-skins', skinsNomes, nick),
+  gerarColagemSkins: (skinsNomes: string[], nick: string, idioma: string) =>
+    ipcRenderer.invoke('gerar-colagem-skins', skinsNomes, nick, idioma),
   fetchLcuData: () => ipcRenderer.invoke('fetch-lcu-data'),
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
 });

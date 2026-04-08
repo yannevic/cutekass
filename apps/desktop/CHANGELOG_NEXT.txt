@@ -1,1 +1,1 @@
-✨ Erro ao atualizar elos mostra "Saiba mais" com detalhes de cada conta | ✨ Ordenação por elo (maior ou menor primeiro, sem rank sempre por último) | ✨ Validação da chave da API da Riot nas Configurações
+✨ Ordenação por elo considera LP | ✨ Idioma do League Client configurável nas Configurações para colagem de skins funcionar em qualquer idioma | ✨ aviso ao baixar colagem se skins não forem encontradas no idioma selecionado

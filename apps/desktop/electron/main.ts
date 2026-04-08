@@ -608,115 +608,119 @@ ipcMain.handle('fetch-lcu-data', async () => {
 
 // ─── Gerador de colagem de skins ──────────────────────────────────────────────
 
-ipcMain.handle('gerar-colagem-skins', async (_e, skinsNomes: string[], nick: string) => {
-  const { join: pJoin } = await import('path');
-  const { writeFileSync: fsWrite, mkdirSync } = await import('fs');
+ipcMain.handle(
+  'gerar-colagem-skins',
+  async (_e, skinsNomes: string[], nick: string, idioma: string) => {
+    const { join: pJoin } = await import('path');
+    const { writeFileSync: fsWrite, mkdirSync } = await import('fs');
 
-  function httpsGetStr(url: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      https
-        .get(url, (res) => {
-          let data = '';
-          res.on('data', (chunk: Buffer) => {
-            data += chunk.toString();
-          });
-          res.on('end', () => resolve(data));
-          res.on('error', reject);
-        })
-        .on('error', reject);
+    function httpsGetStr(url: string): Promise<string> {
+      return new Promise((resolve, reject) => {
+        https
+          .get(url, (res) => {
+            let data = '';
+            res.on('data', (chunk: Buffer) => {
+              data += chunk.toString();
+            });
+            res.on('end', () => resolve(data));
+            res.on('error', reject);
+          })
+          .on('error', reject);
+      });
+    }
+
+    // 1. Versão mais recente do Data Dragon
+    const versoesRaw = await httpsGetStr('https://ddragon.leagueoflegends.com/api/versions.json');
+    const versoes = JSON.parse(versoesRaw) as string[];
+    const versao = versoes[0];
+
+    // 2. JSON completo de campeões e skins
+    const idiomaValido =
+      typeof idioma === 'string' && /^[a-z]{2}_[A-Z]{2}$/.test(idioma) ? idioma : 'pt_BR';
+    const fullJsonRaw = await httpsGetStr(
+      `https://ddragon.leagueoflegends.com/cdn/${versao}/data/${idiomaValido}/championFull.json`
+    );
+    const fullJson = JSON.parse(fullJsonRaw) as {
+      data: Record<string, { id: string; name: string; skins: { num: number; name: string }[] }>;
+    };
+
+    // 3. Mapa nome-da-skin (lowercase) → url da splash art
+    const mapaUrl: Record<string, string> = {};
+    Object.values(fullJson.data).forEach((champ) => {
+      champ.skins.forEach((skin) => {
+        const nomeSkin = skin.num === 0 ? champ.name : skin.name;
+        const url = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champ.id}_${skin.num}.jpg`;
+        mapaUrl[nomeSkin.toLowerCase().trim()] = url;
+      });
     });
-  }
 
-  // 1. Versão mais recente do Data Dragon
-  const versoesRaw = await httpsGetStr('https://ddragon.leagueoflegends.com/api/versions.json');
-  const versoes = JSON.parse(versoesRaw) as string[];
-  const versao = versoes[0];
-
-  // 2. JSON completo de campeões e skins
-  const fullJsonRaw = await httpsGetStr(
-    `https://ddragon.leagueoflegends.com/cdn/${versao}/data/pt_BR/championFull.json`
-  );
-  const fullJson = JSON.parse(fullJsonRaw) as {
-    data: Record<string, { id: string; name: string; skins: { num: number; name: string }[] }>;
-  };
-
-  // 3. Mapa nome-da-skin (lowercase) → url da splash art
-  const mapaUrl: Record<string, string> = {};
-  Object.values(fullJson.data).forEach((champ) => {
-    champ.skins.forEach((skin) => {
-      const nomeSkin = skin.num === 0 ? champ.name : skin.name;
-      const url = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champ.id}_${skin.num}.jpg`;
-      mapaUrl[nomeSkin.toLowerCase().trim()] = url;
+    // 4. Resolve URLs das skins da conta
+    const urlsResolvidas: { nome: string; url: string }[] = [];
+    skinsNomes.forEach((nome) => {
+      const url = mapaUrl[nome.toLowerCase().trim()];
+      if (url) urlsResolvidas.push({ nome, url });
     });
-  });
 
-  // 4. Resolve URLs das skins da conta
-  const urlsResolvidas: { nome: string; url: string }[] = [];
-  skinsNomes.forEach((nome) => {
-    const url = mapaUrl[nome.toLowerCase().trim()];
-    if (url) urlsResolvidas.push({ nome, url });
-  });
+    if (urlsResolvidas.length === 0) {
+      throw new Error('Nenhuma skin encontrada no Data Dragon.');
+    }
 
-  if (urlsResolvidas.length === 0) {
-    throw new Error('Nenhuma skin encontrada no Data Dragon.');
-  }
+    // 5. Divide em páginas de 30 skins (6 colunas × 5 linhas)
+    const COLUNAS = 6;
+    const LARGURA = 308;
+    const ALTURA = 172;
+    const POR_PAGINA = 30;
 
-  // 5. Divide em páginas de 30 skins (6 colunas × 5 linhas)
-  const COLUNAS = 6;
-  const LARGURA = 308;
-  const ALTURA = 172;
-  const POR_PAGINA = 30;
+    const paginas: { nome: string; url: string }[][] = [];
+    for (let i = 0; i < urlsResolvidas.length; i += POR_PAGINA) {
+      paginas.push(urlsResolvidas.slice(i, i + POR_PAGINA));
+    }
 
-  const paginas: { nome: string; url: string }[][] = [];
-  for (let i = 0; i < urlsResolvidas.length; i += POR_PAGINA) {
-    paginas.push(urlsResolvidas.slice(i, i + POR_PAGINA));
-  }
+    // 6. Cria pasta com nome da conta (# → -)
+    const nomePasta = `skins_${nick.replace(/#/g, '-').replace(/[<>:"/\\|?*]/g, '_')}`;
+    const downloadsPath = app.getPath('downloads');
+    const pastaCaminho = pJoin(downloadsPath, nomePasta);
+    mkdirSync(pastaCaminho, { recursive: true });
 
-  // 6. Cria pasta com nome da conta (# → -)
-  const nomePasta = `skins_${nick.replace(/#/g, '-').replace(/[<>:"/\\|?*]/g, '_')}`;
-  const downloadsPath = app.getPath('downloads');
-  const pastaCaminho = pJoin(downloadsPath, nomePasta);
-  mkdirSync(pastaCaminho, { recursive: true });
+    // 7. Gera uma imagem por página
+    const larguraTotal = COLUNAS * LARGURA;
 
-  // 7. Gera uma imagem por página
-  const larguraTotal = COLUNAS * LARGURA;
+    async function gerarPagina(
+      itens: { nome: string; url: string }[],
+      numeroPagina: number
+    ): Promise<void> {
+      const linhas = Math.ceil(itens.length / COLUNAS);
+      const alturaTotal = linhas * ALTURA;
 
-  async function gerarPagina(
-    itens: { nome: string; url: string }[],
-    numeroPagina: number
-  ): Promise<void> {
-    const linhas = Math.ceil(itens.length / COLUNAS);
-    const alturaTotal = linhas * ALTURA;
+      const itensHtml = itens
+        .map(
+          ({ url }) =>
+            `<div style="width:${LARGURA}px;height:${ALTURA}px;overflow:hidden;border:1px solid #3B136B;box-sizing:border-box;flex-shrink:0;">` +
+            `<img src="${url}" style="width:100%;height:100%;object-fit:cover;" /></div>`
+        )
+        .join('');
 
-    const itensHtml = itens
-      .map(
-        ({ url }) =>
-          `<div style="width:${LARGURA}px;height:${ALTURA}px;overflow:hidden;border:1px solid #3B136B;box-sizing:border-box;flex-shrink:0;">` +
-          `<img src="${url}" style="width:100%;height:100%;object-fit:cover;" /></div>`
-      )
-      .join('');
-
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0B0F1A;overflow:hidden;}</style>
 </head><body>
 <div style="display:flex;flex-wrap:wrap;width:${larguraTotal}px;">${itensHtml}</div>
 </body></html>`;
 
-    const offscreen = new BrowserWindow({
-      width: larguraTotal,
-      height: alturaTotal,
-      show: false,
-      webPreferences: {
-        offscreen: true,
-        nodeIntegration: false,
-        contextIsolation: true,
-      },
-    });
+      const offscreen = new BrowserWindow({
+        width: larguraTotal,
+        height: alturaTotal,
+        show: false,
+        webPreferences: {
+          offscreen: true,
+          nodeIntegration: false,
+          contextIsolation: true,
+        },
+      });
 
-    await offscreen.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+      await offscreen.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 
-    // Aguarda imagens carregarem via onload
-    await offscreen.webContents.executeJavaScript(`
+      // Aguarda imagens carregarem via onload
+      await offscreen.webContents.executeJavaScript(`
       new Promise((resolve) => {
         const imgs = document.querySelectorAll('img');
         if (imgs.length === 0) { resolve(); return; }
@@ -730,45 +734,49 @@ ipcMain.handle('gerar-colagem-skins', async (_e, skinsNomes: string[], nick: str
       })
     `);
 
-    // No modo offscreen o Electron só renderiza quando há um consumidor de frames.
-    // Fazemos capturas de "aquecimento" até obter uma imagem não-vazia,
-    // com esperas crescentes entre tentativas.
-    async function capturarComRetry(): Promise<Electron.NativeImage> {
-      const delays = [500, 1000, 1500, 2000, 3000];
-      let ultimo: Electron.NativeImage | null = null;
-      for (let t = 0; t < delays.length; t += 1) {
-        await new Promise((r) => setTimeout(r, delays[t]));
-        const img = await offscreen.webContents.capturePage({
-          x: 0,
-          y: 0,
-          width: larguraTotal,
-          height: alturaTotal,
-        });
-        ultimo = img;
-        // Considera válido se o buffer JPEG tiver mais de 50KB
-        if (img.toJPEG(88).length > 50 * 1024) return img;
+      // No modo offscreen o Electron só renderiza quando há um consumidor de frames.
+      // Fazemos capturas de "aquecimento" até obter uma imagem não-vazia,
+      // com esperas crescentes entre tentativas.
+      async function capturarComRetry(): Promise<Electron.NativeImage> {
+        const delays = [500, 1000, 1500, 2000, 3000];
+        let ultimo: Electron.NativeImage | null = null;
+        for (let t = 0; t < delays.length; t += 1) {
+          await new Promise((r) => setTimeout(r, delays[t]));
+          const img = await offscreen.webContents.capturePage({
+            x: 0,
+            y: 0,
+            width: larguraTotal,
+            height: alturaTotal,
+          });
+          ultimo = img;
+          // Considera válido se o buffer JPEG tiver mais de 50KB
+          if (img.toJPEG(88).length > 50 * 1024) return img;
+        }
+        return ultimo!;
       }
-      return ultimo!;
+
+      const nativeImage = await capturarComRetry();
+
+      offscreen.destroy();
+
+      const nomeArquivo = `skins_${numeroPagina}.jpg`;
+      fsWrite(pJoin(pastaCaminho, nomeArquivo), nativeImage.toJPEG(88));
     }
 
-    const nativeImage = await capturarComRetry();
+    // Gera páginas em sequência para não abrir 10 janelas ao mesmo tempo
+    for (let i = 0; i < paginas.length; i += 1) {
+      await gerarPagina(paginas[i], i + 1);
+    }
 
-    offscreen.destroy();
+    // 8. Abre a pasta no Explorer
+    shell.openPath(pastaCaminho);
 
-    const nomeArquivo = `skins_${numeroPagina}.jpg`;
-    fsWrite(pJoin(pastaCaminho, nomeArquivo), nativeImage.toJPEG(88));
+    return {
+      nomePasta,
+      skinsNaoEncontradas: skinsNomes.length - urlsResolvidas.length,
+    };
   }
-
-  // Gera páginas em sequência para não abrir 10 janelas ao mesmo tempo
-  for (let i = 0; i < paginas.length; i += 1) {
-    await gerarPagina(paginas[i], i + 1);
-  }
-
-  // 8. Abre a pasta no Explorer
-  shell.openPath(pastaCaminho);
-
-  return nomePasta;
-});
+);
 // ─── Ciclo de vida ────────────────────────────────────────────────────────────
 
 app.whenReady().then(async () => {
