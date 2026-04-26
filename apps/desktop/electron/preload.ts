@@ -47,4 +47,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('gerar-colagem-skins', skinsNomes, nick, idioma),
   fetchLcuData: () => ipcRenderer.invoke('fetch-lcu-data'),
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
+  winMinimize: () => ipcRenderer.send('win-minimize'),
+  winMaximize: () => ipcRenderer.send('win-maximize'),
+  winClose: () => ipcRenderer.send('win-close'),
+  getVersion: () => ipcRenderer.invoke('get-version'),
 });

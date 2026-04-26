@@ -40,6 +40,10 @@ declare global {
       addPasta: (nome: string, cor: string, icone: string) => Promise<Pasta>;
       updatePasta: (id: number, nome: string, cor: string, icone: string) => Promise<void>;
       reorderPastas: (ids: number[]) => Promise<void>;
+      winMinimize: () => void;
+      winMaximize: () => void;
+      winClose: () => void;
+      getVersion: () => Promise<string>;
       gerarColagemSkins: (
         skinsNomes: string[],
         nick: string,

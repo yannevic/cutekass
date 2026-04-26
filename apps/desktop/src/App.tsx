@@ -5,6 +5,7 @@ import Trash from './pages/Trash';
 import UpdateNotifier, { UpdateStatus } from './components/UpdateNotifier';
 import ChangelogModal from './components/ChangelogModal';
 import TermosModal from './components/TermosModal';
+import TitleBar from './components/TitleBar';
 
 export default function App() {
   const [versao, setVersao] = useState('');
@@ -42,40 +43,43 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="fixed inset-0 flex flex-col">
+      <TitleBar />
       <UpdateNotifier onStatus={setUpdateStatus} onErro={setUpdateErro} />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Home
-              updateStatus={updateStatus}
-              updateErro={updateErro}
-              onUpdateStatus={setUpdateStatus}
-              onUpdateErro={setUpdateErro}
-              sidebarAberta={sidebarAberta}
-              onSidebarHover={setSidebarAberta}
-            />
-          }
-        />
-        <Route
-          path="/trash"
-          element={
-            <Trash
-              updateStatus={updateStatus}
-              updateErro={updateErro}
-              onUpdateStatus={setUpdateStatus}
-              onUpdateErro={setUpdateErro}
-              sidebarAberta={sidebarAberta}
-              onSidebarHover={setSidebarAberta}
-            />
-          }
-        />
-      </Routes>
+      <div className="flex-1 overflow-hidden">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                updateStatus={updateStatus}
+                updateErro={updateErro}
+                onUpdateStatus={setUpdateStatus}
+                onUpdateErro={setUpdateErro}
+                sidebarAberta={sidebarAberta}
+                onSidebarHover={setSidebarAberta}
+              />
+            }
+          />
+          <Route
+            path="/trash"
+            element={
+              <Trash
+                updateStatus={updateStatus}
+                updateErro={updateErro}
+                onUpdateStatus={setUpdateStatus}
+                onUpdateErro={setUpdateErro}
+                sidebarAberta={sidebarAberta}
+                onSidebarHover={setSidebarAberta}
+              />
+            }
+          />
+        </Routes>
+      </div>
       {mostrarChangelog && versao ? (
         <ChangelogModal versao={versao} onFechar={fecharChangelog} />
       ) : null}
       {mostrarTermos ? <TermosModal onAceitar={aceitarTermos} /> : null}
-    </>
+    </div>
   );
 }

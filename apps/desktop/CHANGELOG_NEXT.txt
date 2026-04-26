@@ -1,1 +1,1 @@
-✨ Ordenação por elo considera LP | ✨ Idioma do League Client configurável nas Configurações para colagem de skins funcionar em qualquer idioma | ✨ aviso ao baixar colagem se skins não forem encontradas no idioma selecionado
+✨ titlebar personalizada com cutekass.png |

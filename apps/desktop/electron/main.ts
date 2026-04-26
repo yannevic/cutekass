@@ -38,6 +38,7 @@ function createWindow() {
     height: 720,
     minWidth: 700,
     minHeight: 500,
+    frame: false,
     autoHideMenuBar: true,
     icon: join(__dirname, '../assets/cutekass.ico'),
     webPreferences: {
@@ -52,6 +53,14 @@ function createWindow() {
   } else {
     win.loadFile(join(__dirname, '../dist/index.html'));
   }
+
+  ipcMain.on('win-minimize', () => win.minimize());
+  ipcMain.on('win-maximize', () => {
+    if (win.isMaximized()) win.unmaximize();
+    else win.maximize();
+  });
+  ipcMain.on('win-close', () => win.close());
+  ipcMain.handle('get-version', () => app.getVersion());
 
   if (app.isPackaged) {
     autoUpdater.autoDownload = true;
