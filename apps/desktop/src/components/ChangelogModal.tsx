@@ -4,6 +4,12 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.48': [
+    '✨ Ordenação por elo considera LP',
+    '✨ Idioma do League Client configurável nas Configurações para colagem de skins funcionar em qualquer idioma',
+    '✨ aviso ao baixar colagem se skins não forem encontradas no idioma selecionado',
+  ],
+
   '1.0.47': [
     '✨ Erro ao atualizar elos mostra "Saiba mais" com detalhes de cada conta',
     '✨ Ordenação por elo (maior ou menor primeiro, sem rank sempre por último)',
