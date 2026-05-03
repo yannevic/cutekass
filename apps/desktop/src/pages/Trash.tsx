@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import usePastas from '../hooks/usePastas';
 import SettingsModal from '../components/SettingsModal';
 import type { UpdateStatus } from '../components/UpdateNotifier';
+import { Trash2 } from 'lucide-react';
 
 interface Props {
   updateStatus: UpdateStatus;
@@ -77,8 +78,10 @@ export default function Trash({
         onUpdateErro={onUpdateErro}
         onHoverChange={onSidebarHover}
       />
-      <main className="flex-1 overflow-y-auto p-6">
-        <h1 className="text-2xl font-bold text-rift-300 mb-6">🗑️ Lixeira</h1>
+      <main className="flex-1 overflow-y-auto scrollbar-custom p-6">
+        <h1 className="text-2xl font-bold text-rift-300 mb-6 flex items-center gap-2">
+          <Trash2 className="w-6 h-6" /> Lixeira
+        </h1>
 
         {contas.length > 0 && (
           <div className="flex justify-end mb-4">

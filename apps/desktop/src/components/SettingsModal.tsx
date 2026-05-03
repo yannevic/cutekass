@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Settings, Globe, Monitor, HardDrive } from 'lucide-react';
 
 interface Props {
   onClose: () => void;
@@ -27,6 +28,7 @@ export default function SettingsModal({ onClose }: Props) {
   const [idiomaClient, setIdiomaClient] = useState(
     () => localStorage.getItem('cutekass-idioma-lcu') ?? 'pt_BR'
   );
+  const mouseDownDentro = useRef(false);
 
   useEffect(() => {
     window.electronAPI.getRiotKey().then(setChave);
@@ -45,31 +47,39 @@ export default function SettingsModal({ onClose }: Props) {
     setValidando(true);
     setStatusChave('idle');
     await window.electronAPI.saveRiotKey(chave);
-    // Valida fazendo uma chamada real à API da Riot
-    // Valida via IPC — fetchElo roda no main.ts, sem CORS
-    try {
-      await window.electronAPI.fetchElo('CuteKassValidacao#BR1');
-      setStatusChave('valida');
-    } catch (e) {
-      const raw =
-        e instanceof Error
-          ? e.message
-          : typeof e === 'object' && e !== null && 'message' in e
-            ? String((e as { message: unknown }).message)
-            : String(e);
-      const msg = raw.replace(/^Error invoking remote method '[^']+': Error: /, '');
-      // 401/403 = chave inválida; 404 = nick não existe mas chave é válida
-      if (
-        msg.includes('401') ||
-        msg.includes('403') ||
-        msg.toLowerCase().includes('forbidden') ||
-        msg.toLowerCase().includes('unauthorized')
-      ) {
-        setStatusChave('invalida');
-      } else {
-        setStatusChave('valida');
+
+    let tentativa = 0;
+    let resultado: 'valida' | 'invalida' | null = null;
+
+    while (tentativa < 3 && resultado === null) {
+      if (tentativa > 0) {
+        await new Promise((res) => setTimeout(res, 1000));
       }
+      try {
+        await window.electronAPI.fetchElo('CuteKassValidacao#BR1');
+        resultado = 'valida';
+      } catch (e) {
+        const raw =
+          e instanceof Error
+            ? e.message
+            : typeof e === 'object' && e !== null && 'message' in e
+              ? String((e as { message: unknown }).message)
+              : String(e);
+        const msg = raw.replace(/^Error invoking remote method '[^']+': Error: /, '');
+        if (
+          msg.includes('401') ||
+          msg.includes('403') ||
+          msg.toLowerCase().includes('forbidden') ||
+          msg.toLowerCase().includes('unauthorized')
+        ) {
+          resultado = 'invalida';
+        }
+        // qualquer outro erro (timeout, 429, etc) → tenta de novo
+      }
+      tentativa += 1;
     }
+
+    setStatusChave(resultado ?? 'valida'); // se 3 tentativas falharam por erro temporário, aceita
     setSalvando(false);
     setValidando(false);
     setSalvo(true);
@@ -119,13 +129,26 @@ export default function SettingsModal({ onClose }: Props) {
   return (
     <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
-      onClick={statusChave === 'invalida' ? undefined : onClose}
+      onMouseDown={() => {
+        mouseDownDentro.current = false;
+      }}
+      onMouseUp={() => {
+        if (!mouseDownDentro.current && statusChave !== 'invalida') onClose();
+      }}
     >
       <div
-        className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-void-900 border border-void-800 rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-xl shadow-black/50 max-h-[90vh] overflow-y-auto scrollbar-custom"
+        onMouseDown={(e) => {
+          mouseDownDentro.current = true;
+          e.stopPropagation();
+        }}
+        onMouseUp={(e) => {
+          e.stopPropagation();
+        }}
       >
-        <h2 className="text-lg font-bold text-rift-300">⚙️ Configurações</h2>
+        <h2 className="text-lg font-bold text-rift-300 flex items-center gap-2">
+          <Settings className="w-4 h-4" /> Configurações
+        </h2>
 
         {/* Chave da API */}
         <div className="flex flex-col gap-2">
@@ -215,7 +238,9 @@ export default function SettingsModal({ onClose }: Props) {
 
         {/* Idioma do League Client */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-rift-200/70 font-medium">🌐 Idioma do League Client</label>
+          <label className="text-sm text-rift-200/70 font-medium flex items-center gap-2">
+            <Globe className="w-4 h-4" /> Idioma do League Client
+          </label>
           <p className="text-xs text-rift-200/40">
             Usado para baixar as skins corretamente. Deve corresponder ao idioma configurado no seu
             client do LoL.
@@ -253,7 +278,9 @@ export default function SettingsModal({ onClose }: Props) {
 
         {/* Aviso de backup antes de formatar */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-rift-200/70 font-medium">🖥️ Vai formatar o PC?</label>
+          <label className="text-sm text-rift-200/70 font-medium flex items-center gap-2">
+            <Monitor className="w-4 h-4" /> Vai formatar o PC?
+          </label>
           <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg px-4 py-3 flex flex-col gap-2">
             <p className="text-yellow-200/80 text-xs leading-relaxed">
               ⚠️ O banco de dados e a chave de criptografia ficam salvos neste computador. Se você
@@ -283,7 +310,9 @@ export default function SettingsModal({ onClose }: Props) {
 
         {/* Histórico de backup */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-rift-200/70 font-medium">💾 Histórico de backup</label>
+          <label className="text-sm text-rift-200/70 font-medium flex items-center gap-2">
+            <HardDrive className="w-4 h-4" /> Histórico de backup
+          </label>
           <p className="text-xs text-rift-200/40">
             Últimas 3 sessões salvas automaticamente. Use para recuperar contas se algo der errado.
           </p>
@@ -337,7 +366,7 @@ export default function SettingsModal({ onClose }: Props) {
           )}
           <button
             type="button"
-            onClick={statusChave === 'invalida' ? undefined : onClose}
+            onClick={onClose}
             disabled={statusChave === 'invalida'}
             className="w-full px-4 py-2 rounded-lg bg-void-800 hover:bg-void-700 disabled:opacity-40 disabled:cursor-not-allowed text-sm text-rift-200/60 transition-colors"
           >

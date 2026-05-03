@@ -32,6 +32,7 @@ import type { UpdateStatus } from '../components/UpdateNotifier';
 import Select from '../components/Select';
 import SimuladorModal from '../components/SimuladorModal';
 import { corDoElo } from '../lib/eloConfig';
+import { Target, Search, RefreshCw, Upload, Plus, Pencil, Trash2 } from 'lucide-react';
 
 const OPCOES_FILTRO = ['Todos', UNRANKED.nome, ...ELO_TIERS.map((t) => t.nome)];
 
@@ -301,16 +302,16 @@ function AccountCard({
               <button
                 type="button"
                 onClick={onEditar}
-                className="w-full text-left text-sm px-4 py-2 text-rift-200 hover:bg-void-800 transition-colors"
+                className="w-full text-left text-sm px-4 py-2 text-rift-200 hover:bg-void-800 transition-colors flex items-center gap-2"
               >
-                ✏️ Editar
+                <Pencil className="w-3 h-3" /> Editar
               </button>
               <button
                 type="button"
                 onClick={onExcluir}
-                className="w-full text-left text-sm px-4 py-2 text-red-400 hover:bg-void-800 transition-colors"
+                className="w-full text-left text-sm px-4 py-2 text-red-400 hover:bg-void-800 transition-colors flex items-center gap-2"
               >
-                🗑️ Excluir
+                <Trash2 className="w-3 h-3" /> Excluir
               </button>
             </div>
           )}
@@ -742,7 +743,9 @@ export default function Home({
         onHoverChange={onSidebarHover}
       />
 
-      <main className={`flex-1 overflow-y-auto p-6 ${algumSelecionado ? 'pb-20' : ''}`}>
+      <main
+        className={`flex-1 overflow-y-auto scrollbar-custom p-6 pr-4 ${algumSelecionado ? 'pb-20' : ''}`}
+      >
         {/* Cabeçalho */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -793,38 +796,39 @@ export default function Home({
             <button
               type="button"
               onClick={() => setSimuladorAberto(true)}
-              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             >
-              🎯 Simular ranking
+              <Target className="w-4 h-4" /> Simular ranking
             </button>
             <button
               type="button"
               onClick={handleAvaliarGeral}
-              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             >
-              🔍 Avaliar conta
+              <Search className="w-4 h-4" /> Avaliar conta
             </button>
             <button
               type="button"
               onClick={() => handleAtualizarElos()}
               disabled={atualizandoElos}
-              className="bg-void-800 hover:bg-void-700 disabled:opacity-50 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+              className="bg-void-800 hover:bg-void-700 disabled:opacity-50 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             >
-              {atualizandoElos ? '⟳ Atualizando...' : '⟳ Atualizar Elos'}
+              <RefreshCw className={`w-4 h-4 ${atualizandoElos ? 'animate-spin' : ''}`} />
+              {atualizandoElos ? 'Atualizando...' : 'Atualizar Elos'}
             </button>
             <button
               type="button"
               onClick={() => setImportModalAberto(true)}
-              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+              className="bg-void-800 hover:bg-void-700 text-rift-200 font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             >
-              ↑ Importar
+              <Upload className="w-4 h-4" /> Importar
             </button>
             <button
               type="button"
               onClick={() => setModalAberto(true)}
-              className="bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+              className="bg-rift-500 hover:bg-rift-400 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             >
-              + Adicionar
+              <Plus className="w-4 h-4" /> Adicionar
             </button>
           </div>
         </div>
@@ -883,7 +887,7 @@ export default function Home({
         )}
 
         {/* Filtros */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex gap-3 mb-6 items-center">
           <input
             className="flex-1 bg-void-900 border border-void-800 rounded-lg px-3 py-2 text-sm text-rift-200 outline-none focus:ring-2 focus:ring-rift-400 placeholder-rift-200/30 transition-colors"
             placeholder="Buscar por nick ou login..."
@@ -916,28 +920,30 @@ export default function Home({
           >
             Sem nick
           </button>
-          <Select
-            value={filtroElo}
-            onChange={setFiltroElo}
-            options={OPCOES_FILTRO.map((op) => ({
-              value: op,
-              label: op,
-              color: op === 'Todos' ? undefined : corDoElo(op),
-            }))}
-          />
-          <Select
-            value={ordem}
-            onChange={(v) => setOrdem(v as typeof ordem)}
-            options={[
-              { value: 'recentes', label: 'Mais recentes' },
-              { value: 'antigas', label: 'Mais antigas' },
-              { value: 'alfabetica', label: 'A → Z' },
-              { value: 'z-a', label: 'Z → A' },
-              { value: 'elo-desc', label: 'Elo ↑ maior primeiro' },
-              { value: 'elo-asc', label: 'Elo ↓ menor primeiro' },
-              ...(ordem === 'custom' ? [{ value: 'custom', label: 'Personalizada' }] : []),
-            ]}
-          />
+          <div className="flex gap-3 ml-auto">
+            <Select
+              value={filtroElo}
+              onChange={setFiltroElo}
+              options={OPCOES_FILTRO.map((op) => ({
+                value: op,
+                label: op,
+                color: op === 'Todos' ? undefined : corDoElo(op),
+              }))}
+            />
+            <Select
+              value={ordem}
+              onChange={(v) => setOrdem(v as typeof ordem)}
+              options={[
+                { value: 'recentes', label: 'Mais recentes' },
+                { value: 'antigas', label: 'Mais antigas' },
+                { value: 'alfabetica', label: 'A → Z' },
+                { value: 'z-a', label: 'Z → A' },
+                { value: 'elo-desc', label: 'Elo ↑ maior primeiro' },
+                { value: 'elo-asc', label: 'Elo ↓ menor primeiro' },
+                ...(ordem === 'custom' ? [{ value: 'custom', label: 'Personalizada' }] : []),
+              ]}
+            />
+          </div>
         </div>
 
         {/* Lista */}

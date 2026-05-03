@@ -18,6 +18,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { Pasta } from '../types/pasta';
 import type { UpdateStatus } from './UpdateNotifier';
+import { FolderOpen, Trash2, Plus, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react';
 import { PASTA_ICONS, getIcon } from '../lib/pastaIcons';
 
 const RELEASE_URL = 'https://github.com/yannevic/cutekass/releases/latest';
@@ -551,15 +552,6 @@ export default function Sidebar({
   }
 
   function renderBotaoUpdate() {
-    function icone() {
-      if (updateStatus === 'checking') return '🔄';
-      if (updateStatus === 'up-to-date') return '✅';
-      if (updateStatus === 'available') return '⬇️';
-      if (updateStatus === 'downloaded') return '✅';
-      if (updateStatus === 'error') return '⚠️';
-      return '🔄';
-    }
-
     function texto() {
       if (updateStatus === 'checking') return 'Verificando...';
       if (updateStatus === 'up-to-date') return 'Tudo atualizado!';
@@ -590,7 +582,9 @@ export default function Sidebar({
             (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
           }}
         >
-          <span className="w-10 flex items-center justify-center shrink-0 text-base">✅</span>
+          <span className="w-10 flex items-center justify-center shrink-0">
+            <CheckCircle className="w-4 h-4" />
+          </span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             {instalando ? 'Instalando...' : 'Instalar agora'}
           </span>
@@ -613,7 +607,9 @@ export default function Sidebar({
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
             }}
           >
-            <span className="w-10 flex items-center justify-center shrink-0 text-base">⚠️</span>
+            <span className="w-10 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4" />
+            </span>
             <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
               Erro na atualização
             </span>
@@ -662,7 +658,7 @@ export default function Sidebar({
                 (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
               }}
             >
-              🔄 Tentar novamente
+              Tentar novamente
             </button>
             <button
               type="button"
@@ -676,7 +672,7 @@ export default function Sidebar({
                 (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
               }}
             >
-              📋 Copiar link para baixar
+              Copiar link para baixar
             </button>
             <button
               type="button"
@@ -718,7 +714,13 @@ export default function Sidebar({
           (e.currentTarget as HTMLButtonElement).style.color = corTexto();
         }}
       >
-        <span className="w-10 flex items-center justify-center shrink-0 text-base">{icone()}</span>
+        <span className="w-10 flex items-center justify-center shrink-0">
+          {updateStatus === 'up-to-date' ? (
+            <CheckCircle className="w-4 h-4" />
+          ) : (
+            <RefreshCw className="w-4 h-4" />
+          )}
+        </span>
         <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
           {texto()}
         </span>
@@ -774,7 +776,9 @@ export default function Sidebar({
               : 'text-[#7B5EA7] hover:bg-[#1E0A38] hover:text-[#CFA6FF]'
           }`}
         >
-          <span className="w-10 flex items-center justify-center shrink-0 text-base">🗂</span>
+          <span className="w-10 flex items-center justify-center shrink-0">
+            <FolderOpen className="w-4 h-4" />
+          </span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Todas as contas
           </span>
@@ -818,7 +822,7 @@ export default function Sidebar({
 
       {/* Rodapé */}
       <div
-        className="py-2 flex flex-col gap-1 shrink-0 border-t"
+        className="py-2 pb-9 flex flex-col gap-1 shrink-0 border-t"
         style={{ borderColor: '#3B136B' }}
       >
         {/* Nova pasta */}
@@ -836,7 +840,9 @@ export default function Sidebar({
             (e.currentTarget as HTMLButtonElement).style.color = '#5A3A8A';
           }}
         >
-          <span className="w-10 flex items-center justify-center shrink-0 text-base">＋</span>
+          <span className="w-10 flex items-center justify-center shrink-0">
+            <Plus className="w-4 h-4" />
+          </span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Nova pasta
           </span>
@@ -863,7 +869,9 @@ export default function Sidebar({
             }
           }}
         >
-          <span className="w-10 flex items-center justify-center shrink-0 text-base">🗑</span>
+          <span className="w-10 flex items-center justify-center shrink-0">
+            <Trash2 className="w-4 h-4" />
+          </span>
           <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pr-2">
             Lixeira
           </span>
@@ -933,7 +941,7 @@ export default function Sidebar({
           style={{ borderColor: '#3B136B' }}
         >
           <span
-            className="w-10 flex items-center justify-center shrink-0 text-xs"
+            className="w-10 flex items-center justify-center shrink-0 text-xs opacity-0"
             style={{ color: '#3B136B' }}
           >
             v
