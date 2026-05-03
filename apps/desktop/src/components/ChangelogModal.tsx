@@ -4,6 +4,10 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.49': [
+    '✨ titlebar personalizada com cutekass.png',
+  ],
+
   '1.0.48': [
     '✨ Ordenação por elo considera LP',
     '✨ Idioma do League Client configurável nas Configurações para colagem de skins funcionar em qualquer idioma',
