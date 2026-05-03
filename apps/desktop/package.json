@@ -55,6 +55,7 @@
     "better-sqlite3-multiple-ciphers": "^12.8.0",
     "electron-updater": "^6.3.9",
     "keytar": "^7.9.0",
+    "lucide-react": "^1.14.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
