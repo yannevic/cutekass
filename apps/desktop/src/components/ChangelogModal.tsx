@@ -4,6 +4,12 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.53': [
+    '✨ botão de copiar infos formatadas no modal LCU',
+    '✨ lista de nomes dos fragmentos de skin no modal LCU',
+    '🔧 emojis na cópia de infos',
+  ],
+
   '1.0.52': [
     '✨ fragmentos de campeão e skin da aba Espólios no modal LCU',
     '🔧 essência azul e laranja lidas via loot-map',
