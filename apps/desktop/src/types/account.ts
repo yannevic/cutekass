@@ -15,7 +15,7 @@ export interface Account {
   lcuCampeoes?: number | null;
   lcuSkins?: number | null;
   lcuSkinsLista?: string | null;
-  lcuFragsCampeao?: number | null;
   lcuFragsSkin?: number | null;
+  lcuFragsSkinLista?: string | null;
   lcuAtualizadoEm?: string | null;
 }

@@ -580,8 +580,14 @@ ipcMain.handle('fetch-lcu-data', async () => {
   const nickLcu = s.gameName && s.tagLine ? `${s.gameName}#${s.tagLine}` : '';
   const essenciaAzul = lootMap['CURRENCY_champion']?.count ?? 0;
   const essenciaLaranja = lootMap['CURRENCY_cosmetic']?.count ?? 0;
-  const fragsCampeao = Object.values(lootMap).filter((v) => v?.type === 'CHAMPION_RENTAL').length;
-  const fragsSkin = Object.values(lootMap).filter((v) => v?.type === 'SKIN_RENTAL').length;
+  const lootMapCompleto = wallet as Record<
+    string,
+    { type?: string; count?: number; itemDesc?: string }
+  >;
+  const fragsSkinNomes = Object.values(lootMapCompleto)
+    .filter((v) => v?.type === 'SKIN_RENTAL' && v?.itemDesc)
+    .map((v) => v.itemDesc as string);
+  const fragsSkin = fragsSkinNomes.length;
   const numCampeoes = Array.isArray(campeoes)
     ? (campeoes as { ownership?: { owned?: boolean } }[]).filter((c) => c.ownership?.owned).length
     : 0;
@@ -610,8 +616,8 @@ ipcMain.handle('fetch-lcu-data', async () => {
     nivel,
     essenciaAzul,
     essenciaLaranja,
-    fragsCampeao,
     fragsSkin,
+    fragsSkinNomes,
     numCampeoes,
     numSkins: skinsRaw.length,
     skinsNomes,

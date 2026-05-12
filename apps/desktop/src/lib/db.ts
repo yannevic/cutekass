@@ -165,10 +165,15 @@ function configurarSchema(): void {
   }
 
   try {
-    db.exec('ALTER TABLE accounts ADD COLUMN lcuFragsCampeao INTEGER');
     db.exec('ALTER TABLE accounts ADD COLUMN lcuFragsSkin INTEGER');
   } catch {
-    // colunas já existem, ignorar
+    // coluna já existe, ignorar
+  }
+
+  try {
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuFragsSkinLista TEXT');
+  } catch {
+    // coluna já existe, ignorar
   }
 
   db.exec(`
@@ -241,7 +246,7 @@ export function updateAccount(data: Account): void {
          elo = @elo, observacoes = @observacoes, pastaId = @pastaId, wins = @wins, losses = @losses,
          lcuNivel = @lcuNivel, lcuEssenciaAzul = @lcuEssenciaAzul, lcuEssenciaLaranja = @lcuEssenciaLaranja,
          lcuCampeoes = @lcuCampeoes, lcuSkins = @lcuSkins, lcuSkinsLista = @lcuSkinsLista,
-         lcuFragsCampeao = @lcuFragsCampeao, lcuFragsSkin = @lcuFragsSkin,
+         lcuFragsSkin = @lcuFragsSkin, lcuFragsSkinLista = @lcuFragsSkinLista,
          lcuAtualizadoEm = @lcuAtualizadoEm
      WHERE id = @id`
   ).run({
@@ -260,8 +265,8 @@ export function updateAccount(data: Account): void {
     lcuCampeoes: data.lcuCampeoes ?? null,
     lcuSkins: data.lcuSkins ?? null,
     lcuSkinsLista: data.lcuSkinsLista ?? null,
-    lcuFragsCampeao: data.lcuFragsCampeao ?? null,
     lcuFragsSkin: data.lcuFragsSkin ?? null,
+    lcuFragsSkinLista: data.lcuFragsSkinLista ?? null,
     lcuAtualizadoEm: data.lcuAtualizadoEm ?? null,
   });
 }

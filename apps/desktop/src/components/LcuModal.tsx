@@ -5,8 +5,8 @@ interface LcuDados {
   nivel: number;
   essenciaAzul: number;
   essenciaLaranja: number;
-  fragsCampeao: number;
   fragsSkin: number;
+  fragsSkinNomes: string[];
   numCampeoes: number;
   numSkins: number;
   skinsNomes: string[];
@@ -115,18 +115,16 @@ export default function LcuModal({
       setProgressoColagem(null);
     }
   }
-
   function handleCopiarInfos() {
     if (!dados) return;
     const linhas = [
-      `Nick: ${dados.nick}`,
-      `Nível: ${dados.nivel}`,
-      `Campeões: ${dados.numCampeoes}`,
-      `Essência Azul: ${dados.essenciaAzul.toLocaleString('pt-BR')}`,
-      `Essência Laranja: ${dados.essenciaLaranja.toLocaleString('pt-BR')}`,
-      `Skins: ${dados.numSkins}`,
-      `Frags Campeão: ${dados.fragsCampeao.toLocaleString('pt-BR')}`,
-      `Frags Skin: ${dados.fragsSkin.toLocaleString('pt-BR')}`,
+      `🔍 Nick: ${dados.nick}`,
+      `🎮 Nível: ${dados.nivel}`,
+      `🏆 Campeões: ${dados.numCampeoes}`,
+      `💙 Essência Azul: ${dados.essenciaAzul.toLocaleString('pt-BR')}`,
+      `🧡 Essência Laranja: ${dados.essenciaLaranja.toLocaleString('pt-BR')}`,
+      `✨ Skins (${dados.numSkins}): ${dados.skinsNomes.join(', ')}`,
+      `💎 Frags Skin (${dados.fragsSkin}): ${dados.fragsSkinNomes.join(', ')}`,
     ];
     window.electronAPI.copyToClipboard(linhas.join('\n'));
   }
@@ -234,11 +232,6 @@ export default function LcuModal({
                     },
                     { icone: '✨', label: 'Skins', valor: dados.numSkins },
                     {
-                      icone: '🧩',
-                      label: 'Frags Campeão',
-                      valor: dados.fragsCampeao.toLocaleString('pt-BR'),
-                    },
-                    {
                       icone: '💎',
                       label: 'Frags Skin',
                       valor: dados.fragsSkin.toLocaleString('pt-BR'),
@@ -268,34 +261,65 @@ export default function LcuModal({
                   )}
               </div>
 
-              {/* Coluna direita: lista de skins */}
-              {dados.skinsNomes.length > 0 && (
-                <ul
+              {/* Coluna direita: lista de skins + frags de skin */}
+              {(dados.skinsNomes.length > 0 || dados.fragsSkinNomes.length > 0) && (
+                <div
                   className="flex flex-col gap-1 overflow-y-auto flex-1 min-w-0 pr-1"
                   style={{
-                    height: '298px',
+                    height: '370px',
                     scrollbarWidth: 'thin',
                     scrollbarColor: '#5a1fa8 transparent',
                   }}
                 >
-                  {dados.skinsNomes
-                    .filter((nome) => nome.toLowerCase().includes(buscaSkin.trim().toLowerCase()))
-                    .map((nome) => (
-                      <li
-                        key={nome}
-                        className="text-xs text-rift-200/70 bg-void-800/60 rounded-lg px-3 py-1.5 shrink-0"
-                      >
-                        {nome}
-                      </li>
-                    ))}
-                  {dados.skinsNomes.filter((nome) =>
-                    nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
-                  ).length === 0 && (
-                    <li className="text-xs text-rift-200/30 text-center py-4">
-                      Nenhuma skin encontrada.
-                    </li>
+                  {dados.skinsNomes.length > 0 && (
+                    <>
+                      <p className="text-xs text-rift-200/30 uppercase tracking-wider font-semibold px-1 shrink-0">
+                        Skins ({dados.numSkins})
+                      </p>
+                      {dados.skinsNomes
+                        .filter((nome) =>
+                          nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
+                        )
+                        .map((nome) => (
+                          <div
+                            key={nome}
+                            className="text-xs text-rift-200/70 bg-void-800/60 rounded-lg px-3 py-1.5 shrink-0"
+                          >
+                            {nome}
+                          </div>
+                        ))}
+                    </>
                   )}
-                </ul>
+                  {dados.fragsSkinNomes.length > 0 && (
+                    <>
+                      <p className="text-xs text-rift-200/30 uppercase tracking-wider font-semibold px-1 mt-2 shrink-0">
+                        Frags de Skin ({dados.fragsSkin})
+                      </p>
+                      {dados.fragsSkinNomes
+                        .filter((nome) =>
+                          nome.toLowerCase().includes(buscaSkin.trim().toLowerCase())
+                        )
+                        .map((nome) => (
+                          <div
+                            key={nome}
+                            className="text-xs text-rift-200/50 bg-void-800/40 rounded-lg px-3 py-1.5 shrink-0"
+                          >
+                            {nome}
+                          </div>
+                        ))}
+                    </>
+                  )}
+                  {dados.skinsNomes.filter((n) =>
+                    n.toLowerCase().includes(buscaSkin.trim().toLowerCase())
+                  ).length === 0 &&
+                    dados.fragsSkinNomes.filter((n) =>
+                      n.toLowerCase().includes(buscaSkin.trim().toLowerCase())
+                    ).length === 0 && (
+                      <p className="text-xs text-rift-200/30 text-center py-4">
+                        Nenhuma skin encontrada.
+                      </p>
+                    )}
+                </div>
               )}
             </div>
 
