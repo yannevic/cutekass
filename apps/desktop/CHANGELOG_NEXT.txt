@@ -1,1 +1,1 @@
-✨ ícones Lucide substituem emojis na sidebar, cabeçalho e modais | 🔧 scrollbar personalizada em todas as páginas e modais | 🔧 modal de configurações não fecha ao arrastar mouse para fora 
+✨ fragmentos de campeão e skin da aba Espólios no modal LCU | 🔧 essência azul e laranja lidas via loot-map | ✨ botão de copiar infos formatadas no modal LCU

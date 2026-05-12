@@ -5,6 +5,8 @@ interface LcuDados {
   nivel: number;
   essenciaAzul: number;
   essenciaLaranja: number;
+  fragsCampeao: number;
+  fragsSkin: number;
   numCampeoes: number;
   numSkins: number;
   skinsNomes: string[];
@@ -114,6 +116,21 @@ export default function LcuModal({
     }
   }
 
+  function handleCopiarInfos() {
+    if (!dados) return;
+    const linhas = [
+      `Nick: ${dados.nick}`,
+      `Nível: ${dados.nivel}`,
+      `Campeões: ${dados.numCampeoes}`,
+      `Essência Azul: ${dados.essenciaAzul.toLocaleString('pt-BR')}`,
+      `Essência Laranja: ${dados.essenciaLaranja.toLocaleString('pt-BR')}`,
+      `Skins: ${dados.numSkins}`,
+      `Frags Campeão: ${dados.fragsCampeao.toLocaleString('pt-BR')}`,
+      `Frags Skin: ${dados.fragsSkin.toLocaleString('pt-BR')}`,
+    ];
+    window.electronAPI.copyToClipboard(linhas.join('\n'));
+  }
+
   function handleCopiarNick() {
     if (dados?.nick) window.electronAPI.copyToClipboard(dados.nick);
   }
@@ -188,6 +205,19 @@ export default function LcuModal({
                   </button>
                 </div>
 
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs text-rift-200/30 uppercase tracking-wider font-semibold">
+                    Infos
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopiarInfos}
+                    className="text-rift-200/30 hover:text-rift-200 transition-colors text-xs"
+                    title="Copiar todas as infos"
+                  >
+                    📋
+                  </button>
+                </div>
                 <ul className="flex flex-col gap-2">
                   {[
                     { icone: '🎮', label: 'Nível', valor: dados.nivel },
@@ -203,6 +233,16 @@ export default function LcuModal({
                       valor: dados.essenciaLaranja.toLocaleString('pt-BR'),
                     },
                     { icone: '✨', label: 'Skins', valor: dados.numSkins },
+                    {
+                      icone: '🧩',
+                      label: 'Frags Campeão',
+                      valor: dados.fragsCampeao.toLocaleString('pt-BR'),
+                    },
+                    {
+                      icone: '💎',
+                      label: 'Frags Skin',
+                      valor: dados.fragsSkin.toLocaleString('pt-BR'),
+                    },
                   ].map(({ icone, label, valor }) => (
                     <li
                       key={label}

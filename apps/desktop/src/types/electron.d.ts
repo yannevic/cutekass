@@ -53,6 +53,8 @@ declare global {
         nivel: number;
         essenciaAzul: number;
         essenciaLaranja: number;
+        fragsCampeao: number;
+        fragsSkin: number;
         numCampeoes: number;
         numSkins: number;
         skinsNomes: string[];

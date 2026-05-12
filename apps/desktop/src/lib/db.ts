@@ -164,6 +164,13 @@ function configurarSchema(): void {
     // coluna já existe, ignorar
   }
 
+  try {
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuFragsCampeao INTEGER');
+    db.exec('ALTER TABLE accounts ADD COLUMN lcuFragsSkin INTEGER');
+  } catch {
+    // colunas já existem, ignorar
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS backup_historico (
       id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -233,7 +240,9 @@ export function updateAccount(data: Account): void {
      SET login = @login, senha = @senha, nick = @nick,
          elo = @elo, observacoes = @observacoes, pastaId = @pastaId, wins = @wins, losses = @losses,
          lcuNivel = @lcuNivel, lcuEssenciaAzul = @lcuEssenciaAzul, lcuEssenciaLaranja = @lcuEssenciaLaranja,
-         lcuCampeoes = @lcuCampeoes, lcuSkins = @lcuSkins, lcuSkinsLista = @lcuSkinsLista, lcuAtualizadoEm = @lcuAtualizadoEm
+         lcuCampeoes = @lcuCampeoes, lcuSkins = @lcuSkins, lcuSkinsLista = @lcuSkinsLista,
+         lcuFragsCampeao = @lcuFragsCampeao, lcuFragsSkin = @lcuFragsSkin,
+         lcuAtualizadoEm = @lcuAtualizadoEm
      WHERE id = @id`
   ).run({
     id: data.id,
@@ -251,6 +260,8 @@ export function updateAccount(data: Account): void {
     lcuCampeoes: data.lcuCampeoes ?? null,
     lcuSkins: data.lcuSkins ?? null,
     lcuSkinsLista: data.lcuSkinsLista ?? null,
+    lcuFragsCampeao: data.lcuFragsCampeao ?? null,
+    lcuFragsSkin: data.lcuFragsSkin ?? null,
     lcuAtualizadoEm: data.lcuAtualizadoEm ?? null,
   });
 }

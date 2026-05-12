@@ -569,17 +569,19 @@ ipcMain.handle('fetch-lcu-data', async () => {
 
   const [summoner, wallet, campeoes, skins] = await Promise.all([
     lcuGet('/lol-summoner/v1/current-summoner'),
-    lcuGet('/lol-inventory/v1/wallet/balance'),
+    lcuGet('/lol-loot/v1/player-loot-map'),
     lcuGet('/lol-champions/v1/owned-champions-minimal'),
     lcuGet('/lol-inventory/v2/inventory/CHAMPION_SKIN'),
   ]);
 
   const s = summoner as { summonerLevel?: number; gameName?: string; tagLine?: string };
-  const w = wallet as Record<string, number>;
+  const lootMap = wallet as Record<string, { type?: string; count?: number }>;
   const nivel = s.summonerLevel ?? 0;
   const nickLcu = s.gameName && s.tagLine ? `${s.gameName}#${s.tagLine}` : '';
-  const essenciaAzul = w['lol_blue_essence'] ?? 0;
-  const essenciaLaranja = w['lol_orange_essence'] ?? 0;
+  const essenciaAzul = lootMap['CURRENCY_champion']?.count ?? 0;
+  const essenciaLaranja = lootMap['CURRENCY_cosmetic']?.count ?? 0;
+  const fragsCampeao = Object.values(lootMap).filter((v) => v?.type === 'CHAMPION_RENTAL').length;
+  const fragsSkin = Object.values(lootMap).filter((v) => v?.type === 'SKIN_RENTAL').length;
   const numCampeoes = Array.isArray(campeoes)
     ? (campeoes as { ownership?: { owned?: boolean } }[]).filter((c) => c.ownership?.owned).length
     : 0;
@@ -608,6 +610,8 @@ ipcMain.handle('fetch-lcu-data', async () => {
     nivel,
     essenciaAzul,
     essenciaLaranja,
+    fragsCampeao,
+    fragsSkin,
     numCampeoes,
     numSkins: skinsRaw.length,
     skinsNomes,

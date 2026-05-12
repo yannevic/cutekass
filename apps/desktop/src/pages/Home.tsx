@@ -368,6 +368,8 @@ export default function Home({
       nivel: number;
       essenciaAzul: number;
       essenciaLaranja: number;
+      fragsCampeao: number;
+      fragsSkin: number;
       numCampeoes: number;
       numSkins: number;
       skinsNomes: string[];
@@ -409,6 +411,8 @@ export default function Home({
       nivel: number;
       essenciaAzul: number;
       essenciaLaranja: number;
+      fragsCampeao: number;
+      fragsSkin: number;
       numCampeoes: number;
       numSkins: number;
       skinsNomes: string[];
@@ -702,6 +706,8 @@ export default function Home({
             lcuCampeoes: dados.numCampeoes,
             lcuSkins: dados.numSkins,
             lcuSkinsLista: JSON.stringify(dados.skinsNomes),
+            lcuFragsCampeao: dados.fragsCampeao,
+            lcuFragsSkin: dados.fragsSkin,
             lcuAtualizadoEm: new Date().toISOString(),
           });
           await fetchAccounts();
@@ -994,6 +1000,8 @@ export default function Home({
                           nivel: account.lcuNivel ?? 0,
                           essenciaAzul: account.lcuEssenciaAzul ?? 0,
                           essenciaLaranja: account.lcuEssenciaLaranja ?? 0,
+                          fragsCampeao: account.lcuFragsCampeao ?? 0,
+                          fragsSkin: account.lcuFragsSkin ?? 0,
                           numCampeoes: account.lcuCampeoes ?? 0,
                           numSkins: account.lcuSkins ?? 0,
                           skinsNomes: account.lcuSkinsLista
