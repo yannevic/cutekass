@@ -4,6 +4,12 @@ interface Props {
 }
 
 const CHANGELOG: Record<string, string[]> = {
+  '1.0.51': [
+    '✨ ícones Lucide substituem emojis na sidebar, cabeçalho e modais',
+    '🔧 scrollbar personalizada em todas as páginas e modais',
+    '🔧 modal de configurações não fecha ao arrastar mouse para fora',
+  ],
+
   '1.0.50': [
     '✨ ícones Lucide substituem emojis na sidebar, cabeçalho e modais',
     '🔧 scrollbar personalizada em todas as páginas e modais',
